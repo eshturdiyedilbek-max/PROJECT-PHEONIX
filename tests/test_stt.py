@@ -29,7 +29,7 @@ class FakeSttEngine:
 @pytest.fixture
 def fake(app):
     engine = FakeSttEngine()
-    app.state.stt_engine = engine
+    app.state.stt_engines = {"whisper": engine}
     return engine
 
 
@@ -45,6 +45,7 @@ async def test_stt_returns_text(client, fake):
         "duration": 1.9,
         "segments": [{"start": 0.0, "end": 1.9, "text": "Salom"}],
         "history_id": None,
+        "engine": "whisper",
     }
     assert fake.calls[0][1] is None
     # temp file existed during transcribe and was removed afterwards
@@ -120,7 +121,7 @@ async def test_stt_bad_language(client, fake):
 
 
 async def test_stt_no_engine(app, client):
-    app.state.stt_engine = None
+    app.state.stt_engines = {}
     r = await client.post("/api/stt", files={"audio": AUDIO})
     assert r.status_code == 503
     assert r.json()["error"]["code"] == "model_unavailable"

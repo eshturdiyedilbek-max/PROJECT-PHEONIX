@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 
@@ -8,6 +9,11 @@ from starlette.concurrency import run_in_threadpool
 from app.deps import get_db, parse_client_id
 from app.errors import ApiError
 from app.history_store import save_history as store_history
+from app.llm.gemini import GeminiError
+from app.stt.audio import audio_duration
+from app.stt.engine import STT_ENGINES, default_engine_name
+
+log = logging.getLogger("phoenix.stt")
 
 router = APIRouter(prefix="/api", tags=["stt"])
 
@@ -37,12 +43,17 @@ async def speech_to_text(
     audio: UploadFile = File(...),
     language: str | None = Form(None),
     save_history: bool = Form(False),
+    engine: str | None = Form(None),
     x_client_id: str | None = Header(None),
     db: AsyncSession = Depends(get_db),
 ):
-    engine = request.app.state.stt_engine
-    if engine is None:
-        raise ApiError(503, "model_unavailable", "Speech-to-text model is not loaded")
+    engines = request.app.state.stt_engines
+    engine_name = (engine or "").strip().lower() or default_engine_name(request.app.state.settings, engines)
+    if engine and engine_name not in STT_ENGINES:
+        raise ApiError(400, "invalid_request", "engine must be whisper or gemini")
+    if engine_name is None or engine_name not in engines:
+        what = f"engine '{engine_name}'" if engine_name else "model"
+        raise ApiError(503, "model_unavailable", f"Speech-to-text {what} is not available")
 
     language = (language or "").strip().lower() or None
     if language is not None and language not in LANGUAGES:
@@ -68,8 +79,12 @@ async def speech_to_text(
             if client_id is None:
                 raise ApiError(400, "invalid_client_id", "X-Client-Id header must be a UUID")
 
-        async with request.app.state.stt_semaphore:  # Whisper is CPU/GPU heavy; queue instead of thrashing
-            result = await run_in_threadpool(engine.transcribe, path, language)
+        duration = await run_in_threadpool(audio_duration, path)
+        if duration is not None and duration > MAX_DURATION:  # check before spending model time
+            raise ApiError(400, "invalid_request", "audio must be at most 60 seconds")
+
+        result, engine_name = await _transcribe(request, engines, engine_name, path, language,
+                                                explicit=bool(engine))
     finally:
         try:
             os.unlink(path)
@@ -89,4 +104,19 @@ async def speech_to_text(
         "duration": result.duration,
         "segments": [{"start": s.start, "end": s.end, "text": s.text} for s in result.segments],
         "history_id": history_id,
+        "engine": engine_name,
     }
+
+
+async def _transcribe(request: Request, engines: dict, name: str, path: str, language: str | None,
+                      explicit: bool):
+    """Run the chosen engine; if Gemini fails and the client didn't insist on it, fall back to Whisper."""
+    try:
+        async with request.app.state.stt_semaphore:  # models are heavy; queue instead of thrashing
+            return await run_in_threadpool(engines[name].transcribe, path, language), name
+    except GeminiError as e:
+        if not explicit and name != "whisper" and "whisper" in engines:
+            log.warning("gemini STT failed (%s); falling back to whisper", e)
+            async with request.app.state.stt_semaphore:
+                return await run_in_threadpool(engines["whisper"].transcribe, path, language), "whisper"
+        raise ApiError(502, "upstream_error", "Speech service is temporarily unavailable; try again") from e

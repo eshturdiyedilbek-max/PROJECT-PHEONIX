@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 
 from app.sign.classes import load_classes
+from app.stt.engine import default_engine_name
 
 router = APIRouter(prefix="/api", tags=["meta"])
 
@@ -20,7 +21,10 @@ async def health(request: Request):
         "status": "ok",
         "sign_model": "loaded" if st.sign_recognizers else "missing",
         "sign_models": per_lang,
-        "stt_model": "loaded" if st.stt_engine is not None else "missing",
+        "stt_model": "loaded" if st.stt_engines else "missing",
+        "stt_engines": sorted(st.stt_engines),
+        "stt_default": default_engine_name(st.settings, st.stt_engines),
+        "sentence_smoothing": st.gemini is not None,
         "version": VERSION,
     }
 

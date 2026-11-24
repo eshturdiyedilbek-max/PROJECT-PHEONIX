@@ -11,7 +11,8 @@ Backend for a sign-language translator: Russian Sign Language (camera) → text/
 |---|---|---|
 | Sign → text (real time), Russian | `WS /ws/sign?lang=rsl` (JPEG frames in, words out) | Slovo `mvit32-2` ONNX (1000 RSL signs, ~64% top-1) via ONNX Runtime |
 | Sign → text (real time), English | `WS /ws/sign?lang=asl` | SignFlow-A ONNX (2000 ASL/WLASL words, 63.3% top-1). **Non-commercial** (WLASL licence) |
-| Speech → subtitles | `POST /api/stt` | faster-whisper (`small` by default; uz/ru/en/auto) |
+| Speech → subtitles | `POST /api/stt` | Gemini (default when `GEMINI_API_KEY` is set; strong Uzbek) or faster-whisper; auto-fallback to Whisper |
+| Signs → natural sentence (ru/en/uz) | `POST /api/sentence`, and `final` on `/ws/sign` | Gemini, falls back to plain words |
 | Learn / Dictionary | `GET /api/dictionary` | Postgres, seeded from `data/rsl_classes.json` |
 | History | `/api/history` | Postgres, scoped by `X-Client-Id` |
 | Dataset collection | `POST /api/contributions` | video files on disk + Postgres row |
@@ -60,6 +61,10 @@ TEST_DATABASE_URL=postgresql+asyncpg://user@host/db .venv/bin/pytest   # same su
 | `WS_IDLE_TIMEOUT_S` / `MAX_WS_CONNECTIONS` | `30` / `100` | close silent sockets / cap live translations |
 | `MAX_CONCURRENT_STT` | `2` | Whisper jobs at once; the rest queue |
 | `LOG_LEVEL` | `INFO` | |
+| `GEMINI_API_KEY` | *(empty)* | Google AI Studio key; put it in `.env` (git-ignored), never in code |
+| `STT_ENGINE` | `auto` | `auto` = Gemini if a key is set, else Whisper; or force `gemini` / `whisper` |
+| `GEMINI_MODELS` / `GEMINI_SENTENCE_MODELS` | see `.env.example` | models tried in order when one is overloaded (503) |
+| `SMOOTH_BY_DEFAULT` | `true` | WS `final` includes a Gemini sentence unless the client sends `"smooth": false` |
 | `SIGN_STRIDE` | `8` | frames between inferences (lower = faster reaction, more compute) |
 | `SIGN_MIN_CONFIDENCE` | `0.5` | below this a prediction is ignored |
 | `MAX_CONCURRENT_INFERENCES` | `4` | global cap on parallel sign inferences |

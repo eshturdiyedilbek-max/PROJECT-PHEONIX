@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -23,12 +24,23 @@ class Settings(BaseSettings):
 
     max_concurrent_stt: int = 2
 
+    stt_engine: Literal["whisper", "gemini", "auto"] = "auto"  # whisper | gemini | auto (Gemini if GEMINI_API_KEY is set, Whisper as backup)
     stt_model: str = "small"
     stt_device: str = "cpu"
     stt_compute_type: str = "int8"
 
+    gemini_api_key: str = ""
+    gemini_models: str = "gemini-3.5-flash,gemini-flash-latest,gemini-flash-lite-latest"  # STT; tried in order
+    gemini_sentence_models: str = "gemini-flash-lite-latest,gemini-3.5-flash"  # short task: fast model first
+    gemini_timeout_s: float = 30.0
+    smooth_by_default: bool = True  # WS final includes a Gemini sentence unless the client opts out
+
     upload_dir: str = "uploads"
     load_models: bool = True
+
+    @property
+    def sentence_model_list(self) -> list[str]:
+        return [m.strip() for m in self.gemini_sentence_models.split(",") if m.strip()]
 
     @property
     def cors_origin_list(self) -> list[str]:
