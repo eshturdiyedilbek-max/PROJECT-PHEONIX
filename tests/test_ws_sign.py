@@ -211,3 +211,40 @@ def test_ws_frame_flood_is_throttled(tc, app):
         ws.send_text(json.dumps({"type": "stop"}))
         final = _recv(ws)
     assert final["signs"] == []  # only 15 frames accepted: never a full 32-frame window
+
+
+def test_ws_final_includes_smoothed_sentence(tc, app):
+    from test_gemini import answer, client_with
+
+    app.state.gemini = client_with(lambda r: answer({"sentence": "Salom!"}))
+    cid = str(uuid.uuid4())
+    with tc.websocket_connect(_url(cid)) as ws:
+        ws.send_text(json.dumps({"type": "start", "fps": 15, "target_lang": "uz"}))
+        ready = _recv(ws)
+        assert ready["smoothing"] is True and ready["target_lang"] == "uz"
+        for i in range(40):
+            ws.send_bytes(_jpeg(i))
+        assert _recv(ws)["type"] == "sign"
+        ws.send_text(json.dumps({"type": "stop"}))
+        final = _recv(ws)
+    assert final["text"] == WORD and final["sentence"] == "Salom!"
+    assert final["smoothed"] is True and final["sentence_lang"] == "uz"
+    item = tc.get("/api/history", headers={"X-Client-Id": cid}).json()["items"][0]
+    assert item["text"] == "Salom!" and item["signs"] == [WORD]
+
+
+def test_ws_smoothing_opt_out_and_bad_target(tc, app):
+    from test_gemini import answer, client_with
+
+    app.state.gemini = client_with(lambda r: answer({"sentence": "SHOULD NOT APPEAR"}))
+    with tc.websocket_connect(_url()) as ws:
+        ws.send_text(json.dumps({"type": "start", "fps": 15, "target_lang": "de"}))
+        assert _recv(ws)["code"] == "bad_message"
+        ws.send_text(json.dumps({"type": "start", "fps": 15, "smooth": False}))
+        _recv(ws)
+        for i in range(40):
+            ws.send_bytes(_jpeg(i))
+        _recv(ws)
+        ws.send_text(json.dumps({"type": "stop"}))
+        final = _recv(ws)
+    assert final["sentence"] == WORD and final["smoothed"] is False and final["sentence_lang"] == "ru"

@@ -1,4 +1,6 @@
-# Phoenix Backend — API Contract v1.1
+# Phoenix Backend — API Contract v1.2
+
+> **v1.2 (2026-11-24):** Gemini added. `POST /api/sentence` turns recognized signs into a natural sentence (and can translate to Uzbek). `/ws/sign` `final` now also carries `sentence`/`smoothed`/`sentence_lang` (opt out with `"smooth": false`, choose language with `"target_lang"`). `/api/stt` can use Gemini (better Uzbek) or Whisper; response gains `engine`. New error `502 upstream_error`. Backward compatible.
 
 > **v1.1 (2026-11-24):** English = American Sign Language (`asl`) added next to Russian (`rsl`). Pick it with `?lang=asl` on `/ws/sign` and `lang=asl` on `/api/dictionary`. `/api/languages` and the `ready` message now say which text/voice language a sign language produces. New WebSocket error codes: `idle_timeout`, `inference_failed`; `overloaded` can now also close the socket when the server is full. Everything from v1 still works unchanged.
 
@@ -33,6 +35,7 @@ History is scoped to this id. A missing or malformed id on an endpoint that need
 | 413 | `file_too_large` | upload over limit |
 | 415 | `unsupported_media_type` | wrong audio/video format |
 | 500 | `internal_error` | unexpected server bug (please report) |
+| 502 | `upstream_error` | Gemini (Google) failed and no fallback was possible; retry |
 | 503 | `model_unavailable` | model weights not loaded on server |
 
 ## 2. Health and languages
@@ -44,6 +47,9 @@ History is scoped to this id. A missing or malformed id on an endpoint that need
   "sign_model": "loaded",
   "sign_models": { "rsl": "loaded", "asl": "missing" },
   "stt_model": "loaded",
+  "stt_engines": ["gemini", "whisper"],
+  "stt_default": "gemini",
+  "sentence_smoothing": true,
   "version": "0.2.0"
 }
 ```
@@ -106,8 +112,10 @@ client                              server
 
 **Text frame `start`** (must be first):
 ```json
-{ "type": "start", "fps": 15, "save_history": true }
+{ "type": "start", "fps": 15, "save_history": true, "smooth": true, "target_lang": "uz" }
 ```
+- `smooth` (bool, default true): on `stop`, turn the recognized signs into a natural sentence with Gemini.
+- `target_lang` (`ru` | `en` | `uz`, default = the sign language's own `text_lang`): language of that sentence. `uz` translates, e.g. RSL signs → Uzbek sentence.
 - `fps` (int, 5–30, default 15): how many frames per second you will send. Server resamples to what the model needs. **Recommended: 15**, or exactly the `recommended_fps` from `ready` (a lighter model may need only 8).
 - Frames sent much faster than the declared `fps` (more than 2× in one second) are skipped.
 - `save_history` (bool, default true): store the final phrase in History.
@@ -134,9 +142,11 @@ client                              server
 {
   "type": "ready", "session_id": "6f1c…", "lang": "rsl", "model": "mvit32-2",
   "window_frames": 32, "target_fps": 15, "recommended_fps": 15,
-  "text_lang": "ru", "tts_lang": "ru-RU"
+  "text_lang": "ru", "tts_lang": "ru-RU",
+  "smoothing": true, "target_lang": "uz"
 }
 ```
+`smoothing` is false if the client opted out or the server has no Gemini key.
 The first sign can arrive after about `window_frames / target_fps` seconds (~2 s). Show a "listening…" indicator until then. `target_fps` can be fractional (e.g. `7.5`); if you want to save bandwidth, send at `recommended_fps`.
 
 **`sign`** — a new sign was recognized (same sign is never sent twice in a row):
@@ -157,8 +167,16 @@ The first sign can arrive after about `window_frames / target_fps` seconds (~2 s
 
 **`final`** — reply to `stop`:
 ```json
-{ "type": "final", "session_id": "6f1c…", "text": "привет утро", "signs": ["привет", "утро"], "history_id": 42 }
+{
+  "type": "final", "session_id": "6f1c…",
+  "text": "Привет! утро", "signs": ["Привет!", "утро"],
+  "sentence": "Xayrli tong!", "smoothed": true, "sentence_lang": "uz",
+  "history_id": 42
+}
 ```
+- `text`: raw signs joined by spaces. `sentence`: what to show/speak as the final result. If Gemini failed or smoothing is off, `sentence` equals `text` and `smoothed` is false.
+- `final` can take 1–3 s longer when smoothing is on (Gemini call). Keep showing `phrase` until it arrives.
+- History stores `sentence` as the item's `text` (and the raw `signs`).
 `history_id` is `null` if nothing was recognized or `save_history` was false.
 
 **`error`**:
@@ -189,6 +207,7 @@ Request: `multipart/form-data`
 | `audio` | file | yes | webm, ogg, wav, mp3, m4a. ≤ 10 MB, ≤ 60 s |
 | `language` | string | no | `uz`, `ru`, `en`. Omit for auto-detect |
 | `save_history` | bool | no | default `false` (chunks are short; save when you have a full utterance) |
+| `engine` | string | no | `gemini` or `whisper`. Omit to use the server default (`stt_default` in `/api/health`). If the default Gemini fails, the server falls back to Whisper automatically; if you ask for `gemini` explicitly and it fails you get `502 upstream_error` |
 
 Headers: `X-Client-Id` (required only when `save_history=true`).
 
@@ -199,10 +218,38 @@ Response `200`:
   "language": "uz",
   "duration": 3.4,
   "segments": [ { "start": 0.0, "end": 1.9, "text": "Salom, qalaysiz?" } ],
-  "history_id": null
+  "history_id": null,
+  "engine": "gemini"
 }
 ```
+With Gemini, `segments` is one segment covering the whole chunk. Audio sent to the Gemini engine is processed by Google; mention it in the privacy policy.
+
 Empty speech returns `"text": ""` with 200 (don't show an empty subtitle).
+
+## 4b. Signs → sentence — `POST /api/sentence`
+
+Turn any list of recognized signs into a natural sentence (the WebSocket already does this on `stop`; use this endpoint to re-generate, e.g. in another language).
+
+Request JSON:
+```json
+{ "signs": ["Я", "врач", "идти", "нужно", "сегодня"], "sign_lang": "rsl", "target_lang": "uz" }
+```
+| field | required | notes |
+|---|---|---|
+| `signs` | yes | 1–50 strings, each ≤ 100 chars, in recognition order |
+| `sign_lang` | no | default `rsl` |
+| `target_lang` | no | `ru`, `en`, `uz`; default = the sign language's `text_lang` |
+
+Response `200` (always 200; falls back to the plain words if Gemini is down):
+```json
+{
+  "sentence": "Men bugun shifokorga borishim kerak.",
+  "source_text": "Я врач идти нужно сегодня",
+  "target_lang": "uz",
+  "smoothed": true,
+  "model": "gemini-flash-lite-latest"
+}
+```
 
 ## 5. Dictionary (Learn page) — `GET /api/dictionary`
 

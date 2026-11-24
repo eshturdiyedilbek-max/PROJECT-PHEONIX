@@ -15,7 +15,8 @@ def settings(tmp_path) -> Settings:
         database_url=os.environ.get("TEST_DATABASE_URL") or f"sqlite+aiosqlite:///{tmp_path / 'test.db'}",
         upload_dir=str(tmp_path / "uploads"),
         load_models=False,
-        ws_frame_rate_slack=100.0,  # tests push frames as fast as possible
+        ws_frame_rate_slack=100.0,
+        gemini_api_key="",  # never call the real API from tests (repo .env may hold a key)  # tests push frames as fast as possible
     )
 
 

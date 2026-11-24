@@ -30,6 +30,8 @@ class SttEngine(Protocol):
 
 
 class FasterWhisperEngine:
+    name = "whisper"
+
     def __init__(self, model: str, device: str, compute_type: str):
         if WhisperModel is None:
             raise RuntimeError("faster-whisper is not installed")
@@ -56,3 +58,26 @@ def load_stt_engine(settings) -> SttEngine | None:
     except Exception as exc:  # noqa: BLE001 - any failure means "model missing"
         log.warning("STT model %r could not be loaded: %s", settings.stt_model, exc)
         return None
+
+
+STT_ENGINES = ("whisper", "gemini")
+
+
+def load_stt_engines(settings, gemini_client) -> dict[str, SttEngine]:
+    """Load the engines STT_ENGINE needs. 'auto' = Gemini if a key is set (with Whisper as fallback)."""
+    wanted = settings.stt_engine
+    engines: dict[str, SttEngine] = {}
+    if wanted in ("gemini", "auto") and gemini_client is not None:
+        from app.stt.gemini_engine import GeminiSttEngine
+
+        engines["gemini"] = GeminiSttEngine(gemini_client)
+    if wanted in ("whisper", "auto") or (wanted == "gemini" and gemini_client is None):
+        whisper = load_stt_engine(settings)
+        if whisper is not None:
+            engines["whisper"] = whisper
+    return engines
+
+
+def default_engine_name(settings, engines: dict) -> str | None:
+    order = ["gemini", "whisper"] if settings.stt_engine in ("auto", "gemini") else ["whisper", "gemini"]
+    return next((n for n in order if n in engines), None)

@@ -21,6 +21,8 @@ services:
       STT_MODEL: ${STT_MODEL:-small}
       SIGN_VARIANTS: ${SIGN_VARIANTS:-}
       SIGN_LANGUAGES_ENABLED: ${SIGN_LANGUAGES_ENABLED:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      STT_ENGINE: ${STT_ENGINE:-auto}
     restart: unless-stopped
     ports: ["8000:8000"]
     volumes:

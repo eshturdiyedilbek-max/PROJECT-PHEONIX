@@ -11,6 +11,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.deps import parse_client_id
 from app.history_store import save_history
+from app.llm.sentence import smooth_sentence
 from app.sign.preprocess import BadFrame, decode_jpeg
 from app.sign.stream import SignEvent, SignStream
 
@@ -36,6 +37,8 @@ class SignSession:
         self.session_id = str(uuid.uuid4())
         self.stream: SignStream | None = None
         self.save = True
+        self.smooth = False
+        self.target_lang = "ru"
         self.inflight: asyncio.Task | None = None
         self.generation = 0
         self.last_overload_notice = 0.0
@@ -70,7 +73,13 @@ class SignSession:
             await self.error("bad_message", "fps must be an integer between 5 and 30")
             return
         save = msg.get("save_history", True)
+        target = msg.get("target_lang") or self.spec.text_lang
+        if target not in ("ru", "en", "uz"):
+            await self.error("bad_message", "target_lang must be ru, en or uz")
+            return
         self.save = bool(save)
+        self.smooth = bool(msg.get("smooth", self.settings.smooth_by_default))
+        self.target_lang = target
         await self._cancel_inflight()
         s = self.settings
         min_conf = self.spec.min_confidence if self.spec.min_confidence is not None else s.sign_min_confidence
@@ -93,6 +102,8 @@ class SignSession:
             "recommended_fps": recommended_fps(self.recognizer.target_fps),
             "text_lang": self.spec.text_lang,
             "tts_lang": self.spec.tts_lang,
+            "smoothing": self.smooth and self.app.state.gemini is not None,
+            "target_lang": self.target_lang,
         })
 
     async def on_stop(self) -> None:
@@ -105,13 +116,22 @@ class SignSession:
             await self._infer(self.stream.next_window(), self.generation)
         signs = self.stream.phrase
         text = " ".join(signs)
+        sentence, smoothed = text, False
+        if signs and self.smooth:
+            sentence, smoothed, _ = await run_in_threadpool(
+                smooth_sentence, self.app.state.gemini, signs, self.lang, self.target_lang,
+                self.settings.sentence_model_list,
+            )
         history_id = None
         if signs and self.save:
             async with self.app.state.sessionmaker() as db:
-                history_id = await save_history(db, self.client_id, "sign_to_text", self.lang, text, signs)
+                history_id = await save_history(db, self.client_id, "sign_to_text",
+                                                self.lang, sentence, signs)
         await self.send({
             "type": "final", "session_id": self.session_id,
             "text": text, "signs": signs, "history_id": history_id,
+            "sentence": sentence, "smoothed": smoothed,
+            "sentence_lang": self.target_lang if smoothed else self.spec.text_lang,
         })
         self.stream.reset()
         self.generation += 1
