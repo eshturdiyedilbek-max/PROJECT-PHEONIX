@@ -2,6 +2,7 @@
 
   python scripts/smoke_ws.py --url ws://localhost:8000 --video some_sign.mp4
   python scripts/smoke_ws.py --url ws://localhost:8000            # synthetic grey frames
+  python scripts/smoke_ws.py --lang asl --video hello.mp4         # American Sign Language
 """
 
 import argparse
@@ -33,7 +34,7 @@ def frames(video: str | None, fps: int, seconds: float):
 
 
 async def main(a):
-    async with websockets.connect(f"{a.url}/ws/sign?client_id={uuid.uuid4()}&lang=rsl") as ws:
+    async with websockets.connect(f"{a.url}/ws/sign?client_id={uuid.uuid4()}&lang={a.lang}") as ws:
         await ws.send(json.dumps({"type": "start", "fps": a.fps}))
         print(await ws.recv())
 
@@ -56,6 +57,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--url", default="ws://localhost:8000")
     p.add_argument("--video")
+    p.add_argument("--lang", default="rsl", help="sign language code: rsl or asl")
     p.add_argument("--fps", type=int, default=15)
     p.add_argument("--seconds", type=float, default=4)
     asyncio.run(main(p.parse_args()))
