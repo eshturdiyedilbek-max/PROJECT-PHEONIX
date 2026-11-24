@@ -16,7 +16,7 @@ def load_classes(path: str) -> list[str]:
 
 def categorize(text: str) -> Literal["letter", "word", "phrase"]:
     t = text.strip()
-    if len(t) == 1:
+    if len(t) == 1 and t.isupper():
         return "letter"
     if " " in t:
         return "phrase"

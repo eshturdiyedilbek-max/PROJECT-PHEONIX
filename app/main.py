@@ -66,10 +66,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     install_error_handlers(app)
 
-    from app.api import meta
+    from app.api import contributions, dictionary, history, meta
+    from app.sign import ws as sign_ws
+    from app.stt import router as stt
 
-    app.include_router(meta.router)
-    # ROUTERS (tasks 3-5 register their routers below)
+    for module in (meta, dictionary, history, contributions, stt, sign_ws):
+        app.include_router(module.router)
     return app
 
 
