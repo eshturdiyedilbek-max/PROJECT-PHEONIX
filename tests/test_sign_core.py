@@ -261,3 +261,11 @@ def test_next_window_trims_buffer_so_steady_stream_never_drops():
         if s.ready():
             s.next_window()
     assert s.dropped_since_last_check() == 0
+
+
+def test_asl_labels_are_wlasl_glosses_in_alphabetical_order():
+    # SignFlow-A's outputs follow sorted() order (verified on real WLASL clips; JSON order scored 0/34).
+    labels = load_classes("data/asl_classes.json")
+    assert len(labels) == 2000 and len(set(labels)) == 2000
+    assert labels == sorted(labels)
+    assert labels[:3] == ["a", "a lot", "abdomen"]

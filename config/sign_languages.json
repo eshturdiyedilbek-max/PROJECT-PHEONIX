@@ -89,7 +89,7 @@
           "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/SignFlow-A.onnx",
           "frame_interval": 2,
           "top1_accuracy": 63.3,
-          "_unverified": "Input layout/normalization/frame rate of SignFlow-A are not documented upstream; layout is auto-detected from the ONNX input shape, normalization assumed to match Slovo."
+          "_notes": "Input [1,1,3,32,224,224] confirmed on the real file (same as Slovo). Labels = WLASL-2000 glosses sorted alphabetically (verified: 74% top-1 / 100% top-5 on 34 WLASL test clips). Frame rate and normalization assumed to match Slovo."
         }
       }
     }

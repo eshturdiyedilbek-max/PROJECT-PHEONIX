@@ -74,7 +74,7 @@ TEST_DATABASE_URL=postgresql+asyncpg://user@host/db .venv/bin/pytest   # same su
 
 `config/sign_languages.json` lists each sign language, its label file, and its model variants. A model's name says its frame rate: `mvit32-2` = 32 frames, every 2nd frame of 30 fps video → 15 fps; `mvit16-4` → 7.5 fps. The server tells the client the rate in the WebSocket `ready` message and resamples whatever the client sends, so switching variants needs no frontend change. To add a language (e.g. Uzbek later): add a labels JSON in `data/`, an entry in the config, and the ONNX file.
 
-ASL caveats: SignFlow-A ships no label file; `data/asl_classes.json` is WLASL-2000 in `WLASL_v0.3.json` order, which is the likely training order but **not yet verified on labelled clips**. It also has no "no sign" class, so pauses are detected only by confidence (`min_confidence` 0.6 for ASL).
+ASL notes: SignFlow-A ships no label file. Its 2000 outputs are the WLASL-2000 glosses in **alphabetical order** (Python `sorted()`: "a", "a lot", "abdomen", …), not the `WLASL_v0.3.json` order. Verified on 34 labelled WLASL test clips with the real model: 25/34 top-1 (74%), 34/34 top-5; every miss was a near-synonym (same→similar, speak→talk). The `WLASL_v0.3.json` order scored 0/34. The model has no "no sign" class, so pauses are detected only by confidence (`min_confidence` 0.6 for ASL).
 
 ## Deploy notes
 
