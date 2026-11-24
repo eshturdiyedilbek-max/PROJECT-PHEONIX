@@ -1,0 +1,29 @@
+[project]
+name = "phoenix-backend"
+version = "0.1.0"
+description = "Sign language (RSL) to text/speech translator backend"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic-settings>=2.4",
+  "sqlalchemy[asyncio]>=2.0.30",
+  "asyncpg>=0.29",
+  "aiosqlite>=0.20",
+  "python-multipart>=0.0.9",
+  "onnxruntime>=1.18",
+  "numpy>=1.26",
+  "opencv-python-headless>=4.9",
+  "faster-whisper>=1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "httpx>=0.27", "onnx>=1.16"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
