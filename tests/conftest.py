@@ -1,3 +1,4 @@
+import os
 import uuid
 
 import pytest
@@ -9,8 +10,9 @@ from app.main import create_app
 
 @pytest.fixture
 def settings(tmp_path) -> Settings:
+    # Set TEST_DATABASE_URL=postgresql+asyncpg://... to run the suite against Postgres.
     return Settings(
-        database_url=f"sqlite+aiosqlite:///{tmp_path / 'test.db'}",
+        database_url=os.environ.get("TEST_DATABASE_URL") or f"sqlite+aiosqlite:///{tmp_path / 'test.db'}",
         upload_dir=str(tmp_path / "uploads"),
         load_models=False,
     )
@@ -18,7 +20,19 @@ def settings(tmp_path) -> Settings:
 
 @pytest.fixture
 def app(settings):
-    return create_app(settings)
+    yield create_app(settings)
+    if os.environ.get("TEST_DATABASE_URL"):
+        import asyncio
+
+        from app.db import Base, make_engine
+
+        async def _drop():
+            engine = make_engine(settings.database_url)
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.drop_all)
+            await engine.dispose()
+
+        asyncio.run(_drop())
 
 
 @pytest.fixture
