@@ -6,3 +6,4 @@ models/
 uploads/
 .env
 .pytest_cache/
+*.egg-info/
