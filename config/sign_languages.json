@@ -1,0 +1,97 @@
+{
+  "_comment": "Sign languages the server can recognize. Pick a variant per language with SIGN_VARIANTS=rsl=mvit16-4,asl=signflow-a. frame_interval = every Nth frame of source_fps video (the model's name says it: mvit32-2 -> 32 frames, every 2nd).",
+  "languages": [
+    {
+      "code": "rsl",
+      "name": "Русский жестовый язык",
+      "english_name": "Russian Sign Language",
+      "text_lang": "ru",
+      "tts_lang": "ru-RU",
+      "classes_path": "data/rsl_classes.json",
+      "no_sign_label": "---",
+      "source_fps": 30,
+      "license": "CC BY-SA 4.0 (Slovo, ai-forever)",
+      "commercial_use": true,
+      "default_variant": "mvit32-2",
+      "variants": {
+        "mvit16-4": {
+          "model_path": "models/mvit16-4.onnx",
+          "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/mvit/onnx/mvit16-4.onnx",
+          "frame_interval": 4,
+          "top1_accuracy": 58.35
+        },
+        "mvit32-2": {
+          "model_path": "models/mvit32-2.onnx",
+          "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/mvit/onnx/mvit32-2.onnx",
+          "frame_interval": 2,
+          "top1_accuracy": 64.09
+        },
+        "mvit48-2": {
+          "model_path": "models/mvit48-2.onnx",
+          "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/mvit/onnx/mvit48-2.onnx",
+          "frame_interval": 2,
+          "top1_accuracy": 62.18
+        },
+        "swin16-3": {
+          "model_path": "models/swin16-3.onnx",
+          "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/swin/onnx/swin16-3.onnx",
+          "frame_interval": 3,
+          "top1_accuracy": 48.04
+        },
+        "swin32-2": {
+          "model_path": "models/swin32-2.onnx",
+          "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/swin/onnx/swin32-2.onnx",
+          "frame_interval": 2,
+          "top1_accuracy": 54.84
+        },
+        "swin48-1": {
+          "model_path": "models/swin48-1.onnx",
+          "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/swin/onnx/swin48-1.onnx",
+          "frame_interval": 1,
+          "top1_accuracy": 55.66
+        },
+        "resnet16-3": {
+          "model_path": "models/resnet16-3.onnx",
+          "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/resnet/onnx/resnet16-3.onnx",
+          "frame_interval": 3,
+          "top1_accuracy": 32.86
+        },
+        "resnet32-2": {
+          "model_path": "models/resnet32-2.onnx",
+          "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/resnet/onnx/resnet32-2.onnx",
+          "frame_interval": 2,
+          "top1_accuracy": 38.38
+        },
+        "resnet48-1": {
+          "model_path": "models/resnet48-1.onnx",
+          "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/resnet/onnx/resnet48-1.onnx",
+          "frame_interval": 1,
+          "top1_accuracy": 43.91
+        }
+      }
+    },
+    {
+      "code": "asl",
+      "name": "American Sign Language",
+      "english_name": "American Sign Language",
+      "text_lang": "en",
+      "tts_lang": "en-US",
+      "classes_path": "data/asl_classes.json",
+      "no_sign_label": null,
+      "source_fps": 30,
+      "min_confidence": 0.6,
+      "license": "SignFlow-A trained on WLASL-2000 (C-UDA: academic/computational use only, no commercial use)",
+      "commercial_use": false,
+      "default_variant": "signflow-a",
+      "variants": {
+        "signflow-a": {
+          "model_path": "models/SignFlow-A.onnx",
+          "download_url": "https://rndml-team-cv.obs.ru-moscow-1.hc.sbercloud.ru/datasets/slovo/models/SignFlow-A.onnx",
+          "frame_interval": 2,
+          "top1_accuracy": 63.3,
+          "_unverified": "Input layout/normalization/frame rate of SignFlow-A are not documented upstream; layout is auto-detected from the ONNX input shape, normalization assumed to match Slovo."
+        }
+      }
+    }
+  ]
+}

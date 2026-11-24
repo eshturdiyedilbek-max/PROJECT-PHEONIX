@@ -6,13 +6,12 @@ import numpy as np
 import pytest
 from fake_model import make_fake_model
 from fastapi.testclient import TestClient
-from sqlalchemy import select
 
-from app.models import HistoryItem
 from app.sign.classes import load_classes
 from app.sign.recognizer import SignRecognizer
 
 WORD = "Привет!"
+ASL_WORD = "hello"
 
 
 def _jpeg(seed: int = 0) -> bytes:
@@ -24,10 +23,16 @@ def _jpeg(seed: int = 0) -> bytes:
 
 @pytest.fixture
 def tc(app, settings, tmp_path):
-    classes = load_classes(settings.sign_classes_path)
+    classes = load_classes("data/rsl_classes.json")
     path = make_fake_model(str(tmp_path / "m.onnx"), window=32, winner=classes.index(WORD))
+    asl_classes = load_classes("data/asl_classes.json")
+    asl_path = make_fake_model(str(tmp_path / "asl.onnx"), window=16, num_classes=len(asl_classes),
+                               winner=asl_classes.index(ASL_WORD), layout="NCTHW")
     with TestClient(app) as c:
-        app.state.sign_recognizer = SignRecognizer(path, classes, "fake")
+        app.state.sign_recognizers = {
+            "rsl": SignRecognizer(path, classes, "fake-rsl"),
+            "asl": SignRecognizer(asl_path, asl_classes, "fake-asl", no_sign_label=None),
+        }
         yield c
 
 
@@ -47,13 +52,13 @@ def test_ws_rejects_bad_client_id(tc):
 
 
 def test_ws_rejects_unknown_lang(tc):
-    with tc.websocket_connect(_url(lang="asl")) as ws:
+    with tc.websocket_connect(_url(lang="xyz")) as ws:
         assert _recv(ws)["code"] == "unsupported_language"
         assert ws.receive()["code"] == 4400
 
 
 def test_ws_model_missing(tc, app):
-    app.state.sign_recognizer = None
+    app.state.sign_recognizers = {}
     with tc.websocket_connect(_url()) as ws:
         assert _recv(ws)["code"] == "model_unavailable"
         assert ws.receive()["code"] == 4503
@@ -140,3 +145,69 @@ def test_ws_reset_then_new_phrase(tc):
             ws.send_bytes(_jpeg(i))
         sign = _recv(ws)
         assert sign["index"] == 0
+
+
+def test_ws_asl_flow(tc):
+    with tc.websocket_connect(_url(lang="asl")) as ws:
+        ws.send_text(json.dumps({"type": "start", "fps": 15}))
+        ready = _recv(ws)
+        assert ready["lang"] == "asl" and ready["window_frames"] == 16
+        assert ready["text_lang"] == "en" and ready["tts_lang"] == "en-US"
+        for i in range(20):
+            ws.send_bytes(_jpeg(i))
+        sign = _recv(ws)
+        assert sign["type"] == "sign" and sign["text"] == ASL_WORD
+        ws.send_text(json.dumps({"type": "stop"}))
+        final = _recv(ws)
+        assert final["signs"] == [ASL_WORD]
+
+
+def test_ws_ready_reports_model_rate(tc, app):
+    app.state.sign_recognizers["rsl"].target_fps = 7.5  # e.g. mvit16-4
+    with tc.websocket_connect(_url()) as ws:
+        ws.send_text(json.dumps({"type": "start", "fps": 15}))
+        ready = _recv(ws)
+    assert ready["target_fps"] == 7.5 and ready["recommended_fps"] == 8
+
+
+def test_ws_idle_timeout(tc, app):
+    app.state.settings.ws_idle_timeout_s = 0.2
+    with tc.websocket_connect(_url()) as ws:
+        assert _recv(ws)["code"] == "idle_timeout"
+        assert ws.receive()["code"] == 4408
+
+
+def test_ws_connection_cap(tc, app):
+    app.state.settings.max_ws_connections = 0
+    with tc.websocket_connect(_url()) as ws:
+        assert _recv(ws)["code"] == "overloaded"
+        assert ws.receive()["code"] == 4503
+
+
+def test_ws_inference_error_is_reported(tc, app):
+    rec = app.state.sign_recognizers["rsl"]
+
+    def boom(frames):
+        raise RuntimeError("gpu fell over")
+
+    rec.predict = boom
+    with tc.websocket_connect(_url()) as ws:
+        ws.send_text(json.dumps({"type": "start", "fps": 15}))
+        _recv(ws)
+        for i in range(32):
+            ws.send_bytes(_jpeg(i))
+        assert _recv(ws)["code"] == "inference_failed"
+        ws.send_text(json.dumps({"type": "stop"}))
+        assert _recv(ws)["type"] == "final"
+
+
+def test_ws_frame_flood_is_throttled(tc, app):
+    app.state.settings.ws_frame_rate_slack = 1.0
+    with tc.websocket_connect(_url()) as ws:
+        ws.send_text(json.dumps({"type": "start", "fps": 15}))
+        _recv(ws)
+        for i in range(100):  # all within well under a second
+            ws.send_bytes(_jpeg(i))
+        ws.send_text(json.dumps({"type": "stop"}))
+        final = _recv(ws)
+    assert final["signs"] == []  # only 15 frames accepted: never a full 32-frame window

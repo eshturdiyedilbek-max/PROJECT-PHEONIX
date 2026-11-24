@@ -1,4 +1,6 @@
-# Phoenix Backend — API Contract v1
+# Phoenix Backend — API Contract v1.1
+
+> **v1.1 (2026-11-24):** English = American Sign Language (`asl`) added next to Russian (`rsl`). Pick it with `?lang=asl` on `/ws/sign` and `lang=asl` on `/api/dictionary`. `/api/languages` and the `ready` message now say which text/voice language a sign language produces. New WebSocket error codes: `idle_timeout`, `inference_failed`; `overloaded` can now also close the socket when the server is full. Everything from v1 still works unchanged.
 
 This is the contract between the frontend (Translate, Learn/Dictionary, History, Settings pages) and the backend. If something here and the code disagree, the code is wrong.
 
@@ -30,22 +32,38 @@ History is scoped to this id. A missing or malformed id on an endpoint that need
 | 404 | `not_found` | id does not exist (or belongs to another client) |
 | 413 | `file_too_large` | upload over limit |
 | 415 | `unsupported_media_type` | wrong audio/video format |
+| 500 | `internal_error` | unexpected server bug (please report) |
 | 503 | `model_unavailable` | model weights not loaded on server |
 
 ## 2. Health and languages
 
 ### `GET /api/health`
 ```json
-{ "status": "ok", "sign_model": "loaded", "stt_model": "loaded", "version": "0.1.0" }
+{
+  "status": "ok",
+  "sign_model": "loaded",
+  "sign_models": { "rsl": "loaded", "asl": "missing" },
+  "stt_model": "loaded",
+  "version": "0.2.0"
+}
 ```
-`sign_model` / `stt_model` is `"loaded"` or `"missing"`. Show a "translation temporarily unavailable" banner on Translate if missing.
+Each value is `"loaded"` or `"missing"`. `sign_model` is `"loaded"` if at least one sign language works; `sign_models` gives it per language. Show a "translation temporarily unavailable" banner on Translate if the selected language is missing.
 
 ### `GET /api/languages`
-Sign languages the recognizer supports. Use it for the language picker in Settings/Translate. Only `rsl` exists in v1; Uzbek/others appear here later without frontend changes.
+Sign languages the recognizer supports. Use it for the language picker in Settings/Translate; build the picker from this list (Uzbek and others will appear here later without frontend changes). Grey out entries with `"available": false`.
 ```json
 {
   "sign_languages": [
-    { "code": "rsl", "name": "Русский жестовый язык", "classes": 1000, "available": true }
+    {
+      "code": "rsl", "name": "Русский жестовый язык", "english_name": "Russian Sign Language",
+      "classes": 1000, "available": true, "text_lang": "ru", "tts_lang": "ru-RU",
+      "model": "mvit32-2", "commercial_use": true
+    },
+    {
+      "code": "asl", "name": "American Sign Language", "english_name": "American Sign Language",
+      "classes": 2000, "available": true, "text_lang": "en", "tts_lang": "en-US",
+      "model": "signflow-a", "commercial_use": false
+    }
   ],
   "speech_languages": [
     { "code": "uz", "name": "O'zbekcha" },
@@ -54,6 +72,9 @@ Sign languages the recognizer supports. Use it for the language picker in Settin
   ]
 }
 ```
+- `text_lang`: language of the words the recognizer outputs (`rsl` → Russian words, `asl` → English words).
+- `tts_lang`: voice to use with `speechSynthesis` for that language.
+- `commercial_use: false` means the model's training data forbids commercial use (ASL/WLASL). Fine for demos; don't sell it.
 
 ## 3. Sign → text (real-time) — `WS /ws/sign`
 
@@ -63,8 +84,10 @@ Translate page, camera mode. The browser streams camera frames as JPEG; the serv
 
 ### Connect
 ```
-ws://localhost:8000/ws/sign?client_id=<uuid>&lang=rsl
+ws://localhost:8000/ws/sign?client_id=<uuid>&lang=rsl     # Russian Sign Language
+ws://localhost:8000/ws/sign?client_id=<uuid>&lang=asl     # American Sign Language (English)
 ```
+To switch language, close the socket and open a new one with the other `lang`.
 
 ### Message flow
 
@@ -85,7 +108,8 @@ client                              server
 ```json
 { "type": "start", "fps": 15, "save_history": true }
 ```
-- `fps` (int, 5–30, default 15): how many frames per second you will send. Server resamples to what the model needs. **Recommended: 15.**
+- `fps` (int, 5–30, default 15): how many frames per second you will send. Server resamples to what the model needs. **Recommended: 15**, or exactly the `recommended_fps` from `ready` (a lighter model may need only 8).
+- Frames sent much faster than the declared `fps` (more than 2× in one second) are skipped.
 - `save_history` (bool, default true): store the final phrase in History.
 
 **Binary frames**: one message = one JPEG image (the whole camera frame, not cropped).
@@ -107,9 +131,13 @@ client                              server
 
 **`ready`** — reply to `start`:
 ```json
-{ "type": "ready", "session_id": "6f1c…", "lang": "rsl", "model": "mvit32-2", "window_frames": 32, "target_fps": 15 }
+{
+  "type": "ready", "session_id": "6f1c…", "lang": "rsl", "model": "mvit32-2",
+  "window_frames": 32, "target_fps": 15, "recommended_fps": 15,
+  "text_lang": "ru", "tts_lang": "ru-RU"
+}
 ```
-The first sign can arrive after about `window_frames / target_fps` seconds (~2 s). Show a "listening…" indicator until then.
+The first sign can arrive after about `window_frames / target_fps` seconds (~2 s). Show a "listening…" indicator until then. `target_fps` can be fractional (e.g. `7.5`); if you want to save bandwidth, send at `recommended_fps`.
 
 **`sign`** — a new sign was recognized (same sign is never sent twice in a row):
 ```json
@@ -125,7 +153,7 @@ The first sign can arrive after about `window_frames / target_fps` seconds (~2 s
 - `text`: the recognized word (Russian). Append it to the subtitle line.
 - `phrase`: the full phrase so far (all signs joined by spaces) — you can just render this.
 - `index`: 0-based position of this sign in the phrase.
-- Speak it with the browser: `speechSynthesis.speak(new SpeechSynthesisUtterance(text))` with `lang = "ru-RU"` (Settings can toggle voice on/off). No server TTS in v1.
+- Speak it with the browser: `speechSynthesis.speak(new SpeechSynthesisUtterance(text))` with `lang` = `tts_lang` from `ready` (`ru-RU` or `en-US`; Settings can toggle voice on/off). No server TTS.
 
 **`final`** — reply to `stop`:
 ```json
@@ -140,11 +168,14 @@ The first sign can arrive after about `window_frames / target_fps` seconds (~2 s
 | code | meaning | socket |
 |---|---|---|
 | `invalid_client_id` | bad/missing `client_id` | closed (4400) |
-| `unsupported_language` | `lang` not available | closed (4400) |
-| `model_unavailable` | weights missing on server | closed (4503) |
+| `unsupported_language` | `lang` not in `/api/languages` | closed (4400) |
+| `model_unavailable` | that language's weights are missing on server | closed (4503) |
+| `overloaded` | server already has the max number of live translations | closed (4503), retry after a few seconds |
+| `idle_timeout` | no message (frame or JSON) for 30 s | closed (4408); reconnect when the user comes back |
 | `bad_message` | unknown/invalid JSON, or frames before `start` | stays open |
 | `bad_frame` | binary is not a JPEG or > 300 KB | stays open, frame ignored |
-| `overloaded` | server is behind; frames are being dropped | stays open, informational |
+| `overloaded` | server is behind; frames are being dropped | stays open, informational (at most every 5 s) |
+| `inference_failed` | the model crashed on one window | stays open, keep sending frames |
 
 Reconnect advice: on unexpected close, wait 1 s, 2 s, 4 s… (max 10 s) and reconnect, then send `start` again.
 
@@ -175,7 +206,7 @@ Empty speech returns `"text": ""` with 200 (don't show an empty subtitle).
 
 ## 5. Dictionary (Learn page) — `GET /api/dictionary`
 
-All 1000 signs the RSL model knows (letters, words, phrases).
+Every sign a recognizer knows: `lang=rsl` → 1000 Russian signs (letters, words, phrases), `lang=asl` → 2000 English (ASL) words.
 
 `GET /api/dictionary?lang=rsl&q=при&category=word&limit=50&offset=0`
 | param | default | notes |
@@ -205,7 +236,7 @@ All 1000 signs the RSL model knows (letters, words, phrases).
 ```
 `GET /api/dictionary/{id}` returns a single item (same shape) or `404`.
 
-`translations.en/uz` and `video_url` are `null` in v1 (filled in later — design the card so they're optional). Category: `letter` = single letter of the fingerspelling alphabet, `phrase` = more than one word, else `word`.
+`translations` has the item's own language filled in (`ru` for `rsl`, `en` for `asl`); the others and `video_url` are `null` for now (filled in later — design the card so they're optional). Category: `letter` = single letter of the fingerspelling alphabet, `phrase` = more than one word, else `word`.
 
 ## 6. History — `/api/history`
 

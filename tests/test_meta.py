@@ -15,15 +15,18 @@ async def test_health_reports_missing_models(client):
     assert body["status"] == "ok"
     assert body["sign_model"] == "missing"
     assert body["stt_model"] == "missing"
+    assert body["sign_models"] == {"rsl": "missing", "asl": "missing"}
 
 
 async def test_languages_lists_rsl(client):
     r = await client.get("/api/languages")
     assert r.status_code == 200
     body = r.json()
-    assert body["sign_languages"][0] == {
-        "code": "rsl", "name": "Русский жестовый язык", "classes": 1000, "available": False,
-    }
+    rsl, asl = body["sign_languages"]
+    assert rsl["code"] == "rsl" and rsl["classes"] == 1000 and rsl["available"] is False
+    assert rsl["text_lang"] == "ru" and rsl["tts_lang"] == "ru-RU" and rsl["model"] == "mvit32-2"
+    assert asl["code"] == "asl" and asl["classes"] == 2000 and asl["text_lang"] == "en"
+    assert asl["commercial_use"] is False
     assert [l["code"] for l in body["speech_languages"]] == ["uz", "ru", "en"]
 
 
@@ -36,11 +39,13 @@ def test_categorize():
 async def test_seed_dictionary_is_idempotent(app, client):
     from app.db import seed_dictionary
 
-    classes = load_classes(app.state.settings.sign_classes_path)
+    classes = load_classes("data/rsl_classes.json")
     async with app.state.sessionmaker() as s:
         await seed_dictionary(s, classes)
         await seed_dictionary(s, classes)
-        n = await s.scalar(select(func.count()).select_from(DictionaryEntry))
+        n = await s.scalar(
+            select(func.count()).select_from(DictionaryEntry).where(DictionaryEntry.lang == "rsl")
+        )
     assert n == 1000
 
 

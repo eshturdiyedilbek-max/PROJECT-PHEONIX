@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, insert, select
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
@@ -22,10 +22,12 @@ async def init_db(engine: AsyncEngine) -> None:
         await conn.run_sync(Base.metadata.create_all)
 
 
-async def seed_dictionary(session: AsyncSession, classes: list[str], lang: str = "rsl") -> int:
-    """Insert one entry per class (except '---'). No-op if the language is already seeded."""
+async def seed_dictionary(
+    session: AsyncSession, classes: list[str], lang: str = "rsl", no_sign_label: str | None = "---"
+) -> int:
+    """Insert one entry per class (except the no-sign label). No-op if the language is already seeded."""
     from app.models import DictionaryEntry
-    from app.sign.classes import NO_SIGN, categorize
+    from app.sign.classes import categorize
 
     existing = await session.scalar(
         select(func.count()).select_from(DictionaryEntry).where(DictionaryEntry.lang == lang)
@@ -33,10 +35,10 @@ async def seed_dictionary(session: AsyncSession, classes: list[str], lang: str =
     if existing:
         return 0
     rows = [
-        DictionaryEntry(lang=lang, text=text, category=categorize(text), class_index=i)
+        {"lang": lang, "text": text, "category": categorize(text), "class_index": i}
         for i, text in enumerate(classes)
-        if text != NO_SIGN
+        if text != no_sign_label
     ]
-    session.add_all(rows)
+    await session.execute(insert(DictionaryEntry), rows)  # bulk insert: one round trip
     await session.commit()
     return len(rows)

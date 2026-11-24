@@ -68,7 +68,8 @@ async def speech_to_text(
             if client_id is None:
                 raise ApiError(400, "invalid_client_id", "X-Client-Id header must be a UUID")
 
-        result = await run_in_threadpool(engine.transcribe, path, language)
+        async with request.app.state.stt_semaphore:  # Whisper is CPU/GPU heavy; queue instead of thrashing
+            result = await run_in_threadpool(engine.transcribe, path, language)
     finally:
         try:
             os.unlink(path)

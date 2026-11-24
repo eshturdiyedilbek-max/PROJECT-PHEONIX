@@ -22,14 +22,15 @@ class SignStream:
     def __init__(
         self,
         recognizer,
-        client_fps: int,
-        target_fps: int = 15,
+        client_fps: float,
+        target_fps: float = 15,
         stride: int = 8,
         min_confidence: float = 0.5,
         max_backlog: int = 64,
     ):
         self.recognizer = recognizer
         self.window: int = recognizer.window
+        self.no_sign_label = getattr(recognizer, "no_sign_label", NO_SIGN)
         self.client_fps = client_fps
         self.target_fps = target_fps
         self.stride = stride
@@ -74,7 +75,7 @@ class SignStream:
         return frames
 
     def accept(self, pred: Prediction) -> SignEvent | None:
-        if pred.text == NO_SIGN:
+        if self.no_sign_label is not None and pred.text == self.no_sign_label:
             # A pause between signs: the same word may legitimately be signed again.
             self._last_text = None
             return None

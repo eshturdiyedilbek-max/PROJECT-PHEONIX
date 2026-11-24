@@ -19,6 +19,9 @@ services:
       DATABASE_URL: postgresql+asyncpg://phoenix:phoenix@db:5432/phoenix
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
       STT_MODEL: ${STT_MODEL:-small}
+      SIGN_VARIANTS: ${SIGN_VARIANTS:-}
+      SIGN_LANGUAGES_ENABLED: ${SIGN_LANGUAGES_ENABLED:-}
+    restart: unless-stopped
     ports: ["8000:8000"]
     volumes:
       - models:/srv/models

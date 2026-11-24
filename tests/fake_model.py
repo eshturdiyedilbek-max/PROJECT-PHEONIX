@@ -5,12 +5,21 @@ import onnx
 from onnx import TensorProto, helper, numpy_helper
 
 
-def make_fake_model(path, window: int = 32, num_classes: int = 1001, winner: int = 5) -> str:
-    """Write an ONNX model: float32[1,1,3,window,224,224] -> float32[1,num_classes] logits, argmax == winner."""
+LAYOUT_SHAPES = {
+    "N1CTHW": lambda t, s: [1, 1, 3, t, s, s],
+    "NCTHW": lambda t, s: [1, 3, t, s, s],
+    "NTCHW": lambda t, s: [1, t, 3, s, s],
+}
+
+
+def make_fake_model(
+    path, window: int = 32, num_classes: int = 1001, winner: int = 5, layout: str = "N1CTHW", size: int = 224
+) -> str:
+    """Write an ONNX model: float32[<layout>] -> float32[1,num_classes] logits, argmax == winner."""
     path = str(path)
     bias = np.zeros((1, num_classes), dtype=np.float32)
     bias[0, winner] = 20.0  # softmax confidence ~1.0, above default min_confidence
-    inp = helper.make_tensor_value_info("input", TensorProto.FLOAT, [1, 1, 3, window, 224, 224])
+    inp = helper.make_tensor_value_info("input", TensorProto.FLOAT, LAYOUT_SHAPES[layout](window, size))
     out = helper.make_tensor_value_info("logits", TensorProto.FLOAT, [1, num_classes])
     nodes = [
         helper.make_node("ReduceMean", ["input"], ["mean"], keepdims=0),  # scalar

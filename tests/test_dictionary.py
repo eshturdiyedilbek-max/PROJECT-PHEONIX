@@ -40,7 +40,7 @@ async def test_search_escapes_wildcards(client):
 async def test_category_filter(app, client):
     from app.sign.classes import NO_SIGN, categorize, load_classes
 
-    classes = [c for c in load_classes(app.state.settings.sign_classes_path) if c != NO_SIGN]
+    classes = [c for c in load_classes("data/rsl_classes.json") if c != NO_SIGN]
     for cat in ("letter", "word", "phrase"):
         r = await client.get("/api/dictionary", params={"category": cat, "limit": 1})
         assert r.json()["total"] == sum(categorize(c) == cat for c in classes)
@@ -72,3 +72,11 @@ async def test_limit_bounds(client, params):
     r = await client.get("/api/dictionary", params=params)
     assert r.status_code == 400
     assert r.json()["error"]["code"] == "invalid_request"
+
+
+async def test_asl_dictionary_is_english(client):
+    r = await client.get("/api/dictionary", params={"lang": "asl", "q": "hello"})
+    body = r.json()
+    item = next(i for i in body["items"] if i["text"] == "hello")
+    assert item["lang"] == "asl" and item["translations"]["en"] == "hello" and item["translations"]["ru"] is None
+    assert (await client.get("/api/dictionary", params={"lang": "asl"})).json()["total"] == 2000

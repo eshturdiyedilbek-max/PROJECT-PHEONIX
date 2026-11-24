@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -29,6 +31,11 @@ def install_error_handlers(app: FastAPI) -> None:
         errs = exc.errors()
         msg = "; ".join(f"{'.'.join(str(p) for p in e.get('loc', []))}: {e.get('msg')}" for e in errs[:3])
         return JSONResponse(error_body("invalid_request", msg or "Invalid request"), status_code=400)
+
+    @app.exception_handler(Exception)
+    async def _unhandled(_: Request, exc: Exception):
+        logging.getLogger("phoenix").exception("unhandled error", exc_info=exc)
+        return JSONResponse(error_body("internal_error", "Something went wrong on the server"), status_code=500)
 
     @app.exception_handler(StarletteHTTPException)
     async def _http(_: Request, exc: StarletteHTTPException):

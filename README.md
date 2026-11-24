@@ -9,7 +9,8 @@ Backend for a sign-language translator: Russian Sign Language (camera) → text/
 
 | Feature | Endpoint | Engine |
 |---|---|---|
-| Sign → text (real time) | `WS /ws/sign` (JPEG frames in, words out) | Slovo `mvit32-2` ONNX (1000 RSL signs, ~64% top-1) via ONNX Runtime |
+| Sign → text (real time), Russian | `WS /ws/sign?lang=rsl` (JPEG frames in, words out) | Slovo `mvit32-2` ONNX (1000 RSL signs, ~64% top-1) via ONNX Runtime |
+| Sign → text (real time), English | `WS /ws/sign?lang=asl` | SignFlow-A ONNX (2000 ASL/WLASL words, 63.3% top-1). **Non-commercial** (WLASL licence) |
 | Speech → subtitles | `POST /api/stt` | faster-whisper (`small` by default; uz/ru/en/auto) |
 | Learn / Dictionary | `GET /api/dictionary` | Postgres, seeded from `data/rsl_classes.json` |
 | History | `/api/history` | Postgres, scoped by `X-Client-Id` |
@@ -21,7 +22,7 @@ Text-to-speech happens in the browser (`speechSynthesis`), so there's no TTS end
 
 ```bash
 python -m venv .venv && .venv/bin/pip install -e '.[dev]'
-./scripts/download_models.sh          # Slovo ONNX (~140 MB) + Whisper; needs internet
+./scripts/download_models.sh          # sign models (~140-150 MB each) + Whisper; needs internet
 cp .env.example .env                  # or leave DATABASE_URL unset to use SQLite
 .venv/bin/uvicorn app.main:app --reload
 open http://localhost:8000/docs
@@ -54,13 +55,25 @@ TEST_DATABASE_URL=postgresql+asyncpg://user@host/db .venv/bin/pytest   # same su
 |---|---|---|
 | `DATABASE_URL` | `sqlite+aiosqlite:///./phoenix.db` | use `postgresql+asyncpg://…` in prod |
 | `CORS_ORIGINS` | `http://localhost:3000,http://localhost:5173` | comma-separated frontend origins |
-| `SIGN_MODEL_PATH` / `SIGN_MODEL_NAME` | `models/mvit32-2.onnx` / `mvit32-2` | any Slovo ONNX (mvit16-4, mvit48-2, swin…, resnet…) |
+| `SIGN_VARIANTS` | *(defaults from JSON)* | pick a model per language, e.g. `rsl=mvit16-4,asl=signflow-a`. Variants and their frame rates live in `config/sign_languages.json` |
+| `SIGN_LANGUAGES_ENABLED` | *(all)* | e.g. `rsl` to load only Russian (saves RAM) |
+| `WS_IDLE_TIMEOUT_S` / `MAX_WS_CONNECTIONS` | `30` / `100` | close silent sockets / cap live translations |
+| `MAX_CONCURRENT_STT` | `2` | Whisper jobs at once; the rest queue |
+| `LOG_LEVEL` | `INFO` | |
 | `SIGN_STRIDE` | `8` | frames between inferences (lower = faster reaction, more compute) |
 | `SIGN_MIN_CONFIDENCE` | `0.5` | below this a prediction is ignored |
 | `MAX_CONCURRENT_INFERENCES` | `4` | global cap on parallel sign inferences |
 | `STT_MODEL` / `STT_DEVICE` / `STT_COMPUTE_TYPE` | `small` / `cpu` / `int8` | e.g. `large-v3` / `cuda` / `float16` on GPU |
 
+## Sign languages and models
+
+`config/sign_languages.json` lists each sign language, its label file, and its model variants. A model's name says its frame rate: `mvit32-2` = 32 frames, every 2nd frame of 30 fps video → 15 fps; `mvit16-4` → 7.5 fps. The server tells the client the rate in the WebSocket `ready` message and resamples whatever the client sends, so switching variants needs no frontend change. To add a language (e.g. Uzbek later): add a labels JSON in `data/`, an entry in the config, and the ONNX file.
+
+ASL caveats: SignFlow-A ships no label file; `data/asl_classes.json` is WLASL-2000 in `WLASL_v0.3.json` order, which is the likely training order but **not yet verified on labelled clips**. It also has no "no sign" class, so pauses are detected only by confidence (`min_confidence` 0.6 for ASL).
+
 ## Deploy notes
+
+- **Speed:** on a laptop CPU one 32-frame inference takes ~8 s (measured), so CPU is not real-time. Use a GPU host, or `SIGN_VARIANTS=rsl=mvit16-4` (half the frames) for a CPU demo.
 
 - One uvicorn worker per machine (models are loaded once per process). Scale by adding machines.
 - CPU works for demos, but MViTv2 on 32 frames is heavy; for several simultaneous users use a GPU host and install `onnxruntime-gpu` (the recognizer picks CUDA automatically). If the server falls behind it drops old frames and sends an `overloaded` notice rather than lagging.
