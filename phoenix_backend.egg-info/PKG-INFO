@@ -1,0 +1,21 @@
+Metadata-Version: 2.4
+Name: phoenix-backend
+Version: 0.1.0
+Summary: Sign language (RSL) to text/speech translator backend
+Requires-Python: >=3.11
+Requires-Dist: fastapi>=0.115
+Requires-Dist: uvicorn[standard]>=0.30
+Requires-Dist: pydantic-settings>=2.4
+Requires-Dist: sqlalchemy[asyncio]>=2.0.30
+Requires-Dist: asyncpg>=0.29
+Requires-Dist: aiosqlite>=0.20
+Requires-Dist: python-multipart>=0.0.9
+Requires-Dist: onnxruntime>=1.18
+Requires-Dist: numpy>=1.26
+Requires-Dist: opencv-python-headless>=4.9
+Requires-Dist: faster-whisper>=1.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23; extra == "dev"
+Requires-Dist: httpx>=0.27; extra == "dev"
+Requires-Dist: onnx>=1.16; extra == "dev"
