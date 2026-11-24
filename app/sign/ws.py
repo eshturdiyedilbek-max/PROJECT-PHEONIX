@@ -11,26 +11,14 @@ from starlette.concurrency import run_in_threadpool
 
 from app.deps import parse_client_id
 from app.history_store import save_history
-from app.sign.preprocess import BadFrame, decode_jpeg, to_model_frame
+from app.sign.preprocess import BadFrame, decode_jpeg
 from app.sign.stream import SignEvent, SignStream
 
 log = logging.getLogger("phoenix.ws")
 router = APIRouter(tags=["sign"])
 
-SUPPORTED_LANGS = {"rsl"}
 OVERLOAD_NOTICE_INTERVAL_S = 5.0
-_semaphores: dict[int, asyncio.Semaphore] = {}
 
-
-def _semaphore(app) -> asyncio.Semaphore:
-    key = id(app)
-    if key not in _semaphores:
-        _semaphores[key] = asyncio.Semaphore(app.state.settings.max_concurrent_inferences)
-    return _semaphores[key]
-
-
-def _preprocess(data: bytes):
-    return to_model_frame(decode_jpeg(data))
 
 
 class SignSession:
@@ -38,7 +26,11 @@ class SignSession:
         self.ws = ws
         self.app = ws.app
         self.settings = ws.app.state.settings
-        self.recognizer = ws.app.state.sign_recognizer
+        self.spec = ws.app.state.registry[lang]
+        self.recognizer = ws.app.state.sign_recognizers[lang]
+        self.max_frames_per_s = 60.0
+        self.rate_window_start = 0.0
+        self.rate_window_frames = 0
         self.client_id = client_id
         self.lang = lang
         self.session_id = str(uuid.uuid4())
@@ -81,21 +73,26 @@ class SignSession:
         self.save = bool(save)
         await self._cancel_inflight()
         s = self.settings
+        min_conf = self.spec.min_confidence if self.spec.min_confidence is not None else s.sign_min_confidence
         self.stream = SignStream(
             self.recognizer,
             client_fps=fps,
-            target_fps=s.sign_target_fps,
+            target_fps=self.recognizer.target_fps,
             stride=s.sign_stride,
-            min_confidence=s.sign_min_confidence,
+            min_confidence=min_conf,
             max_backlog=s.sign_max_backlog_frames,
         )
+        self.max_frames_per_s = fps * s.ws_frame_rate_slack
         await self.send({
             "type": "ready",
             "session_id": self.session_id,
             "lang": self.lang,
-            "model": s.sign_model_name,
+            "model": self.recognizer.name,
             "window_frames": self.recognizer.window,
-            "target_fps": s.sign_target_fps,
+            "target_fps": round(self.recognizer.target_fps, 3),
+            "recommended_fps": recommended_fps(self.recognizer.target_fps),
+            "text_lang": self.spec.text_lang,
+            "tts_lang": self.spec.tts_lang,
         })
 
     async def on_stop(self) -> None:
@@ -129,8 +126,14 @@ class SignSession:
         if self.stream is None:
             await self.error("bad_message", "Send start before frames")
             return
+        now = time.monotonic()
+        if now - self.rate_window_start >= 1.0:
+            self.rate_window_start, self.rate_window_frames = now, 0
+        self.rate_window_frames += 1
+        if self.rate_window_frames > self.max_frames_per_s:
+            return  # far more frames than declared this second (bursts are fine); skip the work
         try:
-            frame = await run_in_threadpool(_preprocess, data)
+            frame = await run_in_threadpool(lambda: self.recognizer.to_frame(decode_jpeg(data)))
         except BadFrame as e:
             await self.error("bad_frame", str(e) or "Frame is not a valid JPEG")
             return
@@ -151,10 +154,16 @@ class SignSession:
 
     async def _infer(self, window, generation: int) -> None:
         try:
-            async with _semaphore(self.app):
+            async with self.app.state.inference_semaphore:
                 pred = await run_in_threadpool(self.recognizer.predict, window)
+        except asyncio.CancelledError:
+            raise
         except Exception:
-            log.exception("sign inference failed")
+            log.exception("sign inference failed (%s)", self.recognizer.name)
+            try:
+                await self.error("inference_failed", "Recognition failed for this moment; keep signing")
+            except Exception:
+                pass
             return
         if generation != self.generation or self.stream is None:
             return  # phrase was reset/stopped while we were running
@@ -180,9 +189,17 @@ class SignSession:
         self.inflight = None
 
 
+def recommended_fps(target_fps: float) -> int:
+    """Smallest whole fps >= the model rate, within the 5-30 range clients may declare."""
+    import math
+
+    return max(5, min(30, math.ceil(target_fps - 1e-9)))
+
+
 @router.websocket("/ws/sign")
 async def sign_ws(ws: WebSocket, client_id: str | None = None, lang: str = "rsl"):
     await ws.accept()
+    state = ws.app.state
 
     async def reject(code: str, message: str, close_code: int):
         await ws.send_text(json.dumps({"type": "error", "code": code, "message": message}))
@@ -191,22 +208,33 @@ async def sign_ws(ws: WebSocket, client_id: str | None = None, lang: str = "rsl"
     cid = parse_client_id(client_id)
     if cid is None:
         return await reject("invalid_client_id", "client_id query param must be a UUID", 4400)
-    if lang not in SUPPORTED_LANGS:
-        return await reject("unsupported_language", f"Sign language '{lang}' is not available", 4400)
-    if ws.app.state.sign_recognizer is None:
-        return await reject("model_unavailable", "Sign recognition model is not loaded", 4503)
+    if lang not in state.registry:
+        known = ", ".join(sorted(state.registry))
+        return await reject("unsupported_language", f"Sign language '{lang}' is not available (use: {known})", 4400)
+    if lang not in state.sign_recognizers:
+        return await reject("model_unavailable", f"The {lang} recognition model is not loaded", 4503)
+    if state.ws_connections >= state.settings.max_ws_connections:
+        return await reject("overloaded", "Too many people are translating right now; retry in a few seconds", 4503)
 
+    state.ws_connections += 1
     session = SignSession(ws, cid, lang)
+    idle = state.settings.ws_idle_timeout_s
     try:
         while True:
-            msg = await ws.receive()
+            try:
+                msg = await asyncio.wait_for(ws.receive(), timeout=idle)
+            except asyncio.TimeoutError:
+                await session.error("idle_timeout", f"No messages for {idle:g} s; closing")
+                await ws.close(code=4408)
+                break
             if msg["type"] == "websocket.disconnect":
                 break
             if msg.get("bytes") is not None:
                 await session.on_frame(msg["bytes"])
             elif msg.get("text") is not None:
                 await session.on_text(msg["text"])
-    except WebSocketDisconnect:
-        pass
+    except (WebSocketDisconnect, RuntimeError):
+        pass  # client went away mid-send
     finally:
+        state.ws_connections -= 1
         await session._cancel_inflight()

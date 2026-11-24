@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -9,30 +11,31 @@ from app.config import Settings, get_settings
 from app.db import init_db, make_engine, make_sessionmaker, seed_dictionary
 from app.errors import install_error_handlers
 from app.sign.classes import load_classes
+from app.sign.registry import registry_for
 
+logging.basicConfig(
+    level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
 log = logging.getLogger("phoenix")
 
 
-def load_sign_recognizer(settings: Settings):
-    """Return a SignRecognizer, or None if weights are missing / fail to load."""
-    try:
-        from app.sign.recognizer import load_sign_recognizer as _load
-    except ImportError:
-        return None
+def load_sign_recognizers(settings: Settings) -> dict:
+    from app.sign.recognizer import load_sign_recognizers as _load
+
     return _load(settings)
 
 
 def load_stt_engine(settings: Settings):
     """Return an SttEngine, or None if the model can't be loaded."""
-    try:
-        from app.stt.engine import load_stt_engine as _load
-    except ImportError:
-        return None
+    from app.stt.engine import load_stt_engine as _load
+
     return _load(settings)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
+    registry = registry_for(settings)  # fail fast on a bad sign_languages.json / SIGN_VARIANTS
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -42,20 +45,27 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.sessionmaker = make_sessionmaker(engine)
         await init_db(engine)
         async with app.state.sessionmaker() as s:
-            await seed_dictionary(s, load_classes(settings.sign_classes_path))
+            for code, spec in registry.items():
+                await seed_dictionary(s, load_classes(spec.classes_path), lang=code,
+                                      no_sign_label=spec.no_sign_label)
         if settings.load_models:
-            app.state.sign_recognizer = load_sign_recognizer(settings)
+            app.state.sign_recognizers = load_sign_recognizers(settings)
             app.state.stt_engine = load_stt_engine(settings)
-            log.info("sign model: %s, stt model: %s",
-                     "loaded" if app.state.sign_recognizer else "MISSING",
-                     "loaded" if app.state.stt_engine else "MISSING")
+            for code, spec in registry.items():
+                log.info("sign model %s (%s): %s", code, spec.variant.name,
+                         "loaded" if code in app.state.sign_recognizers else "MISSING")
+            log.info("stt model %s: %s", settings.stt_model, "loaded" if app.state.stt_engine else "MISSING")
         yield
         await engine.dispose()
 
-    app = FastAPI(title="Phoenix Backend", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="Phoenix Backend", version="0.2.0", lifespan=lifespan)
     app.state.settings = settings
-    app.state.sign_recognizer = None
+    app.state.registry = registry
+    app.state.sign_recognizers = {}
     app.state.stt_engine = None
+    app.state.inference_semaphore = asyncio.Semaphore(settings.max_concurrent_inferences)
+    app.state.stt_semaphore = asyncio.Semaphore(settings.max_concurrent_stt)
+    app.state.ws_connections = 0
 
     app.add_middleware(
         CORSMiddleware,

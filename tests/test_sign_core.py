@@ -7,7 +7,8 @@ import pytest
 from app.config import Settings
 from app.sign.classes import NO_SIGN, load_classes
 from app.sign.preprocess import BadFrame, decode_jpeg, letterbox, to_model_frame
-from app.sign.recognizer import Prediction, SignRecognizer, load_sign_recognizer
+from app.sign.recognizer import Prediction, SignRecognizer, load_sign_recognizers
+from registry_helper import write_registry
 from app.sign.stream import SignEvent, SignStream
 from fake_model import make_fake_model
 
@@ -114,21 +115,61 @@ def test_recognizer_rejects_wrong_frame_count(recognizer):
         recognizer.predict([np.zeros((3, 224, 224), np.float32)] * 5)
 
 
-def test_load_sign_recognizer_missing_returns_none(tmp_path):
-    s = Settings(sign_model_path=str(tmp_path / "nope.onnx"), load_models=True)
-    assert load_sign_recognizer(s) is None
+def test_load_sign_recognizers_missing_model_is_skipped(tmp_path):
+    cfg = write_registry(tmp_path, rsl_model=str(tmp_path / "nope.onnx"), asl_model=str(tmp_path / "nope2.onnx"))
+    assert load_sign_recognizers(Settings(sign_languages_path=cfg)) == {}
 
 
-def test_load_sign_recognizer_corrupt_returns_none(tmp_path):
+def test_load_sign_recognizers_corrupt_is_skipped(tmp_path):
     p = tmp_path / "bad.onnx"
     p.write_bytes(b"not a model")
-    assert load_sign_recognizer(Settings(sign_model_path=str(p))) is None
+    cfg = write_registry(tmp_path, rsl_model=str(p), asl_model=str(p))
+    assert load_sign_recognizers(Settings(sign_languages_path=cfg)) == {}
 
 
-def test_load_sign_recognizer_ok(tmp_path):
-    p = make_fake_model(tmp_path / "m.onnx", window=16)
-    rec = load_sign_recognizer(Settings(sign_model_path=p, sign_classes_path=CLASSES_PATH))
-    assert rec is not None and rec.window == 16
+def test_load_sign_recognizers_both_languages(tmp_path):
+    rsl = make_fake_model(tmp_path / "rsl.onnx", window=16)
+    asl = make_fake_model(tmp_path / "asl.onnx", window=24, num_classes=2000, layout="NCTHW")
+    recs = load_sign_recognizers(Settings(sign_languages_path=write_registry(tmp_path, rsl, asl)))
+    assert set(recs) == {"rsl", "asl"}
+    assert recs["rsl"].window == 16 and recs["rsl"].target_fps == 15
+    assert recs["asl"].window == 24 and recs["asl"].layout == "NCTHW" and recs["asl"].no_sign_label is None
+
+
+def test_variant_override_changes_frame_rate(tmp_path):
+    from app.sign.registry import load_registry
+
+    cfg = write_registry(tmp_path, "a.onnx", "b.onnx")
+    reg = load_registry(cfg, variants="rsl=light")
+    assert reg["rsl"].variant.name == "light" and reg["rsl"].target_fps == 7.5
+    with pytest.raises(ValueError):
+        load_registry(cfg, variants="rsl=nope")
+    with pytest.raises(ValueError):
+        load_registry(cfg, variants="xx=light")
+
+
+@pytest.mark.parametrize("layout", ["N1CTHW", "NCTHW", "NTCHW"])
+def test_recognizer_handles_layouts(tmp_path, layout):
+    classes = load_classes(CLASSES_PATH)
+    p = make_fake_model(tmp_path / "m.onnx", window=8, layout=layout, size=112, winner=7)
+    rec = SignRecognizer(p, classes, "fake")
+    assert rec.layout == layout and rec.window == 8 and rec.preprocess.size == 112
+    frame = rec.to_frame(np.zeros((240, 320, 3), np.uint8))
+    assert frame.shape == (3, 112, 112)
+    assert rec.predict([frame] * 8).text == classes[7]
+
+
+def test_jpeg_dimensions_and_bomb_rejected():
+    from app.sign.preprocess import jpeg_dimensions
+
+    ok, buf = cv2.imencode(".jpg", np.zeros((48, 64, 3), np.uint8))
+    data = buf.tobytes()
+    assert jpeg_dimensions(data) == (64, 48)
+    # Patch the SOF header to claim 20000x20000 without changing the payload size.
+    i = data.index(b"\xff\xc0")
+    bomb = data[: i + 5] + (20000).to_bytes(2, "big") + (20000).to_bytes(2, "big") + data[i + 9:]
+    with pytest.raises(BadFrame):
+        decode_jpeg(bomb)
 
 
 def test_stream_resamples_30fps_to_15():

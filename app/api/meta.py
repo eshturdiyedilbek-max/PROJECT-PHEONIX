@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Request
 
-from app.sign.classes import NO_SIGN, load_classes
+from app.sign.classes import load_classes
 
 router = APIRouter(prefix="/api", tags=["meta"])
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 SPEECH_LANGUAGES = [
     {"code": "uz", "name": "O'zbekcha"},
     {"code": "ru", "name": "Русский"},
@@ -15,9 +15,11 @@ SPEECH_LANGUAGES = [
 @router.get("/health")
 async def health(request: Request):
     st = request.app.state
+    per_lang = {code: ("loaded" if code in st.sign_recognizers else "missing") for code in st.registry}
     return {
         "status": "ok",
-        "sign_model": "loaded" if st.sign_recognizer is not None else "missing",
+        "sign_model": "loaded" if st.sign_recognizers else "missing",
+        "sign_models": per_lang,
         "stt_model": "loaded" if st.stt_engine is not None else "missing",
         "version": VERSION,
     }
@@ -26,15 +28,18 @@ async def health(request: Request):
 @router.get("/languages")
 async def languages(request: Request):
     st = request.app.state
-    classes = load_classes(st.settings.sign_classes_path)
-    return {
-        "sign_languages": [
-            {
-                "code": "rsl",
-                "name": "Русский жестовый язык",
-                "classes": sum(1 for c in classes if c != NO_SIGN),
-                "available": st.sign_recognizer is not None,
-            }
-        ],
-        "speech_languages": SPEECH_LANGUAGES,
-    }
+    out = []
+    for code, spec in st.registry.items():
+        classes = load_classes(spec.classes_path)
+        out.append({
+            "code": code,
+            "name": spec.name,
+            "english_name": spec.english_name,
+            "classes": sum(1 for c in classes if c != spec.no_sign_label),
+            "available": code in st.sign_recognizers,
+            "text_lang": spec.text_lang,
+            "tts_lang": spec.tts_lang,
+            "model": spec.variant.name,
+            "commercial_use": spec.commercial_use,
+        })
+    return {"sign_languages": out, "speech_languages": SPEECH_LANGUAGES}

@@ -1,6 +1,6 @@
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,13 +13,15 @@ router = APIRouter(prefix="/api", tags=["dictionary"])
 Category = Literal["letter", "word", "phrase"]
 
 
-def entry_json(e: DictionaryEntry) -> dict:
+def entry_json(e: DictionaryEntry, text_lang: str = "ru") -> dict:
+    translations = {"ru": None, "en": e.translation_en, "uz": e.translation_uz}
+    translations[text_lang] = e.text
     return {
         "id": e.id,
         "lang": e.lang,
         "text": e.text,
         "category": e.category,
-        "translations": {"ru": e.text, "en": e.translation_en, "uz": e.translation_uz},
+        "translations": translations,
         "video_url": e.video_url,
     }
 
@@ -45,8 +47,14 @@ async def _text_matcher(db: AsyncSession, q: str):
     return DictionaryEntry.text.icontains(q, autoescape=True)
 
 
+def _text_lang(request: Request, lang: str) -> str:
+    spec = request.app.state.registry.get(lang)
+    return spec.text_lang if spec else "ru"
+
+
 @router.get("/dictionary")
 async def list_dictionary(
+    request: Request,
     lang: str = "rsl",
     q: str | None = None,
     category: Category | None = None,
@@ -63,12 +71,13 @@ async def list_dictionary(
     rows = await db.scalars(
         select(DictionaryEntry).where(*conds).order_by(DictionaryEntry.id).limit(limit).offset(offset)
     )
-    return {"items": [entry_json(e) for e in rows], "total": total, "limit": limit, "offset": offset}
+    tl = _text_lang(request, lang)
+    return {"items": [entry_json(e, tl) for e in rows], "total": total, "limit": limit, "offset": offset}
 
 
 @router.get("/dictionary/{entry_id}")
-async def get_dictionary_entry(entry_id: int, db: AsyncSession = Depends(get_db)):
+async def get_dictionary_entry(request: Request, entry_id: int, db: AsyncSession = Depends(get_db)):
     e = await db.get(DictionaryEntry, entry_id)
     if e is None:
         raise ApiError(404, "not_found", "Dictionary entry not found")
-    return entry_json(e)
+    return entry_json(e, _text_lang(request, e.lang))
