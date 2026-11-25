@@ -1,0 +1,51 @@
+<!-- @dsCard group="Translate" height=430 subtitle="Static rendition of the contract's states" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><script>document.documentElement.dataset.theme=new URLSearchParams(location.search).get("theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")</script>
+<style>
+  body { margin: 0; padding: 24px; background: var(--surface); color: var(--ink); font: 400 16px/24px var(--font-sans); }
+  .stack { display: grid; gap: 16px; max-width: 640px; }
+</style>
+</head>
+<body>
+<div class="stack">
+
+  <div class="ph-banner" data-status="danger" role="alert">
+    <svg class="ph-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 2h6l5 5v6l-5 5H7l-5-5V7z"/><path d="M7.5 7.5l5 5M12.5 7.5l-5 5"/></svg>
+    <div class="ph-banner__body">
+      <span class="ph-banner__label">Unavailable</span>
+      <p class="ph-banner__message">Translation is temporarily unavailable for this language.</p>
+      <span class="ph-banner__code">model_unavailable</span>
+    </div>
+    <div class="ph-banner__action"><button class="ph-btn ph-btn--quiet" type="button">Choose another language</button></div>
+  </div>
+
+  <div class="ph-banner" data-status="warn" role="status">
+    <svg class="ph-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L18 17H2z"/><path d="M10 8v4M10 14.5v.01"/></svg>
+    <div class="ph-banner__body">
+      <span class="ph-banner__label">Busy</span>
+      <p class="ph-banner__message">The connection is slow; some frames were skipped.</p>
+    </div>
+  </div>
+
+  <div class="ph-banner" data-status="warn" role="status">
+    <svg class="ph-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L18 17H2z"/><path d="M10 8v4M10 14.5v.01"/></svg>
+    <div class="ph-banner__body">
+      <span class="ph-banner__label">Paused</span>
+      <p class="ph-banner__message">Nothing was sent for 30 seconds.</p>
+    </div>
+    <div class="ph-banner__action"><button class="ph-btn" type="button">Resume</button></div>
+  </div>
+
+  <div class="ph-banner" data-status="ok" role="status">
+    <svg class="ph-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M6.5 10.2l2.4 2.4 4.6-5"/></svg>
+    <div class="ph-banner__body">
+      <span class="ph-banner__label">Ready</span>
+      <p class="ph-banner__message">Camera connected. Sign when you are ready.</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
