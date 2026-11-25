@@ -1,6 +1,7 @@
 // Talking to the Phoenix backend (docs/API.md). No login: each browser keeps a random id.
 // Two modes: "live" talks to the server; "demo" (the default when no server answers) runs everything
 // in the browser with sample data from demo.js, so the site always opens.
+import { t } from './i18n.js';
 import { settings } from './settings.js';
 import { DemoSocket, demoApi } from './demo.js';
 
@@ -44,18 +45,8 @@ export class ApiError extends Error {
   constructor(status, code, message) { super(message || code); this.status = status; this.code = code; }
 }
 
-// Uzbek messages for REST error codes (frontend-resources/states.md).
-export const ERROR_TEXT = {
-  invalid_client_id: "Bu qurilmada nimadir xato ketdi. Sahifani yangilang.",
-  invalid_request: "Kiritilgan ma'lumotni tekshiring.",
-  not_found: "Bu yozuv endi yo'q.",
-  file_too_large: "Fayl juda katta.",
-  unsupported_media_type: "Bu fayl turi qo'llab-quvvatlanmaydi.",
-  internal_error: "Serverda xato chiqdi. Qaytadan urinib ko'ring.",
-  upstream_error: "Nutq xizmati band. Qaytadan urinib ko'ring.",
-  model_unavailable: "Tarjima hozircha ishlamayapti.",
-  network: "Server bilan aloqa yo'q. Server manzilini Sozlamalarda tekshiring."
-};
+// Messages for REST error codes (frontend-resources/states.md), in the current site language.
+const ERROR_TEXT = code => { const k = 'err.' + code, m = t(k); return m === k ? null : m; };
 
 export async function request(path, { method = 'GET', body, json, query, timeout = 30000 } = {}) {
   const u = new URL(path, apiBase() + '/');
@@ -68,7 +59,7 @@ export async function request(path, { method = 'GET', body, json, query, timeout
   try {
     res = await fetch(u, { method, headers, body, signal: ctl.signal });
   } catch (e) {
-    throw new ApiError(0, 'network', ERROR_TEXT.network);
+    throw new ApiError(0, 'network', ERROR_TEXT('network'));
   } finally { clearTimeout(timer); }
   if (res.status === 204) return null;
   let data = null;
@@ -76,7 +67,7 @@ export async function request(path, { method = 'GET', body, json, query, timeout
   if (!res.ok) {
     const code = data?.error?.code || 'internal_error';
     if (code === 'invalid_client_id') newClientId();
-    throw new ApiError(res.status, code, ERROR_TEXT[code] || data?.error?.message);
+    throw new ApiError(res.status, code, ERROR_TEXT(code) || data?.error?.message);
   }
   return data;
 }
