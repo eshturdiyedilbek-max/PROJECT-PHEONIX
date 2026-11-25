@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore", protected_namespaces=())
+    model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore", protected_namespaces=())
 
     database_url: str = "sqlite+aiosqlite:///./phoenix.db"
     cors_origins: str = "http://localhost:3000,http://localhost:5173"
@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     smooth_by_default: bool = True  # WS final includes a Gemini sentence unless the client opts out
 
     upload_dir: str = "uploads"
+    # Website served at "/" by the same server (one URL for the Colab tunnel). Empty = ../frontend next to backend/.
+    frontend_dir: str = ""
+    serve_frontend: bool = True
     load_models: bool = True
 
     @property

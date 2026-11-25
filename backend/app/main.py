@@ -94,7 +94,27 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     for module in (meta, dictionary, history, contributions, sentence, stt, sign_ws):
         app.include_router(module.router)
+    mount_frontend(app, settings)
     return app
+
+
+def mount_frontend(app: FastAPI, settings: Settings) -> None:
+    """Serve the website (frontend/) and its design resources from the API server itself.
+
+    Mounted last, so /api/*, /ws/* and /docs keep priority. Same origin means no CORS setup
+    for the demo and one public URL from the Colab tunnel.
+    """
+    if not settings.serve_frontend:
+        return
+    from fastapi.staticfiles import StaticFiles
+
+    repo_root = Path(__file__).resolve().parents[2]
+    web = Path(settings.frontend_dir) if settings.frontend_dir else repo_root / "frontend"
+    if not (web / "index.html").is_file():
+        log.info("frontend: not found at %s, serving the API only", web)
+        return
+    app.mount("/", StaticFiles(directory=web, html=True), name="frontend")
+    log.info("frontend: serving %s at /", web)
 
 
 app = create_app()
