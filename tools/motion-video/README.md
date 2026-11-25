@@ -1,6 +1,6 @@
 # Motion-graphics video manbasi
 
-Bosh sahifadagi demo video (`frontend/assets/demo/demo.mp4`) shu papkadagi koddan yaratilgan. Video kamera bilan yozilmagan: har bir kadr kodda chiziladi.
+Oldingi dizayndagi demo va taqdimot videolari shu papkadagi koddan yaratilgan. Ular skelet qo'llarni chizadi, shuning uchun yangi saytda ishlatilmaydi. Video kamera bilan yozilmagan: har bir kadr kodda chiziladi.
 
 ## Qanday ishlaydi
 
@@ -18,7 +18,6 @@ Kerak: Node.js, Playwright (Chromium bilan), ffmpeg.
 cd tools/motion-video
 ./build.sh D 4                 # out/phoenix-D-120fps.mp4 va out/phoenix-D-preview-720p.mp4
 node stills.js D out 5 13 20   # 5, 13, 20-soniyadagi kadrlar
-cp out/phoenix-D-120fps.mp4 ../../frontend/assets/demo/demo.mp4
 ```
 
 87 soniya × 120 fps = 10440 kadr, 4 yadroli kompyuterda taxminan 10 daqiqa.

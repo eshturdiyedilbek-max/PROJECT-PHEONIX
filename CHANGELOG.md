@@ -2,6 +2,22 @@
 
 Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
+## 2026-11-25: yangi dizayn (oq va qizil)
+
+### Qo'shildi
+- Bosh sahifa: ikki kishining qo'llari "xush kelibsiz" deb imo-ishora qiladi (three.js 3D tasvir, "3D" belgisi bilan; model MIT, `frontend/assets/hands/`), ostida tanlangan tilda "Xush kelibsiz".
+- Uch til: o'zbek, rus, ingliz. Til almashtirgich saytdagi har bir bo'limga ta'sir qiladi (bosh sahifa, tarjima, lug'at, tarix, sozlamalar, xato va holat xabarlari, namoyish rejimi).
+- Pastda shisha (liquid glass) dock: sichqoncha yaqinlashganda belgilar kattalashadi, telefonda yozuvlari bilan to'liq kenglikda.
+- Aylantirganda storyboard: "Bir suhbat, besh lahza", kamera, so'zlar, gap, ovoz va javob ketma-ket.
+- `PRODUCT.md`, `DESIGN.md`, `.impeccable/`: impeccable dizayn ko'nikmasi bo'yicha mahsulot va dizayn tizimi hujjatlari.
+- `docs/progress/` ga yangi dizayn rasmlari.
+
+### O'zgardi
+- Ranglar: toza oq fon va bitta qizil (#d9241c). Standart mavzu yorug', standart til o'zbekcha.
+
+### Olib tashlandi
+- Oldingi dizayndagi skelet 3D qo'l (`hero3d.js`, `hand-model.js`) va skelet qo'lli demo video (`demo.mp4`, `demo-poster.jpg`). Haqiqiy yozuv `frontend/assets/demo/real.mp4` ga qo'yilsa, bosh sahifada o'zi chiqadi.
+
 ## 2026-11-25: bosh sahifa uchun demo video
 
 ### Qo'shildi
