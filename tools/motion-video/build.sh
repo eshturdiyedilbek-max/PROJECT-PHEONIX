@@ -2,7 +2,7 @@
 # build.sh V workers -> out/phoenix-V-120fps.mp4
 set -e
 cd "$(dirname "$0")"
-V=${1:-A}; WK=${2:-4}; FPS=120
+V=${1:-D}; WK=${2:-4}; FPS=120
 N=$(node -e "
 const fs=require('fs');const src=fs.readFileSync('scene$V.js','utf8');const m=src.match(/duration:\s*([0-9.]+)/);console.log(Math.round(+m[1]*$FPS))")
 rm -rf fr_$V; mkdir -p fr_$V out

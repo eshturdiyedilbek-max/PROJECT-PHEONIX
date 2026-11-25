@@ -5,7 +5,7 @@ Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 ## 2026-11-25: bosh sahifa uchun demo video
 
 ### Qo'shildi
-- Motion-graphics demo video (`frontend/assets/demo/demo.mp4`): 35 soniya, 1080p, 120 fps, o'zbekcha matn. Muammo, kamera orqali tanish, Gemini gap tuzishi, ovoz, javob subtitri va imkoniyatlarni ko'rsatadi. Bosh sahifadagi "Jonli namoyish" bo'limida avtomatik chiqadi, muqovasi `demo-poster.jpg`.
+- Motion-graphics demo video (`frontend/assets/demo/demo.mp4`): 87 soniya, 1080p, 120 fps, o'zbekcha matn. To'rt vaziyat (shifoxona, do'kon, ko'cha, idora; RSL va ASL), ikki tomonlama suhbat, ish jarayoni, ochiq resurslar va texnologiyalar, tillar, sinov natijalari. Bosh sahifadagi "Jonli namoyish" bo'limida avtomatik chiqadi, muqovasi `demo-poster.jpg`.
 - Video manbasi `tools/motion-video/`: canvas sahnasi, Playwright bilan kadrlarni chizish, ffmpeg bilan yig'ish. Videoni bitta buyruq bilan qayta yaratish mumkin.
 
 ## 2026-11-25: haqiqiy sayt va tartibli repo
