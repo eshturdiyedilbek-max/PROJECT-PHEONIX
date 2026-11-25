@@ -91,7 +91,7 @@ PROJECT-PHEONIX/
 │   ├── config/            Qaysi til qaysi modelni ishlatishi
 │   ├── data/              Imo-ishoralar ro'yxati (RSL 1000, ASL 2000)
 │   └── Dockerfile
-├── deploy/                Google Colab'da bepul GPU bilan ishga tushirish
+├── deploy/                Google Colab yoki Kaggle'da bepul GPU bilan ishga tushirish
 ├── docs/                  API hujjati, reja va ish jarayoni rasmlari (docs/progress/)
 ├── frontend-resources/    Dizayn tizimi: ranglar, shriftlar, logotip, komponentlar
 ├── tools/motion-video/    Bosh sahifadagi demo videoning manbasi (kodda chizilgan, 120 fps)
@@ -108,6 +108,8 @@ PROJECT-PHEONIX/
 3. `Runtime > Run all` ni bosing. Taxminan 10 daqiqadan keyin ekranda **Website** havolasi chiqadi. Shu havolani oching.
 
 Batafsil: [`deploy/COLAB.md`](deploy/COLAB.md).
+
+**Colab'da GPU band bo'lsa: Kaggle.** Haftasiga 30 soat bepul T4 GPU. [`deploy/phoenix_kaggle.ipynb`](deploy/phoenix_kaggle.ipynb) ni Kaggle'ga import qiling, **GPU T4 x2** va **Internet On** ni yoqing, **Run All**. Qadam-baqadam: [`deploy/KAGGLE.md`](deploy/KAGGLE.md).
 
 ### 2-usul: O'z kompyuterida
 
@@ -183,6 +185,7 @@ Loyiha qanday rivojlangani rasmlarda: dizayn izlanishlari, Colab GPU va tayyor s
 | [`frontend/README.md`](frontend/README.md) | Sayt kodi qanday tuzilgan |
 | [`frontend-resources/README.md`](frontend-resources/README.md) | Dizayn qoidalari |
 | [`deploy/COLAB.md`](deploy/COLAB.md) | Colab'da ishga tushirish |
+| [`deploy/KAGGLE.md`](deploy/KAGGLE.md) | Kaggle'da ishga tushirish (Colab GPU band bo'lsa) |
 | [`CHANGELOG.md`](CHANGELOG.md) | O'zgarishlar tarixi |
 
 ## Litsenziyalar
