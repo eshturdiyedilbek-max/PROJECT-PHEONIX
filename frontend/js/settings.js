@@ -7,9 +7,10 @@ const DEFAULTS = {
   target: 'uz',         // language of the sentence
   speechLang: 'auto',   // hearing person's language for subtitles
   saveHistory: true,
-  theme: 'auto',
+  theme: 'light',       // the site is white by default; dark is available in Settings
   api: '',              // custom server URL, e.g. the Colab tunnel; empty = same server
-  mode: 'auto'          // auto | live | demo (see api.js resolveMode)
+  mode: 'auto',         // auto | live | demo (see api.js resolveMode)
+  uiLang: 'uz'          // site language: uz | ru | en (i18n.js)
 };
 
 let state = { ...DEFAULTS };

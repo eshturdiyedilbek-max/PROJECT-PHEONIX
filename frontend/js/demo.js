@@ -1,6 +1,7 @@
 // Demo mode: the whole site works without a server. Same messages as the real API (docs/API.md),
 // but the signs come from a fixed sample sequence and nothing leaves the browser.
 // The UI always says when it is in demo mode, so the sample words are never presented as real recognition.
+import { t, getLang } from './i18n.js';
 import { DEMO_DICTIONARY } from './demo-dictionary.js';
 
 // Sample phrases: the signs in recognition order and the sentence Phoenix makes from them.
@@ -23,13 +24,12 @@ const LOOKALIKE = {
   rsl: ['пока', 'здравствуйте', 'ты', 'дом', 'вода', 'идти', 'хорошо', 'друг', 'есть', 'семья'],
   asl: ['hi', 'you', 'nurse', 'home', 'drink', 'go', 'good', 'friend', 'eat', 'family']
 };
-const SPEECH = [
-  'Salom, sizga qanday yordam bera olaman?',
-  'Shifokor ikkinchi qavatda.',
-  'Bir daqiqa kuting, iltimos.',
-  'Kasalxona shu ko\'chaning oxirida.',
-  'Suvni hozir olib kelaman.'
-];
+// What the hearing person "says" in demo mode, in the site language.
+const SPEECH = {
+  uz: ['Salom, sizga qanday yordam bera olaman?', 'Shifokor ikkinchi qavatda.', 'Bir daqiqa kuting, iltimos.', "Kasalxona shu ko'chaning oxirida.", 'Suvni hozir olib kelaman.'],
+  ru: ['Здравствуйте, чем могу помочь?', 'Врач на втором этаже.', 'Подождите минуту, пожалуйста.', 'Больница в конце этой улицы.', 'Сейчас принесу воду.'],
+  en: ['Hello, how can I help you?', 'The doctor is on the second floor.', 'One moment, please.', 'The hospital is at the end of this street.', "I'll bring water right away."]
+};
 const LANGS = {
   sign_languages: [
     { code: 'rsl', name: 'Русский жестовый язык', english_name: 'Russian Sign Language', classes: 1000, available: true, text_lang: 'ru', tts_lang: 'ru-RU', model: 'mvit32-2', commercial_use: true },
@@ -149,9 +149,10 @@ export const demoApi = {
     return { sentence: p ? p[target_lang] : signs.join(' '), source_text: signs.join(' '), target_lang, smoothed: !!p, model: 'demo' };
   },
   async stt(_blob, { saveHistory: save } = {}) {
-    const text = SPEECH[speechNo++ % SPEECH.length];
-    if (save) addHistory({ direction: 'speech_to_text', lang: 'uz', text, signs: null });
-    return { text, language: 'uz', duration: 4, segments: [], history_id: null, engine: 'demo' };
+    const lang = getLang(), lines = SPEECH[lang] || SPEECH.uz;
+    const text = lines[speechNo++ % lines.length];
+    if (save) addHistory({ direction: 'speech_to_text', lang, text, signs: null });
+    return { text, language: lang, duration: 4, segments: [], history_id: null, engine: 'demo' };
   },
-  async contribute() { throw ERR('demo', "Namoyish rejimida video serverga yuborilmaydi. Server ulanganda ishlaydi."); }
+  async contribute() { throw ERR('demo', t('contrib.demo')); }
 };
