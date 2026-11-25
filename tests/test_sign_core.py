@@ -28,6 +28,10 @@ def recognizer(tmp_path_factory, classes):
     return SignRecognizer(path, classes, "fake")
 
 
+def test_recognizer_reports_device(recognizer):
+    assert recognizer.device in ("cpu", "cuda")
+
+
 class StubRecognizer:
     def __init__(self, window=32):
         self.window = window

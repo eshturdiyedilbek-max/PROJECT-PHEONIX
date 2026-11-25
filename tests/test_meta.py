@@ -16,6 +16,7 @@ async def test_health_reports_missing_models(client):
     assert body["sign_model"] == "missing"
     assert body["stt_model"] == "missing"
     assert body["sign_models"] == {"rsl": "missing", "asl": "missing"}
+    assert body["sign_devices"] == {}
 
 
 async def test_languages_lists_rsl(client):

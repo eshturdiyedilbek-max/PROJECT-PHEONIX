@@ -62,12 +62,21 @@ class SignRecognizer:
         import onnxruntime as ort
 
         available = ort.get_available_providers()
-        providers = (
-            ["CUDAExecutionProvider", "CPUExecutionProvider"]
-            if "CUDAExecutionProvider" in available
-            else ["CPUExecutionProvider"]
-        )
+        use_cuda = "CUDAExecutionProvider" in available
+        if use_cuda and hasattr(ort, "preload_dlls"):
+            # onnxruntime-gpu >= 1.21: load CUDA/cuDNN from the nvidia-* pip wheels (e.g. on Colab),
+            # otherwise ORT silently falls back to CPU when it can't find libcudnn.
+            try:
+                ort.preload_dlls()
+            except Exception:  # noqa: BLE001 - best effort; session creation reports the real problem
+                logger.debug("onnxruntime.preload_dlls() failed", exc_info=True)
+        providers = ["CUDAExecutionProvider", "CPUExecutionProvider"] if use_cuda else ["CPUExecutionProvider"]
         self.session = ort.InferenceSession(model_path, providers=providers)
+        # What ORT actually uses (CUDA can be listed as available and still fail to initialise).
+        self.device = "cuda" if self.session.get_providers()[0] == "CUDAExecutionProvider" else "cpu"
+        if use_cuda and self.device != "cuda":
+            logger.warning("sign model %s: CUDA is available but failed to start; running on CPU", name)
+        logger.info("sign model %s runs on %s", name, self.device)
         self.name = name
         self.classes = classes
         self.target_fps = float(target_fps)

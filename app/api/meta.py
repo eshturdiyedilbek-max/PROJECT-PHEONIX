@@ -21,6 +21,7 @@ async def health(request: Request):
         "status": "ok",
         "sign_model": "loaded" if st.sign_recognizers else "missing",
         "sign_models": per_lang,
+        "sign_devices": {code: getattr(rec, "device", "cpu") for code, rec in st.sign_recognizers.items()},
         "stt_model": "loaded" if st.stt_engines else "missing",
         "stt_engines": sorted(st.stt_engines),
         "stt_default": default_engine_name(st.settings, st.stt_engines),
