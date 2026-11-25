@@ -1,0 +1,58 @@
+<!-- @dsCard group="Learn" height=330 subtitle="Today's data, a letter, and when translations and video arrive" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><script>document.documentElement.dataset.theme=new URLSearchParams(location.search).get("theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")</script>
+<style>
+  body { margin: 0; padding: 24px; background: var(--surface); color: var(--ink); font: 400 16px/24px var(--font-sans); }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+  .row > div { flex: 1 1 240px; max-width: 280px; }
+  .cap { font: 500 12px/16px var(--font-sans); letter-spacing: .2px; color: var(--ink-muted); margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<div class="row">
+
+  <div>
+    <p class="cap">Today: word only</p>
+    <article class="ph-card" tabindex="0" lang="ru">
+      <div class="ph-card__head">
+        <h3 class="ph-card__word">привет</h3>
+        <span class="ph-tag">Word</span>
+      </div>
+      <button class="ph-btn ph-btn--quiet" type="button">Record this sign</button>
+    </article>
+  </div>
+
+  <div>
+    <p class="cap">Fingerspelled letter</p>
+    <article class="ph-card" tabindex="0" lang="ru">
+      <div class="ph-card__head">
+        <h3 class="ph-card__word ph-card__word--letter">А</h3>
+        <span class="ph-tag">Letter</span>
+      </div>
+      <button class="ph-btn ph-btn--quiet" type="button">Record this sign</button>
+    </article>
+  </div>
+
+  <div>
+    <p class="cap">When translations and video arrive</p>
+    <article class="ph-card" tabindex="0" lang="ru">
+      <div class="ph-card__head">
+        <h3 class="ph-card__word">привет</h3>
+        <span class="ph-tag">Word</span>
+      </div>
+      <dl class="ph-card__translations">
+        <dt>English</dt><dd>hello</dd>
+        <dt>O'zbekcha</dt><dd>salom</dd>
+      </dl>
+      <div class="ph-card__video" role="img" aria-label="Sign video">
+        <svg class="ph-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M7 4.5v11l9-5.5z"/></svg>
+      </div>
+      <button class="ph-btn ph-btn--quiet" type="button">Record this sign</button>
+    </article>
+  </div>
+
+</div>
+</body>
+</html>
