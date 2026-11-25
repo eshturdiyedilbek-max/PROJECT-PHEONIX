@@ -2,9 +2,11 @@
 // Sign -> text: camera frames go to WS /ws/sign as small JPEGs; the server answers with each recognized sign,
 // and on "Tugatish" with a full sentence (docs/API.md section 3, UI behaviour in frontend-resources/states.md).
 // Speech -> subtitles: the microphone is recorded in 4 s chunks and each chunk is sent to POST /api/stt.
-import { api, clientId, newClientId, wsUrl } from './api.js';
+// In demo mode (no server) the same UI runs on sample data from demo.js, and a banner says so.
+import { api, isDemo, newClientId, onModeChange, openSignSocket } from './api.js';
 import { settings } from './settings.js';
-import { RM } from './hand-model.js';
+import { RM } from './motion.js';
+import { t, onLangChange } from './i18n.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -13,18 +15,10 @@ const FRAME_W = 384, FRAME_H = 288, JPEG_Q = 0.7;      // ~15-30 KB per frame, f
 const MAX_BUFFERED = 512 * 1024;                       // skip frames while the network is behind
 const CHUNK_MS = 4000;                                 // speech chunk length (3-6 s recommended)
 const TTS = { uz: 'uz-UZ', ru: 'ru-RU', en: 'en-US' };
-const LANG_NAMES = { uz: "O'zbekcha", ru: 'Русский', en: 'English' };
-const SIGN_NAMES = { rsl: 'RSL · Rus imo-ishora tili', asl: 'ASL · Amerika imo-ishora tili' };
-
-const STATUS = {
-  off: "Kamera o'chiq",
-  camera: 'Kamera yoqilmoqda…',
-  connecting: 'Serverga ulanmoqda…',
-  listening: 'Imo-ishora qiling…',
-  got: "So'z tanildi",
-  sentence: 'Gap tayyor',
-  paused: "To'xtatildi"
-};
+const LANG_NAME = l => t('lname.' + l);
+const SIGN_NAME = s => t('sign.' + s);
+// A text spec is an i18n key, or [key, vars]; banners and status keep the spec so a language switch re-renders them.
+const T = x => !x ? '' : Array.isArray(x) ? t(x[0], x[1]) : t(x);
 
 export function initTranslate() {
   const el = {
@@ -48,26 +42,33 @@ export function initTranslate() {
   };
 
   // ---------- banners (status messages above the camera) ----------
+  const bannerSpecs = new Map();
   function banner(id, status, label, text, action) {
     let b = el.banners.querySelector(`[data-id="${id}"]`);
-    if (!label) { b?.remove(); return; }
+    if (!label) { b?.remove(); bannerSpecs.delete(id); return; }
+    bannerSpecs.set(id, [status, label, text, action]);
+    label = T(label); text = T(text);
     if (!b) { b = document.createElement('div'); b.className = 'ph-banner'; b.dataset.id = id; el.banners.appendChild(b); }
     b.dataset.status = status;
     b.setAttribute('role', status === 'danger' ? 'alert' : 'status');
-    b.innerHTML = `<svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true">${status === 'danger'
+    b.innerHTML = `<svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true">${status === 'ok'
+      ? '<circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9v5.5M10 5.5V7" stroke="currentColor" stroke-width="2"/>'
+      : status === 'danger'
       ? '<circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 5.5v5.5M10 13.5V15" stroke="currentColor" stroke-width="2"/>'
       : '<path d="M10 2 19 18H1z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 8v4M10 14v1.5" stroke="currentColor" stroke-width="2"/>'}</svg>
       <div><span class="ph-banner__label">${esc(label)}</span><p>${esc(text || '')}</p></div>`;
     if (action) {
       const btn = document.createElement('button');
-      btn.type = 'button'; btn.className = 'ph-btn ph-btn--quiet'; btn.textContent = action.label;
+      btn.type = 'button'; btn.className = 'ph-btn ph-btn--quiet'; btn.textContent = T(action.label);
       btn.addEventListener('click', action.run);
       b.querySelector('div').appendChild(btn);
     }
   }
 
+  let lastStatus = ['off'];
   function status(key, extra) {
-    el.status.textContent = extra || STATUS[key] || key;
+    lastStatus = [key, extra];
+    el.status.textContent = extra ? T(extra) : t('st.' + key);
     el.ring.hidden = key === 'off' || key === 'paused';
     html.dataset.phx = key === 'sentence' ? 'sentence' : key === 'got' ? 'got' : 'idle';
   }
@@ -101,12 +102,12 @@ export function initTranslate() {
   function showFinal(m) {
     el.making.hidden = true;
     st.newPhrase = true;   // the next sign starts a new phrase
-    if (!m.signs || !m.signs.length) { status('listening', "Hech qanday imo-ishora tanilmadi. Qaytadan urinib ko'ring."); return; }
+    if (!m.signs || !m.signs.length) { status('listening', 'st.nothing'); return; }
     st.lastFinal = m;
     el.sentence.innerHTML = m.sentence.split(' ').map((w, i) => `<span class="sw" style="--i:${i}">${esc(w)}</span>`).join(' ');
     el.sentence.lang = m.sentence_lang;
     el.sentence.classList.remove('show'); void el.sentence.offsetWidth; el.sentence.classList.add('show');
-    el.sentMeta.textContent = m.smoothed ? `Tuzilgan gap · ${LANG_NAMES[m.sentence_lang] || m.sentence_lang}` : 'Tanilgan so\'zlar';
+    renderMeta();
     el.say.disabled = false;
     status('sentence');
     speak(m.sentence, m.sentence_lang);
@@ -125,8 +126,9 @@ export function initTranslate() {
   // ---------- camera ----------
   async function openCamera() {
     if (st.cam) return true;
+    if (!navigator.mediaDevices?.getUserMedia && isDemo()) return true;
     if (!navigator.mediaDevices?.getUserMedia) {
-      banner('cam', 'danger', 'Kamera ishlamaydi', "Brauzer kamerani qo'llab-quvvatlamaydi yoki sahifa xavfsiz (https) manzilda ochilmagan.");
+      banner('cam', 'danger', 'b.camNo.l', 'b.camNo.t');
       return false;
     }
     status('camera');
@@ -134,8 +136,11 @@ export function initTranslate() {
       st.cam = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
     } catch (e) {
       const denied = e && (e.name === 'NotAllowedError' || e.name === 'SecurityError');
-      banner('cam', 'danger', denied ? 'Kameraga ruxsat berilmadi' : 'Kamera topilmadi',
-        denied ? "Brauzer manzil satridagi kamera belgisini bosib, ruxsat bering." : "Kamera ulanganini va boshqa dastur ishlatmayotganini tekshiring.");
+      if (isDemo()) {   // the demo does not need the picture, so carry on without it
+        setCamText('tx.noCam', 'tx.noCam', 'tx.noCamHint');
+        return true;
+      }
+      banner('cam', 'danger', denied ? 'b.camDenied.l' : 'b.camMissing.l', denied ? 'b.camDenied.t' : 'b.camMissing.t');
       status('off');
       return false;
     }
@@ -143,14 +148,14 @@ export function initTranslate() {
     el.video.srcObject = st.cam;
     el.video.hidden = false; el.empty.hidden = true;
     await el.video.play().catch(() => {});
-    el.dot.classList.remove('off'); el.camState.textContent = 'Kamera yoqilgan';
+    el.dot.classList.remove('off'); setCamText('tx.camOn');
     return true;
   }
 
   function closeCamera() {
     st.cam?.getTracks().forEach(t => t.stop());
     st.cam = null; el.video.srcObject = null; el.video.hidden = true; el.empty.hidden = false;
-    el.dot.classList.add('off'); el.camState.textContent = "Kamera o'chiq"; el.fps.textContent = '0';
+    el.dot.classList.add('off'); setCamText('tx.camOff', 'tx.camOff', 'tx.camHint'); el.fps.textContent = '0';
   }
 
   // ---------- frames ----------
@@ -188,8 +193,8 @@ export function initTranslate() {
     st.wantOpen = true; st.ready = false;
     status('connecting');
     let ws;
-    try { ws = new WebSocket(wsUrl('ws/sign', { client_id: clientId(), lang: st.sign })); }
-    catch (e) { banner('server', 'danger', "Server bilan aloqa yo'q", 'Server manzilini Sozlamalarda tekshiring.'); return; }
+    try { ws = openSignSocket(st.sign); }
+    catch (e) { banner('server', 'danger', 'b.server.l', 'b.server.t'); return; }
     st.ws = ws;
     let fatal = null;   // an error that means "don't reconnect"
     ws.onopen = () => { st.retry = 0; banner('server'); sendStart(); };
@@ -210,13 +215,13 @@ export function initTranslate() {
       if (!st.wantOpen || fatal === 'stop') return;
       if (ev.code === 4408) {            // idle timeout: wait for the person
         st.wantOpen = false; status('paused');
-        banner('idle', 'warn', "To'xtatildi", "30 soniya davomida hech narsa yuborilmagani uchun ulanish yopildi.", { label: 'Davom etish', run: () => { banner('idle'); connect(); } });
+        banner('idle', 'warn', 'b.idle.l', 'b.idle.t', { label: 'b.resume', run: () => { banner('idle'); connect(); } });
         return;
       }
       if (fatal === 'once') { connect(); return; }
       const wait = Math.min(10000, 1000 * 2 ** st.retry++);   // 1 s, 2 s, 4 s ... 10 s
-      status('connecting', `Ulanish uzildi. ${Math.round(wait / 1000)} soniyadan keyin qayta ulanadi…`);
-      if (st.retry > 2) banner('server', 'warn', "Server bilan aloqa yo'q", "Qayta ulanishga urinyapmiz. Server ishlayotganini va manzil to'g'riligini tekshiring.");
+      status('connecting', ['st.retry', { s: Math.round(wait / 1000) }]);
+      if (st.retry > 2) banner('server', 'warn', 'b.server.l', 'b.serverRetry.t');
       st.retryTimer = setTimeout(connect, wait);
     };
   }
@@ -227,11 +232,11 @@ export function initTranslate() {
       case 'invalid_client_id': newClientId(); return 'once';
       case 'unsupported_language':
       case 'model_unavailable':
-        banner('model', 'danger', 'Tarjima hozircha ishlamayapti', `${SIGN_NAMES[st.sign]} uchun model serverda yuklanmagan. Boshqa tilni tanlab ko'ring.`);
+        banner('model', 'danger', 'b.model.l', ['b.model.t', { lang: SIGN_NAME(st.sign) }]);
         stopAll(); return 'stop';
       case 'overloaded':
-        if (st.ready) banner('slow-net', 'warn', 'Ulanish sekin', "Ba'zi kadrlar o'tkazib yuborildi.");
-        else banner('server', 'warn', "Hozir foydalanuvchilar ko'p", 'Bir necha soniyadan keyin qayta urinamiz…');
+        if (st.ready) banner('slow-net', 'warn', 'b.slow.l', 'b.slow.t');
+        else banner('server', 'warn', 'b.busy.l', 'b.busy.t');
         return null;
       case 'idle_timeout': return null;   // handled on close (4408)
       default: console.warn('[phoenix] server:', m.code, m.message); return null;   // bad_frame, bad_message, inference_failed
@@ -250,7 +255,7 @@ export function initTranslate() {
     banner('model'); banner('idle');
     if (!(await openCamera())) return;
     st.live = true;
-    el.start.textContent = "Kamerani o'chirish";
+    el.start.dataset.i18n = 'tx.camStop'; el.start.textContent = t('tx.camStop');
     el.start.classList.add('ph-btn--quiet');
     el.stop.disabled = false; el.reset.disabled = false;
     clearPhrase();
@@ -260,7 +265,7 @@ export function initTranslate() {
   function stopAll() {
     st.live = false;
     closeSocket(); closeCamera();
-    el.start.textContent = 'Boshlash'; el.start.classList.remove('ph-btn--quiet');
+    el.start.dataset.i18n = 'tx.start'; el.start.textContent = t('tx.start'); el.start.classList.remove('ph-btn--quiet');
     el.stop.disabled = true;
     status('off');
   }
@@ -302,7 +307,7 @@ export function initTranslate() {
   });
   function applySign() {
     html.classList.toggle('asl', st.sign === 'asl');
-    el.signName.textContent = SIGN_NAMES[st.sign];
+    el.signName.textContent = SIGN_NAME(st.sign);
     el.panel.lang = st.sign === 'asl' ? 'en' : 'ru';
     checkModel();
   }
@@ -319,11 +324,17 @@ export function initTranslate() {
   const mic = { stream: null, rec: null, on: false, ctx: null, analyser: null, peak: 0, raf: 0, queue: Promise.resolve() };
 
   async function micOn() {
+    if (isDemo()) {   // no microphone in demo mode: sample replies from demo.js every few seconds
+      mic.on = true; mic.demo = true;
+      const tick = () => { if (!mic.on) return; api.stt(null, { saveHistory: settings.get('saveHistory') }).then(addSubtitle); mic.timer = setTimeout(tick, CHUNK_MS + 800); };
+      mic.timer = setTimeout(tick, 1200);
+      return true;
+    }
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-      banner('mic', 'danger', 'Mikrofon ishlamaydi', "Bu brauzer ovoz yozishni qo'llab-quvvatlamaydi."); return false;
+      banner('mic', 'danger', 'b.micNo.l', 'b.micNo.t'); return false;
     }
     try { mic.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
-    catch (e) { banner('mic', 'danger', 'Mikrofonga ruxsat berilmadi', 'Brauzer manzil satridagi mikrofon belgisini bosib, ruxsat bering.'); return false; }
+    catch (e) { banner('mic', 'danger', 'b.micDenied.l', 'b.micDenied.t'); return false; }
     banner('mic');
     mic.on = true;
     try {   // level meter: drives the bars and lets us skip silent chunks
@@ -362,7 +373,7 @@ export function initTranslate() {
       // keep subtitles in speaking order even if requests finish out of order
       const req = api.stt(blob, { language: settings.get('speechLang'), saveHistory: settings.get('saveHistory') });
       mic.queue = mic.queue.then(() => req).then(addSubtitle, e => {
-        if (e.code === 'network') el.micState.textContent = "Server bilan aloqa yo'q";
+        if (e.code === 'network') el.micState.textContent = t('b.server.l');
         else if (e.code !== 'invalid_request') el.micState.textContent = e.message;
       });
     };
@@ -372,20 +383,19 @@ export function initTranslate() {
   }
 
   function addSubtitle(r) {
-    el.micState.textContent = 'Tinglanmoqda…';
+    el.micState.textContent = t('tx.listening');
     if (!r || !r.text || !r.text.trim()) return;   // no empty subtitles
     const line = document.createElement('span');
     line.innerHTML = r.text.trim().split(/\s+/).map((w, i) => `<span class="sw" style="--i:${i}">${esc(w)}</span>`).join(' ') + ' ';
     el.subText.classList.add('show');
     el.subText.appendChild(line);
     while (el.subText.textContent.length > 600) el.subText.firstChild.remove();   // keep the last few lines
-    $('#privacy').textContent = r.engine === 'gemini'
-      ? "Ovoz Google'ning Gemini xizmatida matnga aylantiriladi."
-      : 'Ovoz serverdagi Whisper modelida matnga aylantiriladi.';
+    const pk = r.engine === 'demo' ? 'tx.privacyDemo' : r.engine === 'gemini' ? 'tx.privacyGemini' : 'tx.privacyWhisper';
+    $('#privacy').dataset.i18n = pk; $('#privacy').textContent = t(pk);
   }
 
   function micOff() {
-    mic.on = false; cancelAnimationFrame(mic.raf);
+    mic.on = false; mic.demo = false; clearTimeout(mic.timer); cancelAnimationFrame(mic.raf);
     if (mic.rec?.state === 'recording') mic.rec.stop();
     mic.stream?.getTracks().forEach(t => t.stop()); mic.stream = null;
     mic.ctx?.close().catch(() => {}); mic.ctx = null; mic.analyser = null;
@@ -405,30 +415,62 @@ export function initTranslate() {
       const [h, l] = await Promise.all([api.health(), api.languages().catch(() => null)]);
       st.health = h; st.languages = l;
       banner('server');
+      showModeBanner();
       if (l) l.sign_languages.forEach(x => {
         const r = document.querySelector(`input[name=sign][value="${x.code}"]`);
         if (!r) return;
         r.disabled = !x.available;
         const small = r.closest('label').querySelector('small');
-        if (small) small.textContent = x.available ? `${x.classes} ta imo-ishora` : 'Serverda yuklanmagan';
+        if (small) { small.dataset.count = x.available ? x.classes : ''; small.textContent = x.available ? t('tx.signs', { n: x.classes }) : t('tx.notLoaded'); }
       });
       if (h.sentence_smoothing === false) { el.tr.hidden = true; $('#row-smooth').hidden = true; }
       checkModel();
     } catch (e) {
-      banner('server', 'danger', "Server bilan aloqa yo'q", e.message, { label: 'Qayta tekshirish', run: checkServer });
+      banner('server', 'danger', 'b.server.l', 'b.server.t', { label: 'b.recheck', run: checkServer });
     }
   }
+
+  function showModeBanner() {
+    if (isDemo()) banner('mode', 'ok', 'b.demo.l', 'b.demo.t', { label: 'b.toSettings', run: () => { location.hash = '#sozlamalar'; } });
+    else banner('mode');
+  }
+  onModeChange(() => { if (st.live) stopAll(); showModeBanner(); checkServer(); });
 
   function checkModel() {
     const h = st.health; if (!h) return;
     const state = h.sign_models?.[st.sign];
-    if (state === 'missing') banner('model', 'danger', 'Tarjima hozircha ishlamayapti', `${SIGN_NAMES[st.sign]} uchun model serverda yuklanmagan.`);
+    if (state === 'missing') banner('model', 'danger', 'b.model.l', ['b.model.t', { lang: SIGN_NAME(st.sign) }]);
     else banner('model');
-    if (h.sign_devices?.[st.sign] === 'cpu') banner('cpu', 'warn', 'Server sekin ishlayapti', "Model GPU'siz ishlayapti, har bir so'z bir necha soniya oladi. Tezroq ishlashi uchun Colab GPU'da ishga tushiring.");
+    if (h.sign_devices?.[st.sign] === 'cpu') banner('cpu', 'warn', 'b.cpu.l', 'b.cpu.t');
     else banner('cpu');
   }
 
+  function setCamText(state, title, hint) {
+    el.camState.dataset.i18n = state; el.camState.textContent = t(state);
+    if (title) { const h = el.empty.querySelector('.heading'), b = el.empty.querySelector('.body-sm');
+      h.dataset.i18n = title; h.textContent = t(title); b.dataset.i18n = hint; b.textContent = t(hint); }
+  }
+  function renderMeta() {
+    const m = st.lastFinal; if (!m) return;
+    el.sentMeta.textContent = m.smoothed ? t('res.made', { lang: LANG_NAME(m.sentence_lang) }) : t('res.raw');
+  }
+  // Language switch: re-render everything JS wrote (static text is handled by applyI18n).
+  onLangChange(() => {
+    for (const [id, [s, l, x, a]] of [...bannerSpecs]) banner(id, s, l, x, a);
+    status(...lastStatus);
+    el.signName.textContent = SIGN_NAME(st.sign);
+    renderMeta();
+    document.querySelectorAll('input[name=sign]').forEach(r => {
+      const small = r.closest('label').querySelector('small');
+      if (small && small.dataset.count) small.textContent = t('tx.signs', { n: small.dataset.count });
+    });
+  });
+
   applySign(); applySmooth(); status('off');
+  document.querySelectorAll('input[name=sign]').forEach(r => {
+    const small = r.closest('label').querySelector('small');
+    if (small && small.dataset.count) small.textContent = t('tx.signs', { n: small.dataset.count });
+  });
 
   return {
     enter() { checkServer(); },
