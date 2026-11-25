@@ -1,0 +1,672 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-25T11:29:51+00:00",
+  "title": "Design System: Phoenix",
+  "extensions": {
+    "colorMeta": {
+      "red": {
+        "role": "primary",
+        "displayName": "Phoenix Vermilion",
+        "canonical": "#d9241c",
+        "oklch": "oklch(57.0% 0.215 28.9)",
+        "tonalRamp": [
+          "#1e0100",
+          "#4b0101",
+          "#7b0806",
+          "#b10908",
+          "#dc382c",
+          "#f56f5f",
+          "#fbada2",
+          "#fee9e5"
+        ]
+      },
+      "red-ink": {
+        "role": "primary",
+        "displayName": "Deep Vermilion",
+        "canonical": "#a3160f",
+        "oklch": "oklch(45.9% 0.175 29.1)",
+        "tonalRamp": [
+          "#1f0000",
+          "#4a0402",
+          "#751710",
+          "#a42d22",
+          "#cd4d3f",
+          "#e77b6c",
+          "#fdaca0",
+          "#ffe9e5"
+        ]
+      },
+      "red-tint": {
+        "role": "primary",
+        "displayName": "Blush",
+        "canonical": "#fdeeec",
+        "oklch": "oklch(96.0% 0.017 26.6)",
+        "tonalRamp": [
+          "#110908",
+          "#2c2120",
+          "#483d3b",
+          "#675a59",
+          "#877a78",
+          "#a99b99",
+          "#cfc0be",
+          "#faebe9"
+        ]
+      },
+      "on-red": {
+        "role": "neutral",
+        "displayName": "On Red",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#7d7d7d",
+          "#9e9e9e",
+          "#c4c4c4",
+          "#eeeeee"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#7d7d7d",
+          "#9e9e9e",
+          "#c4c4c4",
+          "#eeeeee"
+        ]
+      },
+      "surface-sunken": {
+        "role": "neutral",
+        "displayName": "Warm Mist",
+        "canonical": "#f8f2f1",
+        "oklch": "oklch(96.6% 0.007 28.8)",
+        "tonalRamp": [
+          "#0e0a0a",
+          "#272322",
+          "#433e3e",
+          "#615c5b",
+          "#817c7b",
+          "#a29d9c",
+          "#c8c3c2",
+          "#f3edec"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Red-Black Ink",
+        "canonical": "#1b1112",
+        "oklch": "oklch(19.1% 0.017 12.1)",
+        "tonalRamp": [
+          "#120809",
+          "#2c2122",
+          "#483c3d",
+          "#675a5b",
+          "#87797a",
+          "#a99a9b",
+          "#cfc0c1",
+          "#faeaeb"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "#6b5b5c",
+        "oklch": "oklch(48.7% 0.021 13.6)",
+        "tonalRamp": [
+          "#0f0a0a",
+          "#2a2222",
+          "#483d3d",
+          "#68595a",
+          "#89797a",
+          "#a89a9b",
+          "#ccc1c2",
+          "#f4eced"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "canonical": "#9a8a8b",
+        "oklch": "oklch(64.8% 0.019 13.3)",
+        "tonalRamp": [
+          "#120809",
+          "#2d2021",
+          "#493c3d",
+          "#68595a",
+          "#88797a",
+          "#aa9a9b",
+          "#d0bfc0",
+          "#fbeaeb"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Rule Line",
+        "canonical": "#efe3e1",
+        "oklch": "oklch(92.5% 0.013 28.9)",
+        "tonalRamp": [
+          "#100908",
+          "#2a2220",
+          "#473d3c",
+          "#655b59",
+          "#857a79",
+          "#a79b9a",
+          "#cdc1bf",
+          "#f7ebe9"
+        ]
+      },
+      "status-warn": {
+        "role": "status",
+        "displayName": "Amber Warn",
+        "canonical": "#8a5300",
+        "oklch": "oklch(49.4% 0.109 66.9)",
+        "tonalRamp": [
+          "#140800",
+          "#351e03",
+          "#5c3602",
+          "#825112",
+          "#a67033",
+          "#c39464",
+          "#e2bc97",
+          "#feebd8"
+        ]
+      },
+      "status-danger": {
+        "role": "status",
+        "displayName": "Danger (Deep Vermilion)",
+        "canonical": "#a3160f",
+        "oklch": "oklch(45.9% 0.175 29.1)",
+        "tonalRamp": [
+          "#1f0000",
+          "#4a0402",
+          "#751710",
+          "#a42d22",
+          "#cd4d3f",
+          "#e77b6c",
+          "#fdaca0",
+          "#ffe9e5"
+        ]
+      },
+      "dark-red": {
+        "role": "primary",
+        "displayName": "Dark Phoenix Vermilion",
+        "canonical": "#ff5a4f",
+        "oklch": "oklch(68.7% 0.202 27.5)",
+        "tonalRamp": [
+          "#1f0001",
+          "#490505",
+          "#7c0208",
+          "#ad1819",
+          "#d73f37",
+          "#f17266",
+          "#fcaca2",
+          "#ffe9e6"
+        ],
+        "scheme": "dark"
+      },
+      "dark-red-ink": {
+        "role": "primary",
+        "displayName": "Dark Deep Vermilion",
+        "canonical": "#ff8a80",
+        "oklch": "oklch(75.9% 0.144 26.1)",
+        "tonalRamp": [
+          "#1f0001",
+          "#440e0d",
+          "#6d2320",
+          "#993a35",
+          "#c05951",
+          "#dc8279",
+          "#f8afa7",
+          "#fee9e6"
+        ],
+        "scheme": "dark"
+      },
+      "dark-red-tint": {
+        "role": "primary",
+        "displayName": "Dark Blush",
+        "canonical": "#2a1312",
+        "oklch": "oklch(22.0% 0.038 23.3)",
+        "tonalRamp": [
+          "#110908",
+          "#2e201f",
+          "#4e3a39",
+          "#705654",
+          "#927573",
+          "#b09896",
+          "#d3bfbd",
+          "#f9ebe9"
+        ],
+        "scheme": "dark"
+      },
+      "dark-on-red": {
+        "role": "neutral",
+        "displayName": "Dark On Red",
+        "canonical": "#1b0807",
+        "oklch": "oklch(16.6% 0.034 25.1)",
+        "tonalRamp": [
+          "#110908",
+          "#2d201f",
+          "#4c3b39",
+          "#6e5755",
+          "#907674",
+          "#af9896",
+          "#d1bfbd",
+          "#f8ebea"
+        ],
+        "scheme": "dark"
+      },
+      "dark-surface": {
+        "role": "neutral",
+        "displayName": "Dark Paper White",
+        "canonical": "#140c0c",
+        "oklch": "oklch(16.5% 0.014 18.7)",
+        "tonalRamp": [
+          "#110909",
+          "#2a2121",
+          "#473d3d",
+          "#655b5a",
+          "#857a7a",
+          "#a79b9b",
+          "#cdc1c0",
+          "#f8ebeb"
+        ],
+        "scheme": "dark"
+      },
+      "dark-surface-raised": {
+        "role": "neutral",
+        "displayName": "Dark Surface Raised",
+        "canonical": "#1d1313",
+        "oklch": "oklch(20.0% 0.017 18.6)",
+        "tonalRamp": [
+          "#120808",
+          "#2c2121",
+          "#483c3c",
+          "#675a5a",
+          "#877a79",
+          "#a99b9a",
+          "#cfc0c0",
+          "#faeaea"
+        ],
+        "scheme": "dark"
+      },
+      "dark-surface-sunken": {
+        "role": "neutral",
+        "displayName": "Dark Warm Mist",
+        "canonical": "#211616",
+        "oklch": "oklch(21.4% 0.018 18.7)",
+        "tonalRamp": [
+          "#120808",
+          "#2c2121",
+          "#493c3c",
+          "#685a5a",
+          "#887979",
+          "#a99a9a",
+          "#d0c0bf",
+          "#faeaea"
+        ],
+        "scheme": "dark"
+      },
+      "dark-ink": {
+        "role": "neutral",
+        "displayName": "Dark Red-Black Ink",
+        "canonical": "#f8eeed",
+        "oklch": "oklch(95.7% 0.011 24.3)",
+        "tonalRamp": [
+          "#0f0909",
+          "#292221",
+          "#453e3d",
+          "#645b5b",
+          "#847b7a",
+          "#a59c9b",
+          "#cbc1c1",
+          "#f6eceb"
+        ],
+        "scheme": "dark"
+      },
+      "dark-ink-muted": {
+        "role": "neutral",
+        "displayName": "Dark Muted Ink",
+        "canonical": "#c4b2b1",
+        "oklch": "oklch(77.9% 0.021 21.4)",
+        "tonalRamp": [
+          "#0f0a0a",
+          "#2a2221",
+          "#483d3c",
+          "#685a59",
+          "#897978",
+          "#a89b9a",
+          "#ccc1c0",
+          "#f4ecec"
+        ],
+        "scheme": "dark"
+      },
+      "dark-border": {
+        "role": "neutral",
+        "displayName": "Dark Border",
+        "canonical": "#8f7c7b",
+        "oklch": "oklch(60.3% 0.024 21.4)",
+        "tonalRamp": [
+          "#0f0a09",
+          "#2a2221",
+          "#493c3c",
+          "#695958",
+          "#8a7877",
+          "#aa9a99",
+          "#cdc1c0",
+          "#f5eceb"
+        ],
+        "scheme": "dark"
+      },
+      "dark-line": {
+        "role": "neutral",
+        "displayName": "Dark Rule Line",
+        "canonical": "#2f2120",
+        "oklch": "oklch(26.4% 0.022 23.3)",
+        "tonalRamp": [
+          "#0f0a09",
+          "#2a2221",
+          "#483d3c",
+          "#685a58",
+          "#897977",
+          "#a99b99",
+          "#cdc1c0",
+          "#f5eceb"
+        ],
+        "scheme": "dark"
+      },
+      "dark-status-warn": {
+        "role": "status",
+        "displayName": "Dark Amber Warn",
+        "canonical": "#f2b84b",
+        "oklch": "oklch(81.7% 0.140 80.1)",
+        "tonalRamp": [
+          "#120900",
+          "#312100",
+          "#543b04",
+          "#7a5604",
+          "#a27404",
+          "#c29648",
+          "#e1bf84",
+          "#ffeccd"
+        ],
+        "scheme": "dark"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The localized welcome word under the hero stage and the closing word; set like a giant subtitle with a red rule."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles; the storyboard title runs larger."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Page titles in app views, the hero H1 and storyboard step titles."
+      },
+      "subtitle": {
+        "displayName": "Subtitle",
+        "purpose": "Live recognized words, sentences and speech subtitles: the conversation itself."
+      },
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "Small headings and empty-state titles."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "Hero lead, story copy, news descriptions, 40 to 58ch."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default reading text and button labels (buttons at 600)."
+      },
+      "body-sm": {
+        "displayName": "Body small",
+        "purpose": "Meta lines and helper text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Captions, tags and legends."
+      }
+    },
+    "shadows": [
+      {
+        "name": "soft-ambient",
+        "value": "0 18px 40px -18px rgba(20,8,8,.18)",
+        "dark": "0 18px 40px -18px rgba(0,0,0,.6)",
+        "purpose": "Live subtitle panel at rest; learn cards on hover."
+      },
+      {
+        "name": "button-lift",
+        "value": "0 10px 24px -12px rgba(20,8,8,.3)",
+        "purpose": "Primary button hover only."
+      },
+      {
+        "name": "stage-float",
+        "value": "0 30px 60px -30px rgba(0,0,0,.35)",
+        "purpose": "White storyboard stage floating over the red field."
+      },
+      {
+        "name": "dock-glass",
+        "value": "0 16px 36px -14px rgba(0,0,0,.28), 0 2px 6px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 1px rgba(255,255,255,.35), inset 0 0 0 1px rgba(255,255,255,.12)",
+        "purpose": "The dock only; paired with backdrop-filter blur(20px) saturate(1.9) brightness(1.04)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(.16,1,.3,1)",
+        "purpose": "Default exponential ease-out for masks, rises, drawn rules, hovers."
+      },
+      {
+        "name": "ease-io",
+        "value": "cubic-bezier(.76,0,.24,1)",
+        "purpose": "Entrance sheet lift and the storyboard frame stream."
+      },
+      {
+        "name": "fade-dur",
+        "value": "620ms",
+        "purpose": "Shared rise-and-fade duration (rise 14px, stagger 70ms)."
+      },
+      {
+        "name": "hero-entrance",
+        "value": "stage unmask 1.3s; word in 1s at +.45s; rule draw 1.1s at +.8s",
+        "purpose": "The one orchestrated entrance on the landing."
+      },
+      {
+        "name": "reveal",
+        "value": "opacity .9s + translateY(28px) 1.1s, 70ms stagger",
+        "purpose": "Scroll reveals on the landing."
+      },
+      {
+        "name": "dock-magnify",
+        "value": "range 150px, grow 0.55, cosine falloff",
+        "purpose": "Dock items magnify under the pointer on fine-pointer devices."
+      },
+      {
+        "name": "scene-change",
+        "value": "opacity .6s, translateY(18px) .8s, blur(6px) .6s",
+        "purpose": "Storyboard stage scene transitions."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "560px"
+      },
+      {
+        "name": "gutter",
+        "value": "720px"
+      },
+      {
+        "name": "tablet",
+        "value": "960px"
+      }
+    ],
+    "container": {
+      "maxWidth": "1280px",
+      "gutter": "16px (32px from 720px)"
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one action per view: red pill, arrow slides on hover.",
+      "html": "<a class=\"ds-btn\" href=\"#\">Sinab ko'rish<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M4 10h11M11 5l5 5-5 5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/></svg></a>",
+      "css": ":host,.ds-root{--red:#d9241c;--red-ink:#a3160f;--red-tint:#fdeeec;--on-red:#fff;--surface:#fff;--surface-sunken:#f8f2f1;--ink:#1b1112;--ink-muted:#6b5b5c;--line:#efe3e1;--focus:var(--ink);--ease-out:cubic-bezier(.16,1,.3,1)} .ds-btn{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:10px 18px;border:1px solid transparent;border-radius:999px;background:var(--red,#d9241c);color:var(--on-red,#fff);font-family:\"Golos Text\",system-ui,\"Segoe UI\",Arial,sans-serif;font-weight:600;font-size:16px;line-height:1.2;text-decoration:none;cursor:pointer;transition:transform .5s var(--ease-out,cubic-bezier(.16,1,.3,1)),background-color .2s,box-shadow .5s var(--ease-out,cubic-bezier(.16,1,.3,1))} .ds-btn svg{transition:transform .5s cubic-bezier(.16,1,.3,1)} .ds-btn:hover{background:var(--red-ink,#a3160f);box-shadow:0 10px 24px -12px rgba(20,8,8,.3)} .ds-btn:hover svg{transform:translateX(3px)} .ds-btn:active{transform:scale(.97)} .ds-btn:focus-visible{outline:2px solid var(--ink,#1b1112);outline-offset:3px}"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Secondary pill: ink hairline, Warm Mist on hover, red stroke on Blush when pressed.",
+      "html": "<button class=\"ds-btn-quiet\" type=\"button\">Qanday ishlaydi</button> <button class=\"ds-btn-quiet\" type=\"button\" aria-pressed=\"true\">Ovoz</button>",
+      "css": ".ds-btn-quiet{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:10px 18px;border-radius:999px;background:transparent;color:#1b1112;border:1px solid color-mix(in srgb,#1b1112 22%,transparent);font-family:\"Golos Text\",system-ui,\"Segoe UI\",Arial,sans-serif;font-weight:600;font-size:16px;cursor:pointer;transition:background-color .2s,border-color .2s} .ds-btn-quiet:hover{background:#f8f2f1;border-color:color-mix(in srgb,#1b1112 40%,transparent)} .ds-btn-quiet[aria-pressed=true]{border-color:#d9241c;background:#fdeeec} .ds-btn-quiet:focus-visible{outline:2px solid #1b1112;outline-offset:3px}"
+    },
+    {
+      "name": "Invert Button on Red Field",
+      "kind": "button",
+      "refersTo": "button-invert",
+      "description": "The closing call: white pill with red text, only on a red field.",
+      "html": "<div class=\"ds-field\"><p class=\"ds-field-word\">Xush kelibsiz</p><a class=\"ds-btn-inv\" href=\"#\">Sinab ko'rish<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M4 10h11M11 5l5 5-5 5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/></svg></a></div>",
+      "css": ".ds-field{background:#d9241c;color:#fff;padding:32px;border-radius:28px;display:grid;gap:16px;justify-items:start} .ds-field-word{margin:0;font-family:Geologica,\"Golos Text\",system-ui,Arial,sans-serif;font-weight:800;font-size:56px;line-height:.9;letter-spacing:-.04em} .ds-btn-inv{display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:14px 26px;border-radius:999px;background:#fff;color:#d9241c;font-family:\"Golos Text\",system-ui,\"Segoe UI\",Arial,sans-serif;font-weight:600;font-size:17px;text-decoration:none;transition:background-color .2s} .ds-btn-inv:hover{background:#fff4f2;color:#a3160f} .ds-btn-inv:focus-visible{outline:2px solid #fff;outline-offset:3px}"
+    },
+    {
+      "name": "Language Switch",
+      "kind": "nav",
+      "refersTo": "language-switch-active",
+      "description": "UZ/RU/EN pill track; the active language is a solid red pill.",
+      "html": "<div class=\"ds-langs\" role=\"group\"><button aria-pressed=\"true\">UZ</button><button aria-pressed=\"false\">RU</button><button aria-pressed=\"false\">EN</button></div>",
+      "css": ".ds-langs{display:inline-flex;padding:3px;border-radius:999px;background:#f8f2f1;border:1px solid #efe3e1} .ds-langs button{appearance:none;border:0;background:transparent;min-width:44px;min-height:36px;padding:0 10px;border-radius:999px;font-family:\"Golos Text\",system-ui,\"Segoe UI\",Arial,sans-serif;font-weight:700;font-size:13px;letter-spacing:.04em;color:#6b5b5c;cursor:pointer;transition:color .2s,background-color .3s cubic-bezier(.16,1,.3,1)} .ds-langs button:hover{color:#1b1112} .ds-langs button[aria-pressed=true]{background:#d9241c;color:#fff} .ds-langs button:focus-visible{outline:2px solid #1b1112;outline-offset:3px}"
+    },
+    {
+      "name": "Tag",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Status pill: Warm Mist by default, amber outline for warnings.",
+      "html": "<span class=\"ds-tag\">Namoyish rejimi</span> <span class=\"ds-tag ds-tag-warn\">Faqat namoyish, notijorat</span>",
+      "css": ".ds-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid #efe3e1;border-radius:999px;background:#f8f2f1;color:#1b1112;font-family:\"Golos Text\",system-ui,\"Segoe UI\",Arial,sans-serif;font-weight:600;font-size:12px;line-height:16px} .ds-tag-warn{color:#8a5300;background:transparent;border-color:currentColor}"
+    },
+    {
+      "name": "Option (radio card)",
+      "kind": "input",
+      "refersTo": "option-selected",
+      "description": "Choice of sign language or output language; checked turns red on Blush.",
+      "html": "<label class=\"ds-opt\"><input type=\"radio\" name=\"l\" checked> <span>RSL</span></label> <label class=\"ds-opt\"><input type=\"radio\" name=\"l\"> <span>ASL</span></label>",
+      "css": ".ds-opt{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 16px;border:1px solid color-mix(in srgb,#1b1112 18%,transparent);border-radius:12px;background:#fff;font-family:\"Golos Text\",system-ui,\"Segoe UI\",Arial,sans-serif;font-weight:600;cursor:pointer;transition:border-color .2s,background-color .2s} .ds-opt:hover{border-color:color-mix(in srgb,#1b1112 40%,transparent)} .ds-opt:has(input:checked){border-color:#d9241c;background:#fdeeec;box-shadow:inset 0 0 0 1px #d9241c} .ds-opt:has(input:focus-visible){outline:2px solid #1b1112;outline-offset:2px} .ds-opt input{width:18px;height:18px;margin:0;accent-color:#d9241c}"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "52px pill search; focus moves the stroke to red with a Blush ring.",
+      "html": "<input class=\"ds-search\" type=\"search\" placeholder=\"So'z qidiring\">",
+      "css": ".ds-search{min-height:52px;width:320px;border:1px solid color-mix(in srgb,#1b1112 22%,transparent);border-radius:999px;background:#fff;padding:0 20px;font-size:18px;font-family:\"Golos Text\",system-ui,\"Segoe UI\",Arial,sans-serif;color:#1b1112;caret-color:#d9241c} .ds-search:focus{border-color:#d9241c;outline:none;box-shadow:0 0 0 3px #fdeeec}"
+    },
+    {
+      "name": "Subtitle Panel",
+      "kind": "card",
+      "refersTo": "subtitle-panel",
+      "description": "The live conversation surface: words in Subtitle size, red confidence figures.",
+      "html": "<div class=\"ds-sub\"><div class=\"ds-sub-l\">Imo-ishoradan</div><p class=\"ds-sub-t\"><span>привет<em>91%</em></span> <span>я<em>88%</em></span> <span>врач<em>86%</em></span></p><div class=\"ds-sub-m\"><span class=\"ds-alt ds-win\">привет 91%</span><span class=\"ds-alt\">пока 4%</span></div></div>",
+      "css": ".ds-sub{display:flex;flex-direction:column;gap:8px;padding:24px;border:1px solid #efe3e1;border-radius:20px;background:#fff;box-shadow:0 18px 40px -18px rgba(20,8,8,.18);min-height:200px;max-width:460px;color:#1b1112} .ds-sub-l{color:#6b5b5c;font-family:\"Golos Text\",system-ui,\"Segoe UI\",Arial,sans-serif;font-size:12.5px;font-weight:500} .ds-sub-t{margin:0;font-family:Geologica,\"Golos Text\",system-ui,Arial,sans-serif;font-weight:700;font-size:32px;line-height:1.3;letter-spacing:-.02em;display:flex;flex-wrap:wrap;gap:0 .32em} .ds-sub-t em{font-family:\"Golos Text\",system-ui,\"Segoe UI\",Arial,sans-serif;font-style:normal;font-weight:600;font-size:12px;color:#d9241c;vertical-align:super;margin-left:2px} .ds-sub-m{display:flex;gap:8px;margin-top:auto;padding-top:8px;border-top:1px solid #efe3e1} .ds-alt{padding:2px 10px;border-radius:999px;background:#f8f2f1;font-family:\"Golos Text\",system-ui,\"Segoe UI\",Arial,sans-serif;font-weight:600;font-size:12px} .ds-win{background:#fdeeec}"
+    },
+    {
+      "name": "Liquid-Glass Dock",
+      "kind": "nav",
+      "refersTo": "dock-item",
+      "description": "The only glass: floating bottom bar, items magnify under the pointer, main item red.",
+      "html": "<div class=\"ds-dock-bg\"><nav class=\"ds-dock\"><a class=\"ds-di\" href=\"#\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\"><path d=\"M4 11 12 4l8 7v9H4z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/></svg></a><a class=\"ds-di ds-main\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\"><rect x=\"3\" y=\"7\" width=\"13\" height=\"10\" rx=\"2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M16 11l5-3v8l-5-3\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/></svg></a><a class=\"ds-di\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"24\" height=\"24\"><path d=\"M5 4h14v16H5zM9 8h6M9 12h6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/></svg></a></nav></div>",
+      "css": ".ds-dock-bg{padding:40px 24px;background:linear-gradient(135deg,#fdeeec,#fff 50%,#d9241c);border-radius:20px;display:grid;place-items:center} .ds-dock{position:relative;display:flex;align-items:flex-end;gap:6px;padding:8px;border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.34));-webkit-backdrop-filter:blur(20px) saturate(1.9) brightness(1.04);backdrop-filter:blur(20px) saturate(1.9) brightness(1.04);border:1px solid rgba(255,255,255,.75);box-shadow:0 16px 36px -14px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.95)} .ds-di{position:relative;display:grid;place-items:center;width:52px;height:52px;border-radius:14px;color:#1b1112;background:rgba(255,255,255,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 4px 10px -4px rgba(0,0,0,.18);transition:width .35s cubic-bezier(.16,1,.3,1),height .35s cubic-bezier(.16,1,.3,1),background-color .2s} .ds-di:hover{width:80px;height:80px;border-radius:20px;background:#fff} .ds-main{background:#d9241c;color:#fff} .ds-main:hover{background:#a3160f} .ds-di[aria-current]::after{content:\"\";position:absolute;bottom:-6px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#d9241c} .ds-di:focus-visible{outline:2px solid #1b1112;outline-offset:3px}"
+    },
+    {
+      "name": "Welcome Word",
+      "kind": "custom",
+      "refersTo": "media-frame",
+      "description": "Display-size localized word under the hero stage with a red rule that draws in.",
+      "html": "<div class=\"ds-ww-wrap\"><span class=\"ds-ww\">Xush kelibsiz</span></div>",
+      "css": ".ds-ww-wrap{text-align:center;padding:16px} .ds-ww{position:relative;display:inline-block;font-family:Geologica,\"Golos Text\",system-ui,Arial,sans-serif;font-weight:800;font-size:64px;line-height:.95;letter-spacing:-.04em;color:#1b1112;padding-bottom:.14em} .ds-ww::after{content:\"\";position:absolute;left:4%;right:4%;bottom:0;height:7px;border-radius:9px;background:#d9241c;transform-origin:left center;animation:ds-rule 1.1s cubic-bezier(.16,1,.3,1) .3s both} @keyframes ds-rule{from{transform:scaleX(0)}to{transform:scaleX(1)}} @media (prefers-reduced-motion:reduce){.ds-ww::after{animation:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Line Between Two People",
+    "overview": "**Creative North Star: \"The Line Between Two People\"**\n\nPhoenix is one conversation held on one screen, and the visual system is built around that single image: a true white ground where two people meet, and one committed vermilion red that carries meaning between them. The red is never sprinkled. It underlines the word that was just said, it marks the confidence number on a recognized sign, and at the two moments the page asks for attention it takes over a whole region: the scroll storyboard and the closing call. Everything else is ink tinted warm from that red, hairline rules, and generous air.\n\nType does the heavy lifting. Geologica at 800 weight with tight negative tracking sets the words people say, as big as subtitles in a cinema, because for a deaf reader the subtitle is the voice. Golos Text carries the reading. Media sits in large, softly rounded frames (20px and 28px) with hairline borders; reading text and subtitles always sit beside or below media, never on it. The only glass in the system is the bottom dock, an Apple-style liquid-glass bar that magnifies under the pointer; every other surface is opaque and flat.\n\nMotion is masks and rises on an exponential ease-out: the hero stage unmasks from a rounded inset, the welcome word arrives like a subtitle, the red rule draws in beneath it, and the storyboard stage changes scene as five steps scroll past. Reduced motion collapses all of it to the final state.",
+    "keyCharacteristics": [
+      "True white (#ffffff) ground; one red that owns whole regions instead of decorating small ones.",
+      "Ink and greys are tinted from the red, never neutral grey.",
+      "Heavy Geologica display with tight tracking; Golos Text for reading at 16 to 18px.",
+      "Pill controls, 20px and 28px media frames, 1px hairline rules for structure.",
+      "Flat surfaces; depth comes from the red field and a few soft ambient shadows.",
+      "The bottom dock is the only glass.",
+      "Every piece of motion is a mask, a rise, or a drawn line, on `cubic-bezier(.16,1,.3,1)`."
+    ],
+    "rules": [
+      {
+        "name": "The One Red Rule",
+        "body": "There is exactly one accent hue. Red either marks the single thing that matters in a component (the word, the number, the action) or fills an entire region. No second accent, no gradients of red, no red borders as decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tinted Ink Rule",
+        "body": "No neutral greys. Every ink, line and sunken tone carries the red's warmth (#1b1112, #6b5b5c, #efe3e1, #f8f2f1).",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink Focus Rule",
+        "body": "Focus is a 2px ink outline offset 3px, in both schemes. Red never signals focus, so it stays free to mean \"message\".",
+        "section": "colors"
+      },
+      {
+        "name": "The Subtitle Size Rule",
+        "body": "Anything a person said, signed or will hear is set in Geologica at 22px or larger. Meta about it (confidence, time, language) drops to Golos Text at 12 to 14px. Hierarchy comes from that gap.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tight Display Rule",
+        "body": "Display and headline sizes carry negative tracking from -0.025em to -0.04em and line-height at or below 1.12. Body text is never tracked.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Glass Rule",
+        "body": "`backdrop-filter` glass belongs to the bottom dock alone. Every other surface, including the sticky top bar, is opaque.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Red Field Rule",
+        "body": "Depth on the landing comes from switching ground to red, not from stacking shadows. A red field gets white type and an inverted white button, and nothing else.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** let red fill a whole region (storyboard, closing call, landing footer) when the page needs a moment, and invert the button to white-on-red there.",
+      "**Do** keep red to one meaning inside a component: the action, the said word's rule, or the confidence number.",
+      "**Do** set everything a person said or signed in Geologica at 22px or more, and keep meta in Golos Text at 12 to 14px.",
+      "**Do** separate panels with 1px hairlines (#efe3e1) and open ruled lists with a 1px ink line.",
+      "**Do** use pills for controls and 20px or 28px radii for media and panels.",
+      "**Do** animate with masks, rises and drawn rules on `cubic-bezier(.16,1,.3,1)`, and collapse everything to the end state under reduced motion.",
+      "**Do** label any rendered or demo content as such (the \"3D\" tag on the hero, \"Namoyish rejimi\", the non-commercial ASL tag).",
+      "**Do** show focus as a 2px ink outline offset 3px."
+    ],
+    "donts": [
+      "**Don't** introduce a second accent hue or red gradients; the only gradients are the Blush glow under the hero stage and the dock's glass.",
+      "**Don't** use neutral greys; every ink and rule tone is tinted from the red.",
+      "**Don't** put `backdrop-filter` glass anywhere but the dock.",
+      "**Don't** lay reading text or subtitles over live camera video or the hero render; only a small status pill in a corner (camera state, the \"3D\" tag) may sit on media.",
+      "**Don't** draw skeleton, wireframe or landmark-dot hands anywhere; signers are shown as real people or as a labelled realistic render.",
+      "**Don't** fall back to a split hero with a grid of feature cards; the landing is one story read top to bottom.",
+      "**Don't** use red to signal focus or decoration-only borders."
+    ]
+  }
+}
