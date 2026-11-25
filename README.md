@@ -133,6 +133,24 @@ docker compose up --build
 
 Server va PostgreSQL bazasi ishga tushadi, modellar birinchi ishga tushishda yuklab olinadi. Sayt: http://localhost:8000
 
+### 4-usul: Serversiz namoyish (GPU yo'q bo'lsa)
+
+```bash
+cd frontend
+python3 -m http.server 8080
+```
+
+Brauzerda http://localhost:8080 ni oching. Server topilmasa, sayt o'zi **namoyish rejimi**ga o'tadi: hamma sahifalar ishlaydi, lekin so'zlar namuna ketma-ketligidan chiqadi va ekranda "Namoyish rejimi" deb yozib turadi. Haqiqiy tanish uchun server kerak (1-3-usullar).
+
+### Ikki rejim
+
+| Rejim | Qachon | Nima bo'ladi |
+| --- | --- | --- |
+| Jonli | Server javob bersa (sayt serverning o'zida ochilgan yoki Sozlamalarda server manzili berilgan) | Kamera kadrlari serverga boradi, model haqiqiy imo-ishorani taniydi |
+| Namoyish | Server javob bermasa (standart holat) | O'sha interfeys, lekin so'zlar, gaplar va subtitrlar namuna. Hech narsa brauzerdan chiqmaydi |
+
+Rejimni **Sozlamalar > Ish rejimi** dan qo'lda ham tanlash mumkin.
+
 ### Saytni boshqa serverga ulash
 
 Sayt odatda o'zi ochilgan serverga ulanadi. Boshqa serverni ishlatish uchun saytdagi **Sozlamalar > Server manzili** maydoniga havolani yozing yoki manzil satriga `?api=https://...` qo'shing.

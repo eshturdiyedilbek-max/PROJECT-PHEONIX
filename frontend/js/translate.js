@@ -2,7 +2,8 @@
 // Sign -> text: camera frames go to WS /ws/sign as small JPEGs; the server answers with each recognized sign,
 // and on "Tugatish" with a full sentence (docs/API.md section 3, UI behaviour in frontend-resources/states.md).
 // Speech -> subtitles: the microphone is recorded in 4 s chunks and each chunk is sent to POST /api/stt.
-import { api, clientId, newClientId, wsUrl } from './api.js';
+// In demo mode (no server) the same UI runs on sample data from demo.js, and a banner says so.
+import { api, isDemo, newClientId, onModeChange, openSignSocket } from './api.js';
 import { settings } from './settings.js';
 import { RM } from './hand-model.js';
 
@@ -54,7 +55,9 @@ export function initTranslate() {
     if (!b) { b = document.createElement('div'); b.className = 'ph-banner'; b.dataset.id = id; el.banners.appendChild(b); }
     b.dataset.status = status;
     b.setAttribute('role', status === 'danger' ? 'alert' : 'status');
-    b.innerHTML = `<svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true">${status === 'danger'
+    b.innerHTML = `<svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true">${status === 'ok'
+      ? '<circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9v5.5M10 5.5V7" stroke="currentColor" stroke-width="2"/>'
+      : status === 'danger'
       ? '<circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 5.5v5.5M10 13.5V15" stroke="currentColor" stroke-width="2"/>'
       : '<path d="M10 2 19 18H1z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 8v4M10 14v1.5" stroke="currentColor" stroke-width="2"/>'}</svg>
       <div><span class="ph-banner__label">${esc(label)}</span><p>${esc(text || '')}</p></div>`;
@@ -125,6 +128,7 @@ export function initTranslate() {
   // ---------- camera ----------
   async function openCamera() {
     if (st.cam) return true;
+    if (!navigator.mediaDevices?.getUserMedia && isDemo()) return true;
     if (!navigator.mediaDevices?.getUserMedia) {
       banner('cam', 'danger', 'Kamera ishlamaydi', "Brauzer kamerani qo'llab-quvvatlamaydi yoki sahifa xavfsiz (https) manzilda ochilmagan.");
       return false;
@@ -134,6 +138,12 @@ export function initTranslate() {
       st.cam = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
     } catch (e) {
       const denied = e && (e.name === 'NotAllowedError' || e.name === 'SecurityError');
+      if (isDemo()) {   // the demo does not need the picture, so carry on without it
+        el.camState.textContent = 'Kamerasiz namoyish';
+        el.empty.querySelector('.heading').textContent = 'Kamerasiz namoyish';
+        el.empty.querySelector('.body-sm').textContent = "Kamera ochilmadi, lekin namoyish shu holatda ham ishlaydi.";
+        return true;
+      }
       banner('cam', 'danger', denied ? 'Kameraga ruxsat berilmadi' : 'Kamera topilmadi',
         denied ? "Brauzer manzil satridagi kamera belgisini bosib, ruxsat bering." : "Kamera ulanganini va boshqa dastur ishlatmayotganini tekshiring.");
       status('off');
@@ -188,7 +198,7 @@ export function initTranslate() {
     st.wantOpen = true; st.ready = false;
     status('connecting');
     let ws;
-    try { ws = new WebSocket(wsUrl('ws/sign', { client_id: clientId(), lang: st.sign })); }
+    try { ws = openSignSocket(st.sign); }
     catch (e) { banner('server', 'danger', "Server bilan aloqa yo'q", 'Server manzilini Sozlamalarda tekshiring.'); return; }
     st.ws = ws;
     let fatal = null;   // an error that means "don't reconnect"
@@ -319,6 +329,12 @@ export function initTranslate() {
   const mic = { stream: null, rec: null, on: false, ctx: null, analyser: null, peak: 0, raf: 0, queue: Promise.resolve() };
 
   async function micOn() {
+    if (isDemo()) {   // no microphone in demo mode: sample replies from demo.js every few seconds
+      mic.on = true; mic.demo = true;
+      const tick = () => { if (!mic.on) return; api.stt(null, { saveHistory: settings.get('saveHistory') }).then(addSubtitle); mic.timer = setTimeout(tick, CHUNK_MS + 800); };
+      mic.timer = setTimeout(tick, 1200);
+      return true;
+    }
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
       banner('mic', 'danger', 'Mikrofon ishlamaydi', "Bu brauzer ovoz yozishni qo'llab-quvvatlamaydi."); return false;
     }
@@ -379,13 +395,15 @@ export function initTranslate() {
     el.subText.classList.add('show');
     el.subText.appendChild(line);
     while (el.subText.textContent.length > 600) el.subText.firstChild.remove();   // keep the last few lines
-    $('#privacy').textContent = r.engine === 'gemini'
+    $('#privacy').textContent = r.engine === 'demo'
+      ? 'Namoyish rejimi: mikrofon ishlatilmaydi, subtitrlar namuna.'
+      : r.engine === 'gemini'
       ? "Ovoz Google'ning Gemini xizmatida matnga aylantiriladi."
       : 'Ovoz serverdagi Whisper modelida matnga aylantiriladi.';
   }
 
   function micOff() {
-    mic.on = false; cancelAnimationFrame(mic.raf);
+    mic.on = false; mic.demo = false; clearTimeout(mic.timer); cancelAnimationFrame(mic.raf);
     if (mic.rec?.state === 'recording') mic.rec.stop();
     mic.stream?.getTracks().forEach(t => t.stop()); mic.stream = null;
     mic.ctx?.close().catch(() => {}); mic.ctx = null; mic.analyser = null;
@@ -405,6 +423,7 @@ export function initTranslate() {
       const [h, l] = await Promise.all([api.health(), api.languages().catch(() => null)]);
       st.health = h; st.languages = l;
       banner('server');
+      showModeBanner();
       if (l) l.sign_languages.forEach(x => {
         const r = document.querySelector(`input[name=sign][value="${x.code}"]`);
         if (!r) return;
@@ -418,6 +437,12 @@ export function initTranslate() {
       banner('server', 'danger', "Server bilan aloqa yo'q", e.message, { label: 'Qayta tekshirish', run: checkServer });
     }
   }
+
+  function showModeBanner() {
+    if (isDemo()) banner('mode', 'ok', 'Namoyish rejimi', "Server ulanmagan, shuning uchun so'zlar namuna ketma-ketligidan chiqadi va haqiqiy imo-ishora tanilmaydi. Haqiqiy tanish uchun Sozlamalar > Server manziliga Colab havolasini qo'ying.", { label: 'Sozlamalar', run: () => { location.hash = '#sozlamalar'; } });
+    else banner('mode');
+  }
+  onModeChange(() => { if (st.live) stopAll(); showModeBanner(); checkServer(); });
 
   function checkModel() {
     const h = st.health; if (!h) return;

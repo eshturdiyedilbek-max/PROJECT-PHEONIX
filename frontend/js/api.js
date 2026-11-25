@@ -1,5 +1,8 @@
 // Talking to the Phoenix backend (docs/API.md). No login: each browser keeps a random id.
+// Two modes: "live" talks to the server; "demo" (the default when no server answers) runs everything
+// in the browser with sample data from demo.js, so the site always opens.
 import { settings } from './settings.js';
+import { DemoSocket, demoApi } from './demo.js';
 
 const ID_KEY = 'phoenix_client_id';
 
@@ -78,7 +81,7 @@ export async function request(path, { method = 'GET', body, json, query, timeout
   return data;
 }
 
-export const api = {
+const liveApi = {
   health: () => request('api/health', { timeout: 8000 }),
   languages: () => request('api/languages', { timeout: 8000 }),
   dictionary: q => request('api/dictionary', { query: q }),
@@ -101,3 +104,33 @@ export const api = {
     return request('api/contributions', { method: 'POST', body: f, timeout: 60000 });
   }
 };
+
+// ---------- mode ----------
+let mode = 'demo';
+const modeListeners = new Set();
+export const getMode = () => mode;
+export const isDemo = () => mode === 'demo';
+export const onModeChange = fn => modeListeners.add(fn);
+
+/**
+ * Settings > "Ish rejimi": auto (default) | live | demo.
+ * auto = live if the server (Settings > Server, else this site's own server) answers /api/health within 3 s, else demo.
+ */
+export async function resolveMode() {
+  const pref = settings.get('mode') || 'auto';
+  let next = pref;
+  if (pref === 'auto') {
+    try { const h = await request('api/health', { timeout: 3000 }); next = h && h.status === 'ok' ? 'live' : 'demo'; } catch (e) { next = 'demo'; }
+  }
+  if (next !== mode) { mode = next; modeListeners.forEach(fn => fn(mode)); }
+  document.documentElement.dataset.mode = mode;
+  return mode;
+}
+
+/** The API for the current mode; same methods and response shapes in both. */
+export const api = new Proxy({}, { get: (_, k) => (mode === 'demo' ? demoApi : liveApi)[k] });
+
+/** WS /ws/sign in live mode, an in-browser stand-in with the same messages in demo mode. */
+export function openSignSocket(lang) {
+  return mode === 'demo' ? new DemoSocket(lang) : new WebSocket(wsUrl('ws/sign', { client_id: clientId(), lang }));
+}

@@ -1,6 +1,6 @@
 // Phoenix website entry: page router (#landing, #translate, #learn, #history, #sozlamalar), entrance animation, page setup.
 import { applyTheme, initSettingsView, settings } from './settings.js';
-import { api, apiBase } from './api.js';
+import { api, apiBase, getMode, resolveMode } from './api.js';
 import { initHero3d } from './hero3d.js';
 import { initTranslate } from './translate.js';
 import { initLearn } from './learn.js';
@@ -64,11 +64,13 @@ async function loadDemoVideo() {
 async function checkApi() {
   const out = $('#api-status'); if (!out) return;
   out.textContent = 'Tekshirilmoqda…';
+  await resolveMode();
+  if (getMode() === 'demo') { out.textContent = "Hozir namoyish rejimi: server ishlatilmayapti."; return; }
   try { const h = await api.health(); out.textContent = `Ulandi: ${apiBase()} (versiya ${h.version})`; }
   catch (e) { out.textContent = `Ulanib bo'lmadi: ${apiBase()}`; }
 }
 
-function init() {
+async function init() {
   applyTheme();
   initSettingsView();
   pages.translate = initTranslate();
@@ -77,11 +79,12 @@ function init() {
   pages.sozlamalar = { enter: checkApi };
   initHero3d();
   $('#to-how')?.addEventListener('click', () => $('#how').scrollIntoView({ behavior: RM ? 'auto' : 'smooth' }));
+  intro();
+  await resolveMode();   // live if a server answers, else demo (the site always opens)
   addEventListener('hashchange', route);
   route();
-  intro();
   loadDemoVideo();
-  settings.onChange(k => { if (k === 'api') checkApi(); });
+  settings.onChange(k => { if (k === 'api' || k === 'mode') checkApi(); });
 }
 
 init();

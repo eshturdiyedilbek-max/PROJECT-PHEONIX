@@ -8,7 +8,8 @@ const DEFAULTS = {
   speechLang: 'auto',   // hearing person's language for subtitles
   saveHistory: true,
   theme: 'auto',
-  api: ''               // custom server URL, e.g. the Colab tunnel; empty = same server
+  api: '',              // custom server URL, e.g. the Colab tunnel; empty = same server
+  mode: 'auto'          // auto | live | demo (see api.js resolveMode)
 };
 
 let state = { ...DEFAULTS };
