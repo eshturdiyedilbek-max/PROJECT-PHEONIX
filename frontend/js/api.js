@@ -1,5 +1,9 @@
 // Talking to the Phoenix backend (docs/API.md). No login: each browser keeps a random id.
+// Two modes: "live" talks to the server; "demo" (the default when no server answers) runs everything
+// in the browser with sample data from demo.js, so the site always opens.
+import { t } from './i18n.js';
 import { settings } from './settings.js';
+import { DemoSocket, demoApi } from './demo.js';
 
 const ID_KEY = 'phoenix_client_id';
 
@@ -41,18 +45,8 @@ export class ApiError extends Error {
   constructor(status, code, message) { super(message || code); this.status = status; this.code = code; }
 }
 
-// Uzbek messages for REST error codes (frontend-resources/states.md).
-export const ERROR_TEXT = {
-  invalid_client_id: "Bu qurilmada nimadir xato ketdi. Sahifani yangilang.",
-  invalid_request: "Kiritilgan ma'lumotni tekshiring.",
-  not_found: "Bu yozuv endi yo'q.",
-  file_too_large: "Fayl juda katta.",
-  unsupported_media_type: "Bu fayl turi qo'llab-quvvatlanmaydi.",
-  internal_error: "Serverda xato chiqdi. Qaytadan urinib ko'ring.",
-  upstream_error: "Nutq xizmati band. Qaytadan urinib ko'ring.",
-  model_unavailable: "Tarjima hozircha ishlamayapti.",
-  network: "Server bilan aloqa yo'q. Server manzilini Sozlamalarda tekshiring."
-};
+// Messages for REST error codes (frontend-resources/states.md), in the current site language.
+const ERROR_TEXT = code => { const k = 'err.' + code, m = t(k); return m === k ? null : m; };
 
 export async function request(path, { method = 'GET', body, json, query, timeout = 30000 } = {}) {
   const u = new URL(path, apiBase() + '/');
@@ -65,7 +59,7 @@ export async function request(path, { method = 'GET', body, json, query, timeout
   try {
     res = await fetch(u, { method, headers, body, signal: ctl.signal });
   } catch (e) {
-    throw new ApiError(0, 'network', ERROR_TEXT.network);
+    throw new ApiError(0, 'network', ERROR_TEXT('network'));
   } finally { clearTimeout(timer); }
   if (res.status === 204) return null;
   let data = null;
@@ -73,12 +67,12 @@ export async function request(path, { method = 'GET', body, json, query, timeout
   if (!res.ok) {
     const code = data?.error?.code || 'internal_error';
     if (code === 'invalid_client_id') newClientId();
-    throw new ApiError(res.status, code, ERROR_TEXT[code] || data?.error?.message);
+    throw new ApiError(res.status, code, ERROR_TEXT(code) || data?.error?.message);
   }
   return data;
 }
 
-export const api = {
+const liveApi = {
   health: () => request('api/health', { timeout: 8000 }),
   languages: () => request('api/languages', { timeout: 8000 }),
   dictionary: q => request('api/dictionary', { query: q }),
@@ -101,3 +95,33 @@ export const api = {
     return request('api/contributions', { method: 'POST', body: f, timeout: 60000 });
   }
 };
+
+// ---------- mode ----------
+let mode = 'demo';
+const modeListeners = new Set();
+export const getMode = () => mode;
+export const isDemo = () => mode === 'demo';
+export const onModeChange = fn => modeListeners.add(fn);
+
+/**
+ * Settings > "Ish rejimi": auto (default) | live | demo.
+ * auto = live if the server (Settings > Server, else this site's own server) answers /api/health within 3 s, else demo.
+ */
+export async function resolveMode() {
+  const pref = settings.get('mode') || 'auto';
+  let next = pref;
+  if (pref === 'auto') {
+    try { const h = await request('api/health', { timeout: 3000 }); next = h && h.status === 'ok' ? 'live' : 'demo'; } catch (e) { next = 'demo'; }
+  }
+  if (next !== mode) { mode = next; modeListeners.forEach(fn => fn(mode)); }
+  document.documentElement.dataset.mode = mode;
+  return mode;
+}
+
+/** The API for the current mode; same methods and response shapes in both. */
+export const api = new Proxy({}, { get: (_, k) => (mode === 'demo' ? demoApi : liveApi)[k] });
+
+/** WS /ws/sign in live mode, an in-browser stand-in with the same messages in demo mode. */
+export function openSignSocket(lang) {
+  return mode === 'demo' ? new DemoSocket(lang) : new WebSocket(wsUrl('ws/sign', { client_id: clientId(), lang }));
+}

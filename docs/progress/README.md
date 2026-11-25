@@ -2,6 +2,16 @@
 
 Loyiha qanday rivojlangani rasmlarda. Eng yangisi tepada.
 
+## 4. Yangi dizayn: oq va qizil (2026-11-25)
+
+Toza oq fon, bitta qizil rang, ikki kishining "xush kelibsiz" degan 3D qo'llari, uch til va pastda shisha dock. Rasmlar namoyish rejimida (serversiz) olingan.
+
+| | |
+| --- | --- |
+| ![Bosh sahifa](30-yangi-bosh-sahifa.png) Bosh sahifa: 3D qo'llar va "Xush kelibsiz" | ![Storyboard](31-yangi-storyboard.png) Aylantirganda storyboard: "So'zlardan to'liq gap" |
+| ![Tarjima](32-yangi-tarjima.png) Tarjima sahifasi, namoyish rejimi | ![Lug'at](33-yangi-lugat.png) Lug'at |
+| ![Ruscha](35-yangi-ruscha.png) Til RU ga o'zgartirilgan: butun sahifa ruscha | ![Telefonda](34-yangi-telefonda.png) Telefon ekranida bosh sahifa |
+
 ## 3. Haqiqiy sayt, serverga ulangan (2026-11-25)
 
 Tanlangan dizayn asosida yasalgan va backendga ulangan sayt. Rasmlar lokal sinovda olingan: kamera o'rnida brauzerning sinov tasviri (yashil fon), imo-ishora modeli o'rnida so'zlarni navbat bilan qaytaradigan sinov modeli. Shuning uchun so'zlar va "Server sekin ishlayapti" ogohlantirishi sinov ma'lumotlari. Haqiqiy model Colab GPU'da ishlaydi.

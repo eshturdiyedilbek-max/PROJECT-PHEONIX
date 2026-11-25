@@ -10,8 +10,8 @@
 <link rel="stylesheet" href="css/app.css">
 <script>
   // Before first paint: theme from settings, and hide entrance items until the intro runs.
-  try { const t = JSON.parse(localStorage.getItem('phoenix_settings') || '{}').theme; if (t && t !== 'auto') document.documentElement.dataset.theme = t; } catch (e) {}
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('phx-pre');
+  try { const t = JSON.parse(localStorage.getItem('phoenix_settings') || '{}').theme || 'light'; if (t !== 'auto') document.documentElement.dataset.theme = t; } catch (e) {}
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !/[?&]motion=off\b/.test(location.search)) document.documentElement.classList.add('phx-pre');
 </script>
 </head>
 <body>
@@ -19,81 +19,112 @@
   <div class="phx-intro-in">
     <svg class="logo-draw" viewBox="0 14 96 82" aria-hidden="true"><path d="M46 96A46 46 0 0 0 0 50" fill="none" stroke="currentColor" stroke-width="12"/><path d="M50 96A46 46 0 0 1 96 50" fill="none" stroke="currentColor" stroke-width="12"/><path d="M76 96A76 76 0 0 0 0 20" fill="none" stroke="currentColor" stroke-width="12"/><path d="M20 96A76 76 0 0 1 96 20" fill="none" stroke="currentColor" stroke-width="12"/></svg>
     <div class="phx-intro-mark">Phoenix</div>
-    <div class="phx-intro-sub">imo-ishora · matn · ovoz</div>
+    <div class="phx-intro-sub" data-i18n="intro.sub">imo-ishora · matn · ovoz</div>
   </div>
 </div>
 
 <header class="top" data-intro><div class="wrap">
-  <a class="brand" href="#landing" aria-label="Phoenix, bosh sahifa">
+  <a class="brand" href="#landing" data-i18n-aria="brand.home">
     <svg viewBox="0 14 96 82" aria-hidden="true"><path d="M46 96A46 46 0 0 0 0 50M50 96A46 46 0 0 1 96 50M76 96A76 76 0 0 0 0 20M20 96A76 76 0 0 1 96 20" fill="none" stroke="var(--accent)" stroke-width="12"/></svg>
     <span class="title">Phoenix</span>
   </a>
-  <nav class="nav" aria-label="Asosiy"><a href="#translate">Tarjima</a><a href="#learn">Lug'at</a><a href="#history">Tarix</a><a href="#sozlamalar">Sozlamalar</a></nav>
+  <a class="ph-tag mode-tag" href="#sozlamalar" data-i18n="mode.tag" data-i18n-title="mode.tagTitle">Namoyish rejimi</a>
+  <div class="langs" role="group" data-i18n-aria="lang.label">
+    <button type="button" data-ui-lang="uz" aria-pressed="true">UZ</button><button type="button" data-ui-lang="ru" aria-pressed="false">RU</button><button type="button" data-ui-lang="en" aria-pressed="false">EN</button>
+  </div>
 </div></header>
 
 <main>
 <!-- ============ BOSH SAHIFA ============ -->
-<section data-view="landing">
+<section id="landing" data-view="landing">
   <div class="wrap hero">
-    <div class="hero-copy">
-      <span class="eyebrow caption" data-intro>Rus va amerika imo-ishora tili → o'zbek, rus, ingliz</span>
-      <h1 data-intro>Imo-ishorani matnga va ovozga aylantiradi</h1>
-      <p class="lead" data-intro>Kameraga imo-ishora qiling. Phoenix har bir so'zni taniydi, gap tuzadi va uni tanlangan tilda ko'rsatib, ovoz chiqarib o'qiydi.</p>
-      <div class="row" data-intro>
-        <a class="ph-btn ph-btn--big" href="#translate">Sinab ko'rish <svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
-        <button class="ph-btn ph-btn--quiet ph-btn--big" type="button" id="to-how">Qanday ishlaydi</button>
+    <figure class="welcome">
+      <!-- 3D render: two people's hands sign "welcome" (js/hero-hands.js). -->
+      <div class="welcome-stage" id="welcome-stage" data-i18n-aria="hero.videoAria" role="img">
+        <span class="render-tag caption" data-i18n="hero.render"></span>
       </div>
-      <p class="caption muted" data-intro>Ro'yxatdan o'tish shart emas. Kamera brauzerda yoqiladi.</p>
-    </div>
-    <div class="stage3d" data-intro>
-      <canvas id="hand3d" tabindex="0" aria-label="Uch o'lchamli qo'l skeleti. Aylantirish uchun suring yoki chap va o'ng tugmalarini bosing."></canvas>
-      <div class="stage3d-label" aria-live="polite"><span class="w3" id="hand3d-word">привет</span><span class="t3" id="hand3d-tr">Salom</span></div>
-      <span class="stage3d-hint caption"><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h14M6 7l-3 3 3 3M14 7l3 3-3 3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Aylantirish uchun suring</span>
-      <span class="stage3d-tag caption">21 nuqta · 3D</span>
-    </div>
-  </div>
-
-  <div class="wrap block" id="demo">
-    <div class="block-head"><h2 class="title">Jonli namoyish</h2><p class="muted">Phoenix haqiqiy suhbatda qanday ishlashi.</p></div>
-    <!-- Demo video: put the file at frontend/assets/demo/demo.mp4 and it appears here automatically. -->
-    <div class="video-slot" id="video-slot">
-      <div class="video-empty">
-        <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 16l12 8-12 8z" fill="currentColor"/></svg>
-        <span class="heading">Demo video tez orada</span>
-        <span class="body-sm muted">Bu yerga loyihaning haqiqiy namoyish videosi qo'yiladi.</span>
+      <figcaption>
+        <span class="welcome-word" id="welcome-word" data-i18n="hero.welcome"></span>
+        <span class="welcome-sub caption" data-i18n="hero.welcomeSign"></span>
+      </figcaption>
+    </figure>
+    <div class="hero-row">
+      <div class="hero-copy">
+        <h1 data-intro data-i18n="hero.title"></h1>
+        <p class="lead" data-intro data-i18n="hero.lead"></p>
+      </div>
+      <div class="hero-act" data-intro>
+        <a class="ph-btn ph-btn--big" href="#translate"><span data-i18n="hero.try"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
+        <button class="ph-btn ph-btn--quiet ph-btn--big" type="button" id="to-how" data-i18n="hero.how"></button>
+        <p class="caption muted" data-i18n="hero.note"></p>
       </div>
     </div>
   </div>
 
-  <div class="wrap block" id="how">
-    <div class="block-head"><h2 class="title">Ichida nima bor</h2><p class="muted">Kameradan ovozgacha to'rt qadam.</p></div>
-    <ol class="flow">
-      <li class="node"><span class="node-k caption">Kamera</span><h3 class="heading">Kadrlar oqimi</h3><p class="body-sm muted">Brauzer kameradan kadrlarni WebSocket orqali serverga uzatadi.</p></li>
-      <li class="node"><span class="node-k caption">Tanish</span><h3 class="heading">Video-transformer</h3><p class="body-sm muted">Model 32 kadrlik oynani ko'rib, so'zni va bir nechta muqobilini ishonch foizi bilan beradi.</p></li>
-      <li class="node"><span class="node-k caption">Gap</span><h3 class="heading">Gemini</h3><p class="body-sm muted">Tanilgan so'zlar tabiiy gapga yig'iladi va o'zbek, rus yoki ingliz tiliga o'giriladi.</p></li>
-      <li class="node"><span class="node-k caption">Natija</span><h3 class="heading">Ovoz va subtitr</h3><p class="body-sm muted">Gap ovoz chiqarib o'qiladi. Eshituvchining javobi subtitr bo'lib qaytadi.</p></li>
-    </ol>
+  <!-- Scroll storyboard: the stage stays in view while the five steps scroll past -->
+  <div class="story" id="how">
+    <div class="wrap story-head">
+      <h2 class="story-title" data-i18n="story.title"></h2>
+      <p class="story-lead" data-i18n="story.lead"></p>
+    </div>
+    <div class="wrap story-grid">
+      <div class="story-stage-wrap">
+        <div class="story-stage" id="story-stage" data-scene="1" aria-hidden="true">
+          <div class="sc sc-cam">
+            <span class="sc-rec"><i></i><span data-i18n="story.cam"></span></span>
+            <span class="sc-corners"><i></i><i></i><i></i><i></i></span>
+            <span class="sc-frames"><b id="story-fps">15</b> <span data-i18n="tx.fps"></span></span>
+            <span class="sc-stream"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          </div>
+          <div class="sc sc-words"><span class="sc-chip" style="--i:0">привет <em>91%</em></span><span class="sc-chip" style="--i:1">я <em>88%</em></span><span class="sc-chip" style="--i:2">врач <em>86%</em></span></div>
+          <p class="sc sc-sentence" data-i18n="story.sentence"></p>
+          <div class="sc sc-voice"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="sc-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+          <p class="sc sc-reply"><span class="caption" data-i18n="tx.fromSpeech"></span><span class="sc-reply-t" data-i18n="story.reply"></span></p>
+          <ol class="sc-progress"><li></li><li></li><li></li><li></li><li></li></ol>
+          <span class="sc-sample caption" data-i18n="story.sample"></span>
+        </div>
+      </div>
+      <ol class="story-steps">
+        <li class="step" data-step="1"><h3 data-i18n="story.s1.t"></h3><p data-i18n="story.s1.p"></p></li>
+        <li class="step" data-step="2"><h3 data-i18n="story.s2.t"></h3><p data-i18n="story.s2.p"></p></li>
+        <li class="step" data-step="3"><h3 data-i18n="story.s3.t"></h3><p data-i18n="story.s3.p"></p></li>
+        <li class="step" data-step="4"><h3 data-i18n="story.s4.t"></h3><p data-i18n="story.s4.p"></p></li>
+        <li class="step" data-step="5"><h3 data-i18n="story.s5.t"></h3><p data-i18n="story.s5.p"></p></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="wrap block" id="demo" hidden>
+    <div class="block-head"><h2 class="title" data-i18n="demo.title"></h2><p class="muted" data-i18n="demo.sub"></p></div>
+    <div class="video-slot" id="video-slot"></div>
   </div>
 
   <div class="wrap block">
-    <div class="block-head"><h2 class="title">Nimasi yangi</h2></div>
+    <h2 class="block-title" data-reveal data-i18n="news.title"></h2>
     <dl class="news">
-      <dt>Ikki tomonlama suhbat</dt><dd>Imo-ishora qiluvchi ham, gapiruvchi ham bitta ekranda bir-birining gapini matn ko'rinishida o'qiydi.</dd>
-      <dt>So'zlardan to'liq gap</dt><dd>Imo-ishora tilida grammatika boshqacha. Gemini tanilgan so'zlarni odatdagi gapga aylantiradi.</dd>
-      <dt>O'zbekcha natija</dt><dd>Rus va amerika imo-ishoralari o'zbek tilida matn va ovoz bo'lib chiqadi.</dd>
-      <dt>Bepul GPU</dt><dd>Tanish modeli Google Colab'ning bepul T4 GPU'sida ishga tushadi.</dd>
-      <dt>Hisobsiz</dt><dd>Login yo'q. Tarix shu brauzerga bog'langan.</dd>
+      <div data-reveal><dt data-i18n="news.1t"></dt><dd data-i18n="news.1d"></dd></div>
+      <div data-reveal><dt data-i18n="news.2t"></dt><dd data-i18n="news.2d"></dd></div>
+      <div data-reveal><dt data-i18n="news.3t"></dt><dd data-i18n="news.3d"></dd></div>
+      <div data-reveal><dt data-i18n="news.4t"></dt><dd data-i18n="news.4d"></dd></div>
+      <div data-reveal><dt data-i18n="news.5t"></dt><dd data-i18n="news.5d"></dd></div>
     </dl>
-    <div class="row cta-end"><a class="ph-btn ph-btn--big" href="#translate">Sinab ko'rish</a></div>
+  </div>
+
+  <div class="close">
+    <div class="wrap close-in" data-reveal>
+      <p class="close-word" data-i18n="hero.welcome"></p>
+      <p class="close-lead" data-i18n="close.lead"></p>
+      <a class="ph-btn ph-btn--big ph-btn--invert" href="#translate"><span data-i18n="hero.try"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
+    </div>
   </div>
 </section>
 
 <!-- ============ TARJIMA ============ -->
-<section data-view="translate" hidden>
+<section id="translate" data-view="translate" hidden>
   <div class="wrap tx">
     <div class="tx-head">
-      <h1 class="title">Tarjima</h1>
-      <span class="ph-tag demo-tag" data-status="warn"><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 19 18H1z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 8v4M10 14v1.5" stroke="currentColor" stroke-width="2"/></svg>Faqat namoyish, tijorat uchun emas</span>
+      <h1 class="title" data-i18n="tx.title"></h1>
+      <span class="ph-tag demo-tag" data-status="warn"><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 19 18H1z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 8v4M10 14v1.5" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="tx.demoTag"></span></span>
     </div>
     <div class="banners" id="tx-banners" aria-live="polite"></div>
     <div class="tx-grid">
@@ -102,24 +133,24 @@
           <video id="cam" playsinline muted autoplay hidden></video>
           <div class="cam-empty" id="cam-empty">
             <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="12" width="30" height="24" rx="4" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M34 21l10-6v18l-10-6z" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
-            <span class="heading">Kamera o'chiq</span>
-            <span class="body-sm">"Boshlash" tugmasini bosing. Brauzer kameraga ruxsat so'raydi.</span>
+            <span class="heading" id="cam-empty-title" data-i18n="tx.camOff"></span>
+            <span class="body-sm" id="cam-empty-hint" data-i18n="tx.camHint"></span>
           </div>
-          <span class="chip"><span class="dot off" id="cam-dot"></span><span id="cam-state">Kamera o'chiq</span></span>
+          <span class="chip"><span class="dot off" id="cam-dot"></span><span id="cam-state" data-i18n="tx.camOff"></span></span>
         </div>
-        <div class="frame-meta caption"><span id="sign-name">RSL · Rus imo-ishora tili</span><span><span id="fps">0</span> kadr/s</span></div>
+        <div class="frame-meta caption"><span id="sign-name"></span><span><span id="fps">0</span> <span data-i18n="tx.fps"></span></span></div>
         <div class="run">
-          <button class="ph-btn ph-btn--big" id="btn-start" type="button">Boshlash</button>
-          <button class="ph-btn ph-btn--quiet ph-btn--big" id="btn-stop" type="button" disabled>Tugatish va gap tuzish</button>
-          <button class="ph-btn ph-btn--quiet ph-btn--big" id="btn-reset" type="button" disabled>Tozalash</button>
+          <button class="ph-btn ph-btn--big" id="btn-start" type="button" data-i18n="tx.start"></button>
+          <button class="ph-btn ph-btn--quiet ph-btn--big" id="btn-stop" type="button" disabled data-i18n="tx.finish"></button>
+          <button class="ph-btn ph-btn--quiet ph-btn--big" id="btn-reset" type="button" disabled data-i18n="tx.reset"></button>
         </div>
       </div>
       <div class="controls">
-        <fieldset class="seg" id="sign-picker"><legend>Kamera taniydigan til</legend>
-          <label class="opt"><input type="radio" name="sign" value="rsl" checked><span><span class="n">Русский жестовый язык</span><br><small>1000 ta imo-ishora</small></span></label>
-          <label class="opt"><input type="radio" name="sign" value="asl"><span><span class="n">American Sign Language</span><br><small>2000 ta imo-ishora</small></span></label>
+        <fieldset class="seg" id="sign-picker"><legend data-i18n="tx.signLang"></legend>
+          <label class="opt"><input type="radio" name="sign" value="rsl" checked><span><span class="n">Русский жестовый язык</span><br><small data-count="1000"></small></span></label>
+          <label class="opt"><input type="radio" name="sign" value="asl"><span><span class="n">American Sign Language</span><br><small data-count="2000"></small></span></label>
         </fieldset>
-        <fieldset class="seg"><legend>Gap tili</legend>
+        <fieldset class="seg"><legend data-i18n="tx.target"></legend>
           <label class="opt"><input type="radio" name="tgt" value="uz" checked><span class="n">O'zbekcha</span></label>
           <label class="opt"><input type="radio" name="tgt" value="ru"><span class="n">Русский</span></label>
           <label class="opt"><input type="radio" name="tgt" value="en"><span class="n">English</span></label>
@@ -127,24 +158,24 @@
       </div>
       <div class="panels">
         <section class="ph-subtitle" aria-live="polite" lang="ru" id="sign-panel">
-          <div class="ph-subtitle__label caption"><span>Imo-ishoradan</span><span class="ph-subtitle__listening"><span class="ring" id="ring" hidden></span><span id="status">Kamera o'chiq</span></span></div>
+          <div class="ph-subtitle__label caption"><span data-i18n="tx.fromSign"></span><span class="ph-subtitle__listening"><span class="ring" id="ring" hidden></span><span id="status"></span></span></div>
           <p class="ph-subtitle__text" id="words"></p>
           <div class="result">
             <p class="sent" id="sentence"></p>
             <span class="caption muted" id="sentence-meta"></span>
           </div>
-          <span class="making caption" id="making" hidden><span class="ring"></span>Gap tuzilmoqda…</span>
-          <div class="ph-subtitle__meta"><span>Ishonch <span id="conf-val">–</span></span><ul id="top3"></ul></div>
+          <span class="making caption" id="making" hidden><span class="ring"></span><span data-i18n="tx.making"></span></span>
+          <div class="ph-subtitle__meta"><span><span data-i18n="tx.conf"></span> <span id="conf-val">–</span></span><ul id="top3"></ul></div>
         </section>
         <div class="actions">
-          <button class="ph-btn ph-btn--quiet" id="btn-tr" type="button" aria-pressed="true"><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5h11M7 2v3M4 5c1 4 3 7 7 8M11 5c-1 4-3 7-8 9M13 22l4-10 4 10M14.5 18.5h5" fill="none" stroke="currentColor" stroke-width="2"/></svg>Gap tuzish<span class="state"></span></button>
-          <button class="ph-btn ph-btn--quiet" id="btn-sub" type="button" aria-pressed="false"><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="13" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 11a8 8 0 0 0 16 0M12 19v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>Subtitr<span class="state"></span></button>
-          <button class="ph-btn ph-btn--quiet" id="btn-say" type="button" disabled><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 8a5 5 0 0 1 0 8" fill="none" stroke="currentColor" stroke-width="2"/></svg>Qayta o'qish</button>
+          <button class="ph-btn ph-btn--quiet" id="btn-tr" type="button" aria-pressed="true"><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5h11M7 2v3M4 5c1 4 3 7 7 8M11 5c-1 4-3 7-8 9M13 22l4-10 4 10M14.5 18.5h5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="tx.smooth"></span><span class="state"></span></button>
+          <button class="ph-btn ph-btn--quiet" id="btn-sub" type="button" aria-pressed="false"><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="13" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 11a8 8 0 0 0 16 0M12 19v3" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="tx.sub"></span><span class="state"></span></button>
+          <button class="ph-btn ph-btn--quiet" id="btn-say" type="button" disabled><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 8a5 5 0 0 1 0 8" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="tx.say"></span></button>
         </div>
         <section class="ph-subtitle speech" id="sub-panel" aria-live="polite" hidden>
-          <div class="ph-subtitle__label caption"><span>Eshituvchi nutqidan</span><span class="ph-subtitle__listening"><span class="bars" id="mic-bars"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i></span><span id="mic-state">Tinglanmoqda…</span></span></div>
+          <div class="ph-subtitle__label caption"><span data-i18n="tx.fromSpeech"></span><span class="ph-subtitle__listening"><span class="bars" id="mic-bars"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i></span><span id="mic-state" data-i18n="tx.listening"></span></span></div>
           <p id="sub-text"></p>
-          <p class="privacy caption" id="privacy">Ovoz serverda matnga aylantiriladi. Gemini ishlatilsa, ovoz Google xizmatiga yuboriladi.</p>
+          <p class="privacy caption" id="privacy" data-i18n="tx.privacy"></p>
         </section>
       </div>
     </div>
@@ -152,72 +183,86 @@
 </section>
 
 <!-- ============ LUG'AT ============ -->
-<section data-view="learn" hidden>
+<section id="learn" data-view="learn" hidden>
   <div class="wrap page">
-    <h1 class="title">Lug'at</h1>
-    <p class="intro">Phoenix taniy oladigan barcha imo-ishoralar. Video namunalar keyinroq qo'shiladi.</p>
-    <form class="search" id="learn-form" role="search"><input id="q" placeholder="Qidirish: привет, вода, hello" aria-label="Lug'atdan qidirish"><button class="ph-btn" type="submit">Qidirish</button></form>
+    <h1 class="title" data-i18n="learn.title"></h1>
+    <p class="intro" data-i18n="learn.intro"></p>
+    <form class="search" id="learn-form" role="search"><input id="q" data-i18n-ph="learn.ph" data-i18n-aria="learn.searchAria"><button class="ph-btn" type="submit" data-i18n="learn.search"></button></form>
     <div class="filters">
-      <fieldset class="seg"><legend>Til</legend>
+      <fieldset class="seg"><legend data-i18n="learn.lang"></legend>
         <label class="opt"><input type="radio" name="dlang" value="rsl" checked><span class="n">RSL</span></label>
         <label class="opt"><input type="radio" name="dlang" value="asl"><span class="n">ASL</span></label>
       </fieldset>
-      <fieldset class="seg"><legend>Turi</legend>
-        <label class="opt"><input type="radio" name="dcat" value=""><span class="n">Hammasi</span></label>
-        <label class="opt"><input type="radio" name="dcat" value="word" checked><span class="n">So'z</span></label>
-        <label class="opt"><input type="radio" name="dcat" value="phrase"><span class="n">Ibora</span></label>
-        <label class="opt"><input type="radio" name="dcat" value="letter"><span class="n">Harf</span></label>
+      <fieldset class="seg"><legend data-i18n="learn.type"></legend>
+        <label class="opt"><input type="radio" name="dcat" value=""><span class="n" data-i18n="learn.all"></span></label>
+        <label class="opt"><input type="radio" name="dcat" value="word" checked><span class="n" data-i18n="cat.word"></span></label>
+        <label class="opt"><input type="radio" name="dcat" value="phrase"><span class="n" data-i18n="cat.phrase"></span></label>
+        <label class="opt"><input type="radio" name="dcat" value="letter"><span class="n" data-i18n="cat.letter"></span></label>
       </fieldset>
     </div>
     <p class="caption muted" id="learn-total"></p>
     <div id="learn-grid"></div>
-    <button class="ph-btn ph-btn--quiet more" type="button" id="learn-more" hidden>Ko'proq ko'rsatish</button>
+    <button class="ph-btn ph-btn--quiet more" type="button" id="learn-more" hidden data-i18n="learn.more"></button>
 
     <form class="contrib" id="contrib">
-      <h2 class="heading">Imo-ishora yuborish</h2>
-      <p class="muted" style="margin:0">Lug'atdan bitta so'zni tanlang va uni kameraga ko'rsatib, 4 soniyalik video yuboring. Videolar tanish modelini yaxshilash uchun yig'iladi.</p>
-      <p style="margin:0">Tanlangan so'z: <strong id="contrib-word">hali tanlanmagan</strong></p>
+      <h2 class="heading" data-i18n="contrib.title"></h2>
+      <p class="muted" style="margin:0" data-i18n="contrib.intro"></p>
+      <p style="margin:0"><span data-i18n="contrib.picked"></span> <strong id="contrib-word" data-i18n="contrib.none"></strong></p>
       <video id="contrib-cam" playsinline muted hidden></video>
-      <label class="check"><input type="checkbox" id="consent"><span>Videoim ma'lumotlar to'plamiga qo'shilishiga roziman.</span></label>
-      <div class="row"><button class="ph-btn" type="submit" id="contrib-btn" disabled>4 soniya yozib yuborish</button><span class="caption muted" id="contrib-status" aria-live="polite"></span></div>
+      <label class="check"><input type="checkbox" id="consent"><span data-i18n="contrib.consent"></span></label>
+      <div class="row"><button class="ph-btn" type="submit" id="contrib-btn" disabled data-i18n="contrib.send"></button><span class="caption muted" id="contrib-status" aria-live="polite"></span></div>
     </form>
   </div>
 </section>
 
 <!-- ============ TARIX ============ -->
-<section data-view="history" hidden>
+<section id="history" data-view="history" hidden>
   <div class="wrap page">
-    <h1 class="title">Tarix</h1>
-    <p class="intro">Oldingi tarjimalar. Ular shu brauzerga bog'langan, boshqa hech kim ko'rmaydi.</p>
+    <h1 class="title" data-i18n="hist.title"></h1>
+    <p class="intro" data-i18n="hist.intro"></p>
     <ol id="history-list"></ol>
-    <p class="empty" id="history-empty" hidden>Hali tarjima yo'q. <a href="#translate">Tarjimani boshlang</a>.</p>
-    <button class="ph-btn ph-btn--quiet more" type="button" id="history-more" hidden>Ko'proq ko'rsatish</button>
+    <p class="empty" id="history-empty" hidden></p>
+    <button class="ph-btn ph-btn--quiet more" type="button" id="history-more" hidden data-i18n="learn.more"></button>
   </div>
 </section>
 
 <!-- ============ SOZLAMALAR ============ -->
-<section data-view="sozlamalar" hidden>
+<section id="sozlamalar" data-view="sozlamalar" hidden>
   <div class="wrap page">
-    <h1 class="title">Sozlamalar</h1>
-    <p class="intro">Bu sozlamalar shu brauzerda saqlanadi.</p>
+    <h1 class="title" data-i18n="set.title"></h1>
+    <p class="intro" data-i18n="set.intro"></p>
     <div class="settings">
-      <div class="set-row"><p>Gapni ovoz chiqarib o'qish<small>Brauzer ovozi bilan. Ovoz bo'lmasa, faqat matn chiqadi.</small></p><input class="switch" type="checkbox" data-set="voice" aria-label="Gapni ovoz chiqarib o'qish"></div>
-      <div class="set-row" id="row-smooth"><p>So'zlardan gap tuzish<small>Tugatganingizda tanilgan so'zlar to'liq gapga aylanadi.</small></p><input class="switch" type="checkbox" data-set="smooth" aria-label="So'zlardan gap tuzish"></div>
-      <div class="set-row"><p>Eshituvchi nutqi tili<small>Subtitr uchun. "Avtomatik" tilni o'zi aniqlaydi.</small></p><select class="sel" data-set="speechLang" aria-label="Eshituvchi nutqi tili"><option value="auto">Avtomatik</option><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
-      <div class="set-row"><p>Tarixni saqlash<small>O'chirsangiz, yangi tarjimalar saqlanmaydi.</small></p><input class="switch" type="checkbox" data-set="saveHistory" aria-label="Tarixni saqlash"></div>
-      <div class="set-row"><p>Mavzu</p><select class="sel" data-set="theme" aria-label="Mavzu"><option value="auto">Tizim bo'yicha</option><option value="light">Yorug'</option><option value="dark">Qorong'i</option></select></div>
-      <div class="set-row col"><label class="field"><span>Server manzili<small class="muted"> Bo'sh qoldirsangiz, sayt ochilgan server ishlatiladi. Colab havolasini shu yerga qo'ying.</small></span><input type="url" data-set="api" placeholder="https://….trycloudflare.com" inputmode="url" spellcheck="false"></label><span class="caption muted" id="api-status"></span></div>
-      <div class="set-row"><p>Tarixni tozalash<small>Shu brauzerdagi barcha yozuvlar o'chadi.</small></p><button class="ph-btn ph-btn--quiet" type="button" id="clear-history">Tozalash</button></div>
+      <div class="set-row"><p><span data-i18n="set.uiLang"></span><small data-i18n="set.uiLangHint"></small></p><select class="sel" id="ui-lang" data-i18n-aria="set.uiLang"><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
+      <div class="set-row"><p><span data-i18n="set.voice"></span><small data-i18n="set.voiceHint"></small></p><input class="switch" type="checkbox" data-set="voice" data-i18n-aria="set.voice"></div>
+      <div class="set-row" id="row-smooth"><p><span data-i18n="set.smooth"></span><small data-i18n="set.smoothHint"></small></p><input class="switch" type="checkbox" data-set="smooth" data-i18n-aria="set.smooth"></div>
+      <div class="set-row"><p><span data-i18n="set.speech"></span><small data-i18n="set.speechHint"></small></p><select class="sel" data-set="speechLang" data-i18n-aria="set.speech"><option value="auto" data-i18n="set.auto"></option><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
+      <div class="set-row"><p><span data-i18n="set.hist"></span><small data-i18n="set.histHint"></small></p><input class="switch" type="checkbox" data-set="saveHistory" data-i18n-aria="set.hist"></div>
+      <div class="set-row"><p data-i18n="set.theme"></p><select class="sel" data-set="theme" data-i18n-aria="set.theme"><option value="auto" data-i18n="set.themeAuto"></option><option value="light" data-i18n="set.themeLight"></option><option value="dark" data-i18n="set.themeDark"></option></select></div>
+      <div class="set-row"><p><span data-i18n="set.mode"></span><small data-i18n="set.modeHint"></small></p><select class="sel" data-set="mode" data-i18n-aria="set.mode"><option value="auto" data-i18n="set.auto"></option><option value="live" data-i18n="set.modeLive"></option><option value="demo" data-i18n="set.modeDemo"></option></select></div>
+      <div class="set-row col"><label class="field"><span><span data-i18n="set.api"></span><small class="muted" data-i18n="set.apiHint"></small></span><input type="url" data-set="api" placeholder="https://….trycloudflare.com" inputmode="url" spellcheck="false"></label><span class="caption muted" id="api-status"></span></div>
+      <div class="set-row"><p><span data-i18n="set.clear"></span><small data-i18n="set.clearHint"></small></p><button class="ph-btn ph-btn--quiet" type="button" id="clear-history" data-i18n="set.clearBtn"></button></div>
     </div>
   </div>
 </section>
 </main>
 
 <footer><div class="wrap">
-  <p>Phoenix · imo-ishora tarjimoni, xakaton loyihasi</p>
-  <p>Slovo ma'lumotlar to'plami va rus modellari: CC BY-SA 4.0, © ai-forever. ASL modeli WLASL asosida, faqat notijorat foydalanish uchun. Nutqni tanish: Whisper (MIT) va Gemini. Shriftlar: Golos Text va Geologica, SIL Open Font License 1.1.</p>
+  <p data-i18n="footer.line"></p>
+  <p data-i18n="footer.lic"></p>
+  <p data-i18n="footer.hands"></p>
 </div></footer>
 
+<!-- Dock: the main navigation, pinned to the bottom of the screen -->
+<nav class="dock" data-i18n-aria="nav.dock">
+  <a href="#landing" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label" data-i18n="nav.home"></span></a>
+  <a href="#translate" class="dock-item dock-main"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label" data-i18n="nav.translate"></span></a>
+  <a href="#learn" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label" data-i18n="nav.learn"></span></a>
+  <a href="#history" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="dock-label" data-i18n="nav.history"></span></a>
+  <span class="dock-sep" aria-hidden="true"></span>
+  <a href="#sozlamalar" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="dock-label" data-i18n="nav.settings"></span></a>
+</nav>
+
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js"}}</script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

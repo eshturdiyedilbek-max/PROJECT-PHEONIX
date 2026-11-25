@@ -1,9 +1,9 @@
 // Learn page: search the dictionary (GET /api/dictionary) and send a recorded sample (POST /api/contributions).
-import { api } from './api.js';
+import { api, onModeChange } from './api.js';
+import { t, onLangChange } from './i18n.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const CAT = { word: "So'z", phrase: 'Ibora', letter: 'Harf' };
 const PAGE = 48, RECORD_MS = 4000;
 
 export function initLearn() {
@@ -19,14 +19,14 @@ export function initLearn() {
   async function load(append) {
     const seq = ++st.seq;
     if (!append) st.offset = 0;
-    total.textContent = 'Yuklanmoqda…';
+    total.textContent = t('learn.loading');
     try {
       const r = await api.dictionary({ ...params(), limit: PAGE, offset: st.offset });
       if (seq !== st.seq) return;   // a newer search already started
       if (!append) grid.innerHTML = '';
       r.items.forEach((it, i) => grid.appendChild(card(it, i)));
       st.total = r.total; st.offset += r.items.length;
-      total.textContent = r.total ? `${r.total} ta imo-ishora` : "Hech narsa topilmadi. Boshqa so'z bilan qidirib ko'ring.";
+      st.loaded = true; renderTotal();
       more.hidden = st.offset >= r.total;
       st.loaded = true;
     } catch (e) {
@@ -39,10 +39,10 @@ export function initLearn() {
     b.type = 'button'; b.className = 'card'; b.style.setProperty('--i', Math.min(i, 12));
     b.setAttribute('aria-pressed', String(st.selected?.id === it.id));
     const tr = Object.entries(it.translations || {}).filter(([k, v]) => v && v !== it.text);
-    b.innerHTML = `<span class="card-cat">${CAT[it.category] || it.category}</span>
+    b.innerHTML = `<span class="card-cat" data-i18n="cat.${esc(it.category)}">${t('cat.' + it.category)}</span>
       <div class="card-body"><p class="card-word">${esc(it.text)}</p>
       ${tr.map(([k, v]) => `<p class="card-sub"><span>${k.toUpperCase()}</span><span>${esc(v)}</span></p>`).join('')}
-      ${it.video_url ? `<video src="${esc(it.video_url)}" controls preload="none" style="width:100%"></video>` : '<p class="card-video">Video namuna hali yo\'q</p>'}</div>`;
+      ${it.video_url ? `<video src="${esc(it.video_url)}" controls preload="none" style="width:100%"></video>` : `<p class="card-video" data-i18n="learn.noVideo">${t('learn.noVideo')}</p>`}</div>`;
     b.addEventListener('click', () => select(it, b));
     return b;
   }
@@ -64,7 +64,7 @@ export function initLearn() {
     if (!st.selected || !consent.checked) return;   // consent is required, the server checks it too
     let stream;
     try { stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } }); }
-    catch (err) { msg.textContent = 'Kameraga ruxsat berilmadi.'; return; }
+    catch (err) { msg.textContent = t('contrib.denied'); return; }
     btn.disabled = true;
     video.srcObject = stream; video.hidden = false; await video.play().catch(() => {});
     const type = ['video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find(t => MediaRecorder.isTypeSupported(t)) || '';
@@ -74,14 +74,14 @@ export function initLearn() {
     const done = new Promise(r => { rec.onstop = r; });
     let left = 3; msg.textContent = `${left}…`;
     await new Promise(r => { const t = setInterval(() => { left--; if (left > 0) msg.textContent = `${left}…`; else { clearInterval(t); r(); } }, 700); });
-    rec.start(); msg.textContent = 'Yozilmoqda… imo-ishorani ko\'rsating';
+    rec.start(); msg.textContent = t('contrib.rec');
     setTimeout(() => rec.stop(), RECORD_MS);
     await done;
     stream.getTracks().forEach(t => t.stop()); video.hidden = true; video.srcObject = null;
-    msg.textContent = 'Yuborilmoqda…';
+    msg.textContent = t('contrib.sending');
     try {
       await api.contribute(new Blob(parts, { type: rec.mimeType || 'video/webm' }), st.selected.id);
-      msg.textContent = 'Rahmat! Video qabul qilindi.';
+      msg.textContent = t('contrib.ok');
       consent.checked = false;
     } catch (err) { msg.textContent = err.message; }
     updateContrib();
@@ -94,5 +94,8 @@ export function initLearn() {
   document.querySelectorAll('input[name=dlang],input[name=dcat]').forEach(r => r.addEventListener('change', () => load(false)));
   more.addEventListener('click', () => load(true));
 
+  function renderTotal() { if (st.loaded || st.offset) total.textContent = st.total ? t('learn.total', { n: st.total }) : t('learn.none'); }
+  onLangChange(renderTotal);
+  onModeChange(() => { st.loaded = false; if (!document.querySelector('[data-view=learn]').hidden) load(false); });
   return { enter() { if (!st.loaded) load(false); } };
 }
