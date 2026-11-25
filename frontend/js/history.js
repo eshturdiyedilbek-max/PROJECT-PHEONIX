@@ -1,5 +1,5 @@
 // History page (GET/DELETE /api/history) and the "clear history" button in Settings.
-import { api } from './api.js';
+import { api, onModeChange } from './api.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -49,5 +49,6 @@ export function initHistory() {
     setTimeout(() => { clear.disabled = false; clear.textContent = 'Tozalash'; }, 2000);
   });
 
+  onModeChange(() => { if (!document.querySelector('[data-view=history]').hidden) load(false); });
   return { enter() { load(false); } };
 }

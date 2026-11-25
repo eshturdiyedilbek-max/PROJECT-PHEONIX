@@ -28,6 +28,7 @@
     <svg viewBox="0 14 96 82" aria-hidden="true"><path d="M46 96A46 46 0 0 0 0 50M50 96A46 46 0 0 1 96 50M76 96A76 76 0 0 0 0 20M20 96A76 76 0 0 1 96 20" fill="none" stroke="var(--accent)" stroke-width="12"/></svg>
     <span class="title">Phoenix</span>
   </a>
+  <a class="ph-tag mode-tag" href="#sozlamalar" title="Server ulanmagan: sayt namuna ma'lumotlar bilan ishlayapti">Namoyish rejimi</a>
   <nav class="nav" aria-label="Asosiy"><a href="#translate">Tarjima</a><a href="#learn">Lug'at</a><a href="#history">Tarix</a><a href="#sozlamalar">Sozlamalar</a></nav>
 </div></header>
 
@@ -206,6 +207,7 @@
       <div class="set-row"><p>Eshituvchi nutqi tili<small>Subtitr uchun. "Avtomatik" tilni o'zi aniqlaydi.</small></p><select class="sel" data-set="speechLang" aria-label="Eshituvchi nutqi tili"><option value="auto">Avtomatik</option><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
       <div class="set-row"><p>Tarixni saqlash<small>O'chirsangiz, yangi tarjimalar saqlanmaydi.</small></p><input class="switch" type="checkbox" data-set="saveHistory" aria-label="Tarixni saqlash"></div>
       <div class="set-row"><p>Mavzu</p><select class="sel" data-set="theme" aria-label="Mavzu"><option value="auto">Tizim bo'yicha</option><option value="light">Yorug'</option><option value="dark">Qorong'i</option></select></div>
+      <div class="set-row"><p>Ish rejimi<small>"Avtomatik": server javob bersa jonli tanish, bo'lmasa namoyish. Namoyishda so'zlar namuna ketma-ketligidan chiqadi.</small></p><select class="sel" data-set="mode" aria-label="Ish rejimi"><option value="auto">Avtomatik</option><option value="live">Faqat server</option><option value="demo">Namoyish</option></select></div>
       <div class="set-row col"><label class="field"><span>Server manzili<small class="muted"> Bo'sh qoldirsangiz, sayt ochilgan server ishlatiladi. Colab havolasini shu yerga qo'ying.</small></span><input type="url" data-set="api" placeholder="https://….trycloudflare.com" inputmode="url" spellcheck="false"></label><span class="caption muted" id="api-status"></span></div>
       <div class="set-row"><p>Tarixni tozalash<small>Shu brauzerdagi barcha yozuvlar o'chadi.</small></p><button class="ph-btn ph-btn--quiet" type="button" id="clear-history">Tozalash</button></div>
     </div>

@@ -14,9 +14,14 @@ Oddiy HTML, CSS va JavaScript. Build bosqichi, npm yoki framework yo'q: fayllar 
 | `js/history.js` | Tarix (`GET/DELETE /api/history`) |
 | `js/api.js` | Server bilan aloqa, xato xabarlari o'zbekchada, brauzer identifikatori (`X-Client-Id`) |
 | `js/settings.js` | Sozlamalar, brauzerning `localStorage` xotirasida |
+| `js/demo.js`, `js/demo-dictionary.js` | Namoyish rejimi: server o'rnida namuna ma'lumotlar |
 | `js/hero3d.js`, `js/hand-model.js` | Bosh sahifadagi aylantiriladigan 3D qo'l (kutubxonasiz) |
 
 Har bir server holati va xatosi uchun nima ko'rsatilishi [`../frontend-resources/states.md`](../frontend-resources/states.md) da yozilgan va shu bo'yicha qilingan.
+
+## Ikki rejim
+
+`js/api.js` dagi `resolveMode()` sayt ochilganda `/api/health` ni tekshiradi (3 soniya). Javob kelsa jonli rejim, kelmasa namoyish rejimi (`js/demo.js`). Ikkalasida ham bir xil funksiyalar va bir xil javob shakllari, shuning uchun sahifalar rejimni bilmaydi. `js/demo-dictionary.js` ni `backend/scripts/make_demo_dictionary.py` yaratadi.
 
 ## Lokal ishga tushirish
 
@@ -24,6 +29,8 @@ Har bir server holati va xatosi uchun nima ko'rsatilishi [`../frontend-resources
 cd ../backend && .venv/bin/uvicorn app.main:app
 # brauzerda: http://localhost:8000
 ```
+
+Serversiz namoyish uchun: `python3 -m http.server 8080` (shu papkada), keyin http://localhost:8080.
 
 Kamera faqat `https://` yoki `localhost` manzilida ishlaydi (brauzer talabi).
 

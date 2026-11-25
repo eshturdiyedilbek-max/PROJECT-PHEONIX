@@ -1,5 +1,5 @@
 // Learn page: search the dictionary (GET /api/dictionary) and send a recorded sample (POST /api/contributions).
-import { api } from './api.js';
+import { api, onModeChange } from './api.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -94,5 +94,6 @@ export function initLearn() {
   document.querySelectorAll('input[name=dlang],input[name=dcat]').forEach(r => r.addEventListener('change', () => load(false)));
   more.addEventListener('click', () => load(true));
 
+  onModeChange(() => { st.loaded = false; if (!document.querySelector('[data-view=learn]').hidden) load(false); });
   return { enter() { if (!st.loaded) load(false); } };
 }

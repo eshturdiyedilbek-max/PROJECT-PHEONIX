@@ -303,3 +303,5 @@ html.phx-go [data-view]:not([hidden]){animation:none}
 .set-row.col{flex-wrap:wrap}
 @media (max-width:900px){.h-actions{grid-column:auto}}
 .run{margin-top:var(--space-3)}
+.mode-tag{display:none;text-decoration:none}
+html[data-mode=demo] .mode-tag{display:inline-flex}
