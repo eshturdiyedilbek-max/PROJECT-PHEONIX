@@ -3,6 +3,7 @@
 Backend for a sign-language translator: Russian Sign Language (camera) → text/speech, and speech → subtitles.
 
 - **API contract for the frontend:** [`docs/API.md`](docs/API.md)
+- **Front-end resources** (design tokens, fonts, logo, component styles, UI states): [`frontend-resources/`](frontend-resources/README.md)
 - **Implementation plan:** [`docs/superpowers/plans/2026-11-24-phoenix-backend-mvp.md`](docs/superpowers/plans/2026-11-24-phoenix-backend-mvp.md)
 
 ## How it works

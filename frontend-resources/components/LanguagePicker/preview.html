@@ -1,0 +1,68 @@
+<!-- @dsCard group="Translate" height=360 subtitle="Selected, non-commercial tag, unavailable" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><script>document.documentElement.dataset.theme=new URLSearchParams(location.search).get("theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")</script>
+<style>
+  body { margin: 0; padding: 24px; background: var(--surface); color: var(--ink); font: 400 16px/24px var(--font-sans); }
+  .row { display: flex; flex-wrap: wrap; gap: 24px; }
+  .row > * { flex: 1 1 320px; max-width: 420px; }
+  .cap { font: 500 12px/16px var(--font-sans); letter-spacing: .2px; color: var(--ink-muted); margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<div class="row">
+
+  <div>
+    <p class="cap">Both languages loaded</p>
+    <fieldset class="ph-picker">
+      <legend>Sign language</legend>
+      <label class="ph-option">
+        <input type="radio" name="lang-a" value="rsl" checked>
+        <span class="ph-option__text">
+          <span class="ph-option__name">Русский жестовый язык</span>
+          <span class="ph-option__sub">Russian Sign Language</span>
+        </span>
+        <span class="ph-option__tags"><span class="ph-tag">1000 signs</span></span>
+      </label>
+      <label class="ph-option">
+        <input type="radio" name="lang-a" value="asl">
+        <span class="ph-option__text">
+          <span class="ph-option__name">American Sign Language</span>
+        </span>
+        <span class="ph-option__tags">
+          <span class="ph-tag">2000 signs</span>
+          <span class="ph-tag" data-status="warn">
+            <svg class="ph-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L18 17H2z"/><path d="M10 8v4M10 14.5v.01"/></svg>
+            Demo only, non-commercial
+          </span>
+        </span>
+      </label>
+    </fieldset>
+  </div>
+
+  <div>
+    <p class="cap">American Sign Language missing on the server</p>
+    <fieldset class="ph-picker">
+      <legend>Sign language</legend>
+      <label class="ph-option">
+        <input type="radio" name="lang-b" value="rsl" checked>
+        <span class="ph-option__text">
+          <span class="ph-option__name">Русский жестовый язык</span>
+          <span class="ph-option__sub">Russian Sign Language</span>
+        </span>
+        <span class="ph-option__tags"><span class="ph-tag">1000 signs</span></span>
+      </label>
+      <label class="ph-option" aria-disabled="true">
+        <input type="radio" name="lang-b" value="asl" disabled>
+        <span class="ph-option__text">
+          <span class="ph-option__name">American Sign Language</span>
+        </span>
+        <span class="ph-option__tags"><span class="ph-tag">Unavailable</span></span>
+      </label>
+    </fieldset>
+  </div>
+
+</div>
+</body>
+</html>
