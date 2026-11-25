@@ -54,7 +54,7 @@ async function loadDemoVideo() {
   const slot = $('#video-slot');
   slot.innerHTML = '';
   const v = document.createElement('video');
-  Object.assign(v, { src, controls: true, preload: 'metadata', playsInline: true });
+  Object.assign(v, { src, poster: 'assets/demo/demo-poster.jpg', controls: true, preload: 'metadata', playsInline: true, muted: true });
   v.setAttribute('aria-label', 'Phoenix namoyish videosi');
   slot.appendChild(v);
   slot.style.borderStyle = 'solid';

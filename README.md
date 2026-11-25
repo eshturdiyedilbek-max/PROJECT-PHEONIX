@@ -94,6 +94,7 @@ PROJECT-PHEONIX/
 ├── deploy/                Google Colab'da bepul GPU bilan ishga tushirish
 ├── docs/                  API hujjati, reja va ish jarayoni rasmlari (docs/progress/)
 ├── frontend-resources/    Dizayn tizimi: ranglar, shriftlar, logotip, komponentlar
+├── tools/motion-video/    Bosh sahifadagi demo videoning manbasi (kodda chizilgan, 120 fps)
 ├── docker-compose.yml     Server + PostgreSQL bitta buyruqda
 └── CHANGELOG.md           O'zgarishlar tarixi
 ```
