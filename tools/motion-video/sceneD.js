@@ -50,12 +50,12 @@
       const x0 = L / 2 + (j - (n - 1) / 2) * 250, y0 = 730;
       chip(ctx, lerp(x0, L, fly), lerp(y0, 440, fly), w, 0.68 + ((j * 37) % 25) / 100, null, k * (1 - prog(lt, 3.45, 3.75)), P, { minW: 230, size: 38, h: 104 });
     });
-    // Gemini pill on the divider
+    // sentence-building pill on the divider
     const kg = env(lt, 3.4, 4.45, 0.25, 0.3);
     if (kg > 0) {
       ctx.save(); ctx.globalAlpha *= kg; ctx.translate(L, 440); const sc = lerp(0.7, 1, E.outBack(kg)); ctx.scale(sc, sc);
       rrect(ctx, -140, -44, 280, 88, 44); ctx.fillStyle = P.raised; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = P.accent; ctx.stroke();
-      txt(ctx, 'Gemini', 0, 14, { size: 40, weight: 700, color: P.accent, align: 'center' });
+      txt(ctx, 'Phoenix', 0, 14, { size: 40, weight: 700, color: P.accent, align: 'center' });
       ctx.restore();
     }
     // spoken sentence on the right
@@ -106,7 +106,7 @@
       const o = E.inCubic(prog(t, 48.9, 49.5)); ctx.save(); ctx.globalAlpha = 1 - o;
       tag(ctx, P, 'Qanday ishlaydi', 120, 110, E.outCubic(prog(t, 39.0, 39.5)), 'left');
       rise(ctx, 'Kameradan ovozgacha', 120, 220, t, 39.1, { size: 84, weight: 800, color: P.ink });
-      const nodes = [['Kamera', 'brauzerda, 15 kadr/s'], ['WebSocket', '384×288 JPEG'], ['Video-transformer', '32 kadr ≈ 2 soniya'], ['Soʻz', 'ishonch + 3 muqobil'], ['Gemini', 'gap va tarjima'], ['Matn + ovoz', 'brauzer ovozi']];
+      const nodes = [['Kamera', 'brauzerda, 15 kadr/s'], ['WebSocket', '384×288 JPEG'], ['Video-transformer', '32 kadr ≈ 2 soniya'], ['Soʻz', 'ishonch + 3 muqobil'], ['Gap tuzish', 'gap va tarjima'], ['Matn + ovoz', 'brauzer ovozi']];
       const y = 520, gap = 300, x0 = 210;
       nodes.forEach((nd, i) => {
         const x = x0 + i * gap, t0 = 39.8 + i * 0.4, k = E.outBack(prog(t, t0, t0 + 0.5));
@@ -131,10 +131,10 @@
         ctx.strokeStyle = P.border; ctx.lineWidth = 3; ctx.setLineDash([10, 10]); ctx.lineDashOffset = -t * 40;
         ctx.beginPath(); ctx.moveTo(x0 + 5 * gap, y + 90); ctx.lineTo(x0 + 5 * gap, 780); ctx.lineTo(x0, 780); ctx.lineTo(x0, y + 90); ctx.stroke(); ctx.setLineDash([]);
         box(ctx, P, W / 2 - 330, 730, 660, 100, P.accent);
-        txt(ctx, 'Mikrofon → Gemini / Whisper → subtitr', W / 2, 792, { size: 32, weight: 700, color: P.ink, align: 'center' });
+        txt(ctx, 'Mikrofon → nutqni tanish → subtitr', W / 2, 792, { size: 32, weight: 700, color: P.ink, align: 'center' });
         ctx.restore();
       }
-      cap(ctx, P, 'Ishonch 50% dan past boʻlsa, soʻz tashlanadi. Gemini ishlamasa, soʻzlar oʻzicha koʻrsatiladi.', W / 2, 920, t, 44.4, 49.4, { align: 'center', size: 32 });
+      cap(ctx, P, 'Ishonch 50% dan past boʻlsa, soʻz tashlanadi. Gap tuzib boʻlmasa, soʻzlar oʻzicha koʻrsatiladi.', W / 2, 920, t, 44.4, 49.4, { align: 'center', size: 32 });
       cap(ctx, P, 'Nutq 4 soniyalik boʻlaklarda yuboriladi, jim boʻlaklar yuborilmaydi', W / 2, 970, t, 45.0, 49.4, { align: 'center', size: 32, color: 'accent' });
       ctx.restore();
     }
@@ -146,7 +146,7 @@
       rise(ctx, 'Nimalar asosida qurilgan', 120, 220, t, 49.8, { size: 84, weight: 800, color: P.ink, stagger: 0.05 });
       const cards = [
         ['Slovo', 'RSL maʼlumotlari, 1000 soʻz', 'CC BY-SA 4.0'], ['WLASL', 'ASL maʼlumotlari, 2000 soʻz', 'notijorat, namoyish'], ['MViTv2 (mvit32-2)', 'RSL video-transformer', 'Slovo modeli'], ['SignFlow-A', 'ASL modeli, WLASL-2000', ''],
-        ['ONNX Runtime', 'modellarni ishga tushirish', 'CPU yoki GPU'], ['FastAPI + WebSocket', 'server va kadrlar oqimi', 'Python'], ['Google Gemini', 'soʻzlardan gap, tarjima, nutq', ''], ['faster-whisper', 'nutqni tanish, zaxira', 'internetsiz'],
+        ['ONNX Runtime', 'modellarni ishga tushirish', 'CPU yoki GPU'], ['FastAPI + WebSocket', 'server va kadrlar oqimi', 'Python'], ['HTML · CSS · JS', 'sayt, build bosqichisiz', 'ES modullar'], ['faster-whisper', 'nutqni tanish', 'internetsiz ishlaydi'],
         ['speechSynthesis', 'brauzerning oʻz ovozi', 'serverga yuk yoʻq'], ['Google Colab T4', 'bepul GPU, bitta havola', 'Cloudflare tunnel'], ['Docker', 'server va baza bitta buyruqda', 'SQLite / PostgreSQL'], ['pytest', '108 ta avtomatik test', 'modelsiz ham ishlaydi'],
       ];
       const cw = 400, ch = 150, gx = 26, gy = 26, ox = (W - (cw * 4 + gx * 3)) / 2, oy = 300;
@@ -166,7 +166,7 @@
         if (c[2]) txt(ctx, c[2], -cw / 2 + 26, -ch / 2 + 128, { size: 21, weight: 600, fam: SANS, color: P.accent });
         ctx.restore();
       });
-      cap(ctx, P, 'Frontend: HTML, CSS, JavaScript, build bosqichisiz. Shriftlar: Golos Text, Geologica (SIL OFL).', W / 2, 880, t, 53.2, 60.4, { align: 'center', size: 30 });
+      cap(ctx, P, 'Shriftlar: Golos Text va Geologica (SIL OFL). Dizayn tizimi: oʻz ranglar va komponentlar.', W / 2, 880, t, 53.2, 60.4, { align: 'center', size: 30 });
       ctx.restore();
     }
 

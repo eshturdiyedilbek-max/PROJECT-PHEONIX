@@ -32,10 +32,10 @@ cp out/phoenix-D-120fps.mp4 ../../frontend/assets/demo/demo.mp4
    - Ko'cha (ASL): SCHOOL WHERE → "Maktab qayerda?" Javob: "To'g'riga yuring, keyin chapga."
    - Idora (RSL): ТЫ ПОМОЧЬ Я → "Menga yordam bera olasizmi?" Javob: "Albatta, nima kerak?"
    Har bir so'z modellarning haqiqiy so'zlar ro'yxatidan olingan.
-3. Qanday ishlaydi: kamera → WebSocket → video-transformer → so'z va muqobillar → Gemini → matn va ovoz; javob yo'li mikrofon → Gemini / Whisper → subtitr.
-4. Ochiq resurslar va texnologiyalar: Slovo, WLASL, MViTv2, SignFlow-A, ONNX Runtime, FastAPI, Gemini, faster-whisper, speechSynthesis, Google Colab T4, Docker, pytest.
+3. Qanday ishlaydi: kamera → WebSocket → video-transformer → so'z va muqobillar → gap tuzish → matn va ovoz; javob yo'li mikrofon → nutqni tanish → subtitr.
+4. Ochiq resurslar va texnologiyalar: Slovo, WLASL, MViTv2, SignFlow-A, ONNX Runtime, FastAPI, faster-whisper, speechSynthesis, Google Colab T4, Docker, pytest.
 5. Tillar: 1000 RSL va 2000 ASL so'zi taniladi, natija o'zbek, rus yoki ingliz tilida.
 6. Sinov natijalari (README'dagi "Natijalar va cheklovlar" bo'limidan, kichik to'plam, taxminiy).
 7. Login yo'q, brauzerda ishlaydi, bepul GPU, ikki tomonlama. Logotip.
 
-Videoda kalitlar, akkauntlar, shaxsiy ma'lumotlar va yopiq havolalar yo'q.
+Videoda tashqi xizmat nomlari (gap tuzish va nutqni tanish qadamlari "Phoenix" nomi bilan ko'rsatiladi; texnik tafsilotlar asosiy README'da), kalitlar, akkauntlar, shaxsiy ma'lumotlar va yopiq havolalar yo'q.
