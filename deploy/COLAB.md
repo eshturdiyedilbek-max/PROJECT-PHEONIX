@@ -30,10 +30,10 @@ A laptop CPU needs ~8 s per sign, too slow for live. Colab's free T4 GPU is mean
 | 3 Secrets | Colab Secrets, or a hidden prompt |
 | 4 Code | shallow clone of `main` with the token, then removes the token from the git remote |
 | 5 Install | `pip install -e .`, swaps `onnxruntime` for `onnxruntime-gpu` (with its own CUDA/cuDNN wheels; picks the CUDA 12 or 13 build from the driver), installs `cloudflared` |
-| 6 Models | `scripts/download_models.py`: Slovo RSL + SignFlow-A ASL (~150 MB each) + Whisper |
-| 7a Benchmark | `scripts/gpu_bench.py`: device used and ms per word for each sign model |
-| 7b Server | `uvicorn app.main:app` on port 8000 (SQLite in `/content`), waits for `/api/health`, checks `sign_devices` says `cuda`, starts a Cloudflare quick tunnel and prints the URLs |
-| 8 Test | streams frames over the public `wss://` URL with `scripts/smoke_ws.py` (optionally your own video) |
+| 6 Models | `backend/scripts/download_models.py`: Slovo RSL + SignFlow-A ASL (~150 MB each) + Whisper |
+| 7a Benchmark | `backend/scripts/gpu_bench.py`: device used and ms per word for each sign model |
+| 7b Server | `uvicorn app.main:app` on port 8000 (SQLite in `/content`), waits for `/api/health`, checks `sign_devices` says `cuda`, starts a Cloudflare quick tunnel and prints the URLs (the **Website** link opens the Phoenix site, served by the same server) |
+| 8 Test | streams frames over the public `wss://` URL with `backend/scripts/smoke_ws.py` (optionally your own video) |
 
 `GET /api/health` now includes `"sign_devices": {"rsl": "cuda", "asl": "cuda"}`, so the frontend or you can see at any time whether the GPU is in use.
 

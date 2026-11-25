@@ -16,6 +16,7 @@ def settings(tmp_path) -> Settings:
         upload_dir=str(tmp_path / "uploads"),
         load_models=False,
         ws_frame_rate_slack=100.0,
+        serve_frontend=False,  # tests add routes after create_app; test_frontend.py turns the site on
         gemini_api_key="",  # never call the real API from tests (repo .env may hold a key)  # tests push frames as fast as possible
     )
 

@@ -5,14 +5,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl ffmpeg lib
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /srv
-COPY pyproject.toml ./
-COPY app ./app
+# Build context is the repo root (see docker-compose.yml): the image holds the API and the website.
+COPY backend/pyproject.toml ./
+COPY backend/app ./app
 RUN pip install .
-COPY data ./data
-COPY config ./config
-COPY scripts ./scripts
+COPY backend/data ./data
+COPY backend/config ./config
+COPY backend/scripts ./scripts
+COPY frontend ./frontend
 
-ENV UPLOAD_DIR=/srv/uploads HF_HOME=/srv/models/hf
+ENV UPLOAD_DIR=/srv/uploads HF_HOME=/srv/models/hf FRONTEND_DIR=/srv/frontend
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s CMD curl -fs http://localhost:8000/api/health || exit 1
 # models/ is a volume: download on first boot (no-op later), then serve.

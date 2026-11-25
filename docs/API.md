@@ -347,4 +347,4 @@ No server endpoints in v1. Keep these client-side (localStorage): sign language 
 
 ## 9. CORS
 
-The server allows origins from the `CORS_ORIGINS` env var (comma-separated). Dev default: `http://localhost:3000,http://localhost:5173`. Tell the backend your deployed frontend URL.
+The server allows origins from the `CORS_ORIGINS` env var (comma-separated). Dev default: `http://localhost:3000,http://localhost:5173`. Tell the backend your deployed frontend URL. The bundled website in `frontend/` is served by the same server at `/`, so it needs no CORS setup.
