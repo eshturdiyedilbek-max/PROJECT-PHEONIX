@@ -40,7 +40,7 @@ Two-way on one screen, in the browser, with Uzbek as an output language: Russian
 ## Evidence on Hand
 - Real backend with tests; demo mode for when no GPU is running.
 - No licensed footage of signers yet: the hero welcome clip is a labelled placeholder until temur films it (`frontend/assets/hero/README.md`).
-- The existing motion-graphics demo video (`frontend/assets/demo/demo.mp4`) draws skeleton hands, so the redesigned landing does not show it; temur will supply a real demo recording.
+- The existing motion-graphics demo video (`frontend/assets/demo/demo.mp4`) drew skeleton hands, so it was removed from the site; temur will supply a real demo recording.
 - No testimonials, users, accuracy benchmarks or partners exist. Do not invent them.
 
 ## Product Principles

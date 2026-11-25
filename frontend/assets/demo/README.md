@@ -1,3 +1,3 @@
-Bosh sahifadagi demo video: `demo.mp4` (1080p, 120 fps, 87 soniya, ovozsiz) va uning muqovasi `demo-poster.jpg`. Bosh sahifa videoni o'zi topib ko'rsatadi.
+Bosh sahifadagi demo video joyi. Haqiqiy ekran va kamera yozuvini shu papkaga `real.mp4` nomi bilan qo'ying: bosh sahifa uni o'zi topib ko'rsatadi. Fayl bo'lmasa, video bo'limi yashirin qoladi.
 
-Video kodda yaratilgan, manbasi va qayta yaratish yo'li: [`tools/motion-video/`](../../../tools/motion-video/README.md).
+Oldingi motion-graphics video (`demo.mp4`) skelet qo'llarni ko'rsatgani uchun yangi dizayndan olib tashlandi.

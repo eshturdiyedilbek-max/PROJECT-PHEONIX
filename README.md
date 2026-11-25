@@ -77,9 +77,11 @@ PROJECT-PHEONIX/
 │   │   ├── history.js     Tarix
 │   │   ├── api.js         Server bilan aloqa
 │   │   ├── settings.js    Sozlamalar (brauzerda saqlanadi)
-│   │   └── hero3d.js      Bosh sahifadagi 3D qo'l
+│   │   ├── i18n.js        Uch til: o'zbek, rus, ingliz
+│   │   └── hero-hands.js  Bosh sahifadagi "xush kelibsiz" 3D qo'llar
 │   ├── fonts/             Shriftlar (SIL OFL litsenziyasi)
-│   └── assets/demo/       Demo video shu yerga qo'yiladi (demo.mp4)
+│   ├── vendor/three/      three.js (3D uchun, MIT)
+│   └── assets/            Logo, 3D qo'l modellari, demo video joyi (real.mp4)
 ├── backend/               Server: imo-ishorani taniydigan Python kodi
 │   ├── app/               FastAPI ilovasi
 │   │   ├── sign/          Imo-ishorani tanish (model, kadrlar oqimi, WebSocket)
