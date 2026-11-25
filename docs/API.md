@@ -1,4 +1,6 @@
-# Phoenix Backend — API Contract v1.2
+# Phoenix Backend — API Contract v1.3
+
+> **v1.3 (2026-11-25):** `/api/health` gains `sign_devices` (`cuda`/`cpu` per loaded sign model). Backward compatible. Colab GPU deploy: [`deploy/COLAB.md`](../deploy/COLAB.md).
 
 > **v1.2 (2026-11-24):** Gemini added. `POST /api/sentence` turns recognized signs into a natural sentence (and can translate to Uzbek). `/ws/sign` `final` now also carries `sentence`/`smoothed`/`sentence_lang` (opt out with `"smooth": false`, choose language with `"target_lang"`). `/api/stt` can use Gemini (better Uzbek) or Whisper; response gains `engine`. New error `502 upstream_error`. Backward compatible.
 
@@ -46,6 +48,7 @@ History is scoped to this id. A missing or malformed id on an endpoint that need
   "status": "ok",
   "sign_model": "loaded",
   "sign_models": { "rsl": "loaded", "asl": "missing" },
+  "sign_devices": { "rsl": "cuda" },
   "stt_model": "loaded",
   "stt_engines": ["gemini", "whisper"],
   "stt_default": "gemini",
@@ -53,6 +56,7 @@ History is scoped to this id. A missing or malformed id on an endpoint that need
   "version": "0.2.0"
 }
 ```
+`sign_devices` says where each loaded sign model actually runs (`cuda` = GPU, fast enough for live; `cpu` = several seconds per word).
 Each value is `"loaded"` or `"missing"`. `sign_model` is `"loaded"` if at least one sign language works; `sign_models` gives it per language. Show a "translation temporarily unavailable" banner on Translate if the selected language is missing.
 
 ### `GET /api/languages`

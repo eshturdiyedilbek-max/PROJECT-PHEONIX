@@ -37,6 +37,12 @@ Try the sign WebSocket with a video of someone signing:
 .venv/bin/python scripts/smoke_ws.py --video sign.mp4
 ```
 
+## Free GPU on Google Colab
+
+For a live demo without a paid GPU host: open [`deploy/phoenix_colab.ipynb`](deploy/phoenix_colab.ipynb) in Colab (T4 GPU) and press **Run all**. It installs everything, benchmarks the GPU, starts the server and prints public `https://` / `wss://` URLs. Steps and limits: [`deploy/COLAB.md`](deploy/COLAB.md).
+
+Benchmark sign inference on any machine: `python scripts/gpu_bench.py` (prints the device and ms per word).
+
 ## Docker
 
 ```bash
@@ -78,7 +84,7 @@ ASL notes: SignFlow-A ships no label file. Its 2000 outputs are the WLASL-2000 g
 
 ## Deploy notes
 
-- **Speed:** on a laptop CPU one 32-frame inference takes ~8 s (measured), so CPU is not real-time. Use a GPU host, or `SIGN_VARIANTS=rsl=mvit16-4` (half the frames) for a CPU demo.
+- **Speed:** on a laptop CPU one 32-frame inference takes ~8 s (measured), so CPU is not real-time. Use a GPU host (free option: [Colab](deploy/COLAB.md)), or `SIGN_VARIANTS=rsl=mvit16-4` (half the frames) for a CPU demo.
 
 - One uvicorn worker per machine (models are loaded once per process). Scale by adding machines.
 - CPU works for demos, but MViTv2 on 32 frames is heavy; for several simultaneous users use a GPU host and install `onnxruntime-gpu` (the recognizer picks CUDA automatically). If the server falls behind it drops old frames and sends an `overloaded` notice rather than lagging.
