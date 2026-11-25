@@ -1,0 +1,50 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><script>document.documentElement.dataset.theme=new URLSearchParams(location.search).get("theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")</script>
+<style>
+  html, body { margin: 0; }
+  .cover { position: relative; width: 960px; height: 288px; overflow: hidden; background: var(--surface); }
+  .cover svg { position: absolute; inset: 0; }
+  .accent { fill: var(--accent); }
+  .ink { fill: var(--ink); }
+  .warn { fill: var(--status-warn); }
+  .ok { fill: var(--status-ok); }
+  .relief { fill: var(--border); }
+  .blk { rx: var(--radius-lg); }
+  .sm { rx: var(--radius-md); }
+  .cut { fill: none; stroke: var(--surface); stroke-width: var(--space-2); }
+  .text { position: absolute; left: 32px; bottom: 32px; width: 440px; }
+  .name { margin: 0; font: 600 96px/0.95 var(--font-display); letter-spacing: -0.02em; color: var(--ink); }
+  .tag { margin: 12px 0 0; font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+  <svg width="960" height="288" viewBox="0 0 960 288" aria-hidden="true">
+    <!--
+      Blocks: accent 224x160 at (544,0); ink 192x224 at (768,64); warn 128x96 at (544,192); border-tone relief 96x96 at (672,192); status-ok 32x32 at (480,32). All sides are multiples of space-5 (32px).
+      Arrangement: a staggered stack. The accent slab bleeds off the top, the ink slab off the bottom-right, and a short warn and relief step runs along the base.
+      Pattern: a literal motif (wing). Two mirrored fans of quarter-circle arcs, one cut out of the accent slab and one out of the ink slab, chosen because the name is a bird and the product turns hands into words and back.
+      Steps and radii: arcs at 32, 64 and 96 (multiples of space-5), stroke space-2, corners radius-lg (radius-md on the small block).
+    -->
+    <rect class="blk accent" x="544" y="0" width="224" height="160"/>
+    <rect class="blk ink" x="768" y="64" width="192" height="224"/>
+    <rect class="blk warn" x="544" y="192" width="128" height="96"/>
+    <rect class="blk relief" x="672" y="192" width="96" height="96"/>
+    <rect class="sm ok" x="480" y="32" width="32" height="32"/>
+    <path class="cut" d="M672 160A96 96 0 0 1 768 64"/>
+    <path class="cut" d="M704 160A64 64 0 0 1 768 96"/>
+    <path class="cut" d="M736 160A32 32 0 0 1 768 128"/>
+    <path class="cut" d="M768 256A32 32 0 0 1 800 288"/>
+    <path class="cut" d="M768 224A64 64 0 0 1 832 288"/>
+    <path class="cut" d="M768 192A96 96 0 0 1 864 288"/>
+  </svg>
+  <div class="text">
+    <p class="name">Phoenix</p>
+    <p class="tag">Sign language to words, and speech to subtitles.</p>
+  </div>
+</div>
+</body>
+</html>
