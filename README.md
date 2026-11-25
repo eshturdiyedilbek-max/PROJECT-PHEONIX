@@ -1,96 +1,192 @@
-# Phoenix Backend
+# Phoenix: imo-ishora tarjimoni
 
-Backend for a sign-language translator: Russian Sign Language (camera) → text/speech, and speech → subtitles.
+Phoenix kar va eshitmaydigan odamlar bilan eshitadigan odamlar o'rtasidagi suhbatni osonlashtiradigan veb-ilova. U kamera orqali imo-ishora tilini taniydi, tanilgan so'zlardan to'liq gap tuzadi va uni o'zbek, rus yoki ingliz tilida matn va ovoz qilib beradi. Javob tomonda eshituvchining nutqi subtitr bo'lib ekranga chiqadi.
 
-- **API contract for the frontend:** [`docs/API.md`](docs/API.md)
-- **Front-end resources** (design tokens, fonts, logo, component styles, UI states): [`frontend-resources/`](frontend-resources/README.md)
-- **Implementation plan:** [`docs/superpowers/plans/2026-11-24-phoenix-backend-mvp.md`](docs/superpowers/plans/2026-11-24-phoenix-backend-mvp.md)
+> Xakaton loyihasi (1 haftalik MVP). Hozir rus imo-ishora tili (RSL) va amerika imo-ishora tili (ASL) taniladi. O'zbek imo-ishora tili uchun ochiq ma'lumotlar to'plami yo'q, shuning uchun o'zbek tili hozircha **natija tili** sifatida ishlaydi.
 
-## How it works
+## Mundarija
 
-| Feature | Endpoint | Engine |
-|---|---|---|
-| Sign → text (real time), Russian | `WS /ws/sign?lang=rsl` (JPEG frames in, words out) | Slovo `mvit32-2` ONNX (1000 RSL signs, ~64% top-1) via ONNX Runtime |
-| Sign → text (real time), English | `WS /ws/sign?lang=asl` | SignFlow-A ONNX (2000 ASL/WLASL words, 63.3% top-1). **Non-commercial** (WLASL licence) |
-| Speech → subtitles | `POST /api/stt` | Gemini (default when `GEMINI_API_KEY` is set; strong Uzbek) or faster-whisper; auto-fallback to Whisper |
-| Signs → natural sentence (ru/en/uz) | `POST /api/sentence`, and `final` on `/ws/sign` | Gemini, falls back to plain words |
-| Learn / Dictionary | `GET /api/dictionary` | Postgres, seeded from `data/rsl_classes.json` |
-| History | `/api/history` | Postgres, scoped by `X-Client-Id` |
-| Dataset collection | `POST /api/contributions` | video files on disk + Postgres row |
+1. [Loyiha nima qiladi](#loyiha-nima-qiladi)
+2. [Qanday ishlaydi](#qanday-ishlaydi)
+3. [Texnologiyalar](#texnologiyalar)
+4. [Repo tuzilishi](#repo-tuzilishi)
+5. [Ishga tushirish](#ishga-tushirish)
+6. [Testlar](#testlar)
+7. [Natijalar va cheklovlar](#natijalar-va-cheklovlar)
+8. [Ishlar davomida](#ishlar-davomida)
+9. [Hujjatlar](#hujjatlar)
+10. [Litsenziyalar](#litsenziyalar)
 
-Text-to-speech happens in the browser (`speechSynthesis`), so there's no TTS endpoint.
+## Loyiha nima qiladi
 
-## Run locally
+| Imkoniyat | Tavsif |
+| --- | --- |
+| Imo-ishoradan matnga | Kamera oldida imo-ishora qilinadi, har bir tanilgan so'z ishonch foizi va muqobil variantlari bilan ekranga chiqadi. |
+| So'zlardan gap | Imo-ishora tilida grammatika boshqacha. Tanilgan so'zlar ("men", "shifokor", "kerak") Gemini yordamida odatdagi gapga aylanadi va tanlangan tilga o'giriladi. |
+| Ovoz | Tayyor gap brauzer ovozi bilan o'qib beriladi. |
+| Nutqdan subtitr | Eshituvchi gapiradi, uning gapi matn bo'lib chiqadi (Gemini yoki Whisper). |
+| Lug'at | Tizim taniydigan 3000 ta imo-ishorani qidirish (1000 RSL + 2000 ASL). |
+| Tarix | Oldingi tarjimalar. Login yo'q: har bir brauzer o'z tasodifiy identifikatoriga ega. |
+| Ma'lumot yig'ish | Foydalanuvchi roziligi bilan imo-ishora videosini yuborish (kelajakda o'zbek imo-ishora tili uchun). |
+
+## Qanday ishlaydi
+
+```mermaid
+flowchart LR
+    A[Kamera<br/>brauzerda] -- "JPEG kadrlar<br/>WebSocket" --> B[Video-transformer<br/>ONNX modeli]
+    B -- "so'z + ishonch %" --> C[Ekranda so'zlar]
+    C -- "tugatish" --> D[Gemini<br/>gap tuzadi va o'giradi]
+    D --> E[Gap: matn + ovoz]
+    F[Mikrofon] -- "4 soniyalik bo'laklar" --> G[Gemini / Whisper<br/>nutqni taniydi]
+    G --> H[Subtitr]
+```
+
+1. **Kamera.** Brauzer sekundiga 15 ta kichik kadrni (384×288 JPEG) WebSocket orqali serverga yuboradi.
+2. **Tanish.** Server oxirgi 32 kadrni (taxminan 2 soniya) video-transformer modeliga beradi. Model eng ehtimolli so'zni va 3 ta muqobilini qaytaradi. Ishonch 50% dan past bo'lsa, natija tashlab yuboriladi.
+3. **Gap.** Foydalanuvchi "Tugatish" tugmasini bosganda, tanilgan so'zlar ro'yxati Gemini'ga yuboriladi va u tabiiy gap qaytaradi. Gemini ishlamasa, so'zlar o'zicha ko'rsatiladi.
+4. **Natija.** Gap ekranga chiqadi va ovoz chiqarib o'qiladi. Eshituvchining javobi mikrofon orqali subtitrga aylanadi.
+
+## Texnologiyalar
+
+| Qatlam | Texnologiya | Nima uchun tanlangan |
+| --- | --- | --- |
+| Sayt (frontend) | HTML, CSS, JavaScript (ES modullar), build bosqichisiz | Har qanday kompyuterda ochiladi, o'rnatish kerak emas, kodni o'qish oson |
+| Dizayn tizimi | O'z ranglar, shriftlar (Golos Text, Geologica), komponentlar: [`frontend-resources/`](frontend-resources/README.md) | Bir xil ko'rinish, yorug' va qorong'i mavzu |
+| Server (backend) | Python 3.11+, FastAPI, Uvicorn | Tez, asinxron, WebSocket'ni qo'llab-quvvatlaydi, avtomatik API hujjati (`/docs`) |
+| Imo-ishora modeli (RSL) | Slovo MViTv2 (`mvit32-2`), ONNX Runtime | 1000 ta rus imo-ishorasiga o'qitilgan ochiq model |
+| Imo-ishora modeli (ASL) | SignFlow-A (WLASL-2000), ONNX Runtime | 2000 ta ingliz (ASL) so'zi, faqat notijorat foydalanish uchun |
+| Gap tuzish va tarjima | Google Gemini API | So'zlar ro'yxatidan grammatik to'g'ri o'zbekcha gap |
+| Nutqni tanish | Gemini (asosiy), faster-whisper (zaxira) | Gemini o'zbek tilini yaxshiroq taniydi, Whisper internetsiz ham ishlaydi |
+| Ovoz chiqarish | Brauzerning `speechSynthesis` funksiyasi | Serverga yuk yo'q, bepul |
+| Ma'lumotlar bazasi | SQLite (demo) yoki PostgreSQL 16 | Lug'at, tarix, yuborilgan videolar |
+| GPU | Google Colab bepul T4 GPU + Cloudflare tunnel | Pullik server shart emas, bitta havola orqali ishlaydi |
+| Joylashtirish | Docker, Docker Compose | Bitta buyruq bilan server va baza |
+| Testlar | pytest, Playwright (qo'lda tekshiruv) | 108 ta avtomatik test, haqiqiy modelsiz ishlaydi |
+
+## Repo tuzilishi
+
+```
+PROJECT-PHEONIX/
+├── frontend/              Sayt: foydalanuvchi ko'radigan hamma narsa
+│   ├── index.html         Barcha sahifalar (bosh sahifa, tarjima, lug'at, tarix, sozlamalar)
+│   ├── css/app.css        Dizayn: ranglar, shriftlar, animatsiya
+│   ├── js/                Mantiq: har bir sahifa alohida faylda
+│   │   ├── main.js        Sahifalar orasida o'tish, kirish animatsiyasi
+│   │   ├── translate.js   Kamera, WebSocket, subtitr, ovoz
+│   │   ├── learn.js       Lug'at va video yuborish
+│   │   ├── history.js     Tarix
+│   │   ├── api.js         Server bilan aloqa
+│   │   ├── settings.js    Sozlamalar (brauzerda saqlanadi)
+│   │   └── hero3d.js      Bosh sahifadagi 3D qo'l
+│   ├── fonts/             Shriftlar (SIL OFL litsenziyasi)
+│   └── assets/demo/       Demo video shu yerga qo'yiladi (demo.mp4)
+├── backend/               Server: imo-ishorani taniydigan Python kodi
+│   ├── app/               FastAPI ilovasi
+│   │   ├── sign/          Imo-ishorani tanish (model, kadrlar oqimi, WebSocket)
+│   │   ├── stt/           Nutqni matnga aylantirish
+│   │   ├── llm/           Gemini: so'zlardan gap
+│   │   └── api/           Lug'at, tarix, video yuborish, salomatlik tekshiruvi
+│   ├── tests/             Avtomatik testlar
+│   ├── scripts/           Modellarni yuklab olish, GPU tezligini o'lchash, sinov
+│   ├── config/            Qaysi til qaysi modelni ishlatishi
+│   ├── data/              Imo-ishoralar ro'yxati (RSL 1000, ASL 2000)
+│   └── Dockerfile
+├── deploy/                Google Colab'da bepul GPU bilan ishga tushirish
+├── docs/                  API hujjati, reja va ish jarayoni rasmlari (docs/progress/)
+├── frontend-resources/    Dizayn tizimi: ranglar, shriftlar, logotip, komponentlar
+├── docker-compose.yml     Server + PostgreSQL bitta buyruqda
+└── CHANGELOG.md           O'zgarishlar tarixi
+```
+
+## Ishga tushirish
+
+### 1-usul: Google Colab (eng oson, GPU bepul)
+
+1. [`deploy/phoenix_colab.ipynb`](deploy/phoenix_colab.ipynb) faylini Google Colab'da oching.
+2. `Runtime > Change runtime type > T4 GPU` ni tanlang.
+3. `Runtime > Run all` ni bosing. Taxminan 10 daqiqadan keyin ekranda **Website** havolasi chiqadi. Shu havolani oching.
+
+Batafsil: [`deploy/COLAB.md`](deploy/COLAB.md).
+
+### 2-usul: O'z kompyuterida
+
+Python 3.11 yoki undan yangi versiyasi kerak.
 
 ```bash
+cd backend
 python -m venv .venv && .venv/bin/pip install -e '.[dev]'
-./scripts/download_models.sh          # sign models (~140-150 MB each) + Whisper; needs internet
-cp .env.example .env                  # or leave DATABASE_URL unset to use SQLite
-.venv/bin/uvicorn app.main:app --reload
-open http://localhost:8000/docs
+./scripts/download_models.sh      # modellar (~300 MB), internet kerak
+cp .env.example .env              # Gemini kalitini shu faylga yozing (ixtiyoriy)
+.venv/bin/uvicorn app.main:app
 ```
 
-Without model files the server still starts; `/api/health` reports `"missing"` for that model and the WebSocket replies `model_unavailable`.
+Keyin brauzerda http://localhost:8000 ni oching. Sayt va server bitta manzilda ishlaydi. API hujjati: http://localhost:8000/docs
 
-Try the sign WebSocket with a video of someone signing:
+> Kompyuter protsessorida (GPU'siz) har bir so'zni tanish taxminan 8 soniya oladi. Jonli tarjima uchun GPU kerak (1-usul).
+
+### 3-usul: Docker
 
 ```bash
-.venv/bin/python scripts/smoke_ws.py --video sign.mp4
+docker compose up --build
 ```
 
-## Free GPU on Google Colab
+Server va PostgreSQL bazasi ishga tushadi, modellar birinchi ishga tushishda yuklab olinadi. Sayt: http://localhost:8000
 
-For a live demo without a paid GPU host: open [`deploy/phoenix_colab.ipynb`](deploy/phoenix_colab.ipynb) in Colab (T4 GPU) and press **Run all**. It installs everything, benchmarks the GPU, starts the server and prints public `https://` / `wss://` URLs. Steps and limits: [`deploy/COLAB.md`](deploy/COLAB.md).
+### Saytni boshqa serverga ulash
 
-Benchmark sign inference on any machine: `python scripts/gpu_bench.py` (prints the device and ms per word).
+Sayt odatda o'zi ochilgan serverga ulanadi. Boshqa serverni ishlatish uchun saytdagi **Sozlamalar > Server manzili** maydoniga havolani yozing yoki manzil satriga `?api=https://...` qo'shing.
 
-## Docker
+## Testlar
 
 ```bash
-docker compose up --build    # api on :8000 + Postgres 16; models download on first boot into a volume
+cd backend
+.venv/bin/pytest
 ```
 
-## Tests
+108 ta test haqiqiy modellar va internetsiz ishlaydi: kichik soxta model, SQLite va soxta nutq tanish ishlatiladi. Ular WebSocket oqimini, xatolarni, tarixni, lug'atni, nutqni tanishni, Gemini'ni va saytni berishni tekshiradi.
 
-```bash
-.venv/bin/pytest                                   # SQLite, fake ONNX model, fake STT — no network
-TEST_DATABASE_URL=postgresql+asyncpg://user@host/db .venv/bin/pytest   # same suite on Postgres
-```
+## Natijalar va cheklovlar
 
-## Configuration (env vars)
+**O'lchangan natijalar** (kichik sinov to'plamida, shuning uchun taxminiy):
 
-| var | default | notes |
-|---|---|---|
-| `DATABASE_URL` | `sqlite+aiosqlite:///./phoenix.db` | use `postgresql+asyncpg://…` in prod |
-| `CORS_ORIGINS` | `http://localhost:3000,http://localhost:5173` | comma-separated frontend origins |
-| `SIGN_VARIANTS` | *(defaults from JSON)* | pick a model per language, e.g. `rsl=mvit16-4,asl=signflow-a`. Variants and their frame rates live in `config/sign_languages.json` |
-| `SIGN_LANGUAGES_ENABLED` | *(all)* | e.g. `rsl` to load only Russian (saves RAM) |
-| `WS_IDLE_TIMEOUT_S` / `MAX_WS_CONNECTIONS` | `30` / `100` | close silent sockets / cap live translations |
-| `MAX_CONCURRENT_STT` | `2` | Whisper jobs at once; the rest queue |
-| `LOG_LEVEL` | `INFO` | |
-| `GEMINI_API_KEY` | *(empty)* | Google AI Studio key; put it in `.env` (git-ignored), never in code |
-| `STT_ENGINE` | `auto` | `auto` = Gemini if a key is set, else Whisper; or force `gemini` / `whisper` |
-| `GEMINI_MODELS` / `GEMINI_SENTENCE_MODELS` | see `.env.example` | models tried in order when one is overloaded (503) |
-| `SMOOTH_BY_DEFAULT` | `true` | WS `final` includes a Gemini sentence unless the client sends `"smooth": false` |
-| `SIGN_STRIDE` | `8` | frames between inferences (lower = faster reaction, more compute) |
-| `SIGN_MIN_CONFIDENCE` | `0.5` | below this a prediction is ignored |
-| `MAX_CONCURRENT_INFERENCES` | `4` | global cap on parallel sign inferences |
-| `STT_MODEL` / `STT_DEVICE` / `STT_COMPUTE_TYPE` | `small` / `cpu` / `int8` | e.g. `large-v3` / `cuda` / `float16` on GPU |
+| Model | Birinchi taxmin to'g'ri (top-1) | To'g'ri javob dastlabki variantlar ichida |
+| --- | --- | --- |
+| ASL (SignFlow-A) | 74% (34 ta videodan 25 tasi) | 100% (top-5) |
+| RSL (Slovo mvit32-2) | 65% | 88% (top-4) |
 
-## Sign languages and models
+Tezlik: noutbuk protsessorida bitta so'z taxminan 8 soniya. Colab T4 GPU'da tezlik notebookning 7a qadamida o'lchanadi.
 
-`config/sign_languages.json` lists each sign language, its label file, and its model variants. A model's name says its frame rate: `mvit32-2` = 32 frames, every 2nd frame of 30 fps video → 15 fps; `mvit16-4` → 7.5 fps. The server tells the client the rate in the WebSocket `ready` message and resamples whatever the client sends, so switching variants needs no frontend change. To add a language (e.g. Uzbek later): add a labels JSON in `data/`, an entry in the config, and the ONNX file.
+**Cheklovlar:**
 
-ASL notes: SignFlow-A ships no label file. Its 2000 outputs are the WLASL-2000 glosses in **alphabetical order** (Python `sorted()`: "a", "a lot", "abdomen", …), not the `WLASL_v0.3.json` order. Verified on 34 labelled WLASL test clips with the real model: 25/34 top-1 (74%), 34/34 top-5; every miss was a near-synonym (same→similar, speak→talk). The `WLASL_v0.3.json` order scored 0/34. The model has no "no sign" class, so pauses are detected only by confidence (`min_confidence` 0.6 for ASL).
+- Model alohida so'zlarni taniydi, uzluksiz imo-ishora nutqini emas. So'zlar orasida qisqa to'xtash kerak.
+- O'zbek imo-ishora tili hali tanilmaydi (ochiq ma'lumotlar to'plami yo'q). Saytdagi video yuborish bo'limi shunday to'plam yig'ishni boshlash uchun.
+- ASL modeli WLASL ma'lumotlari asosida, faqat notijorat (namoyish) maqsadda ishlatiladi.
+- Gemini ishlatilganda ovoz va so'zlar Google serverlariga yuboriladi. Sayt buni foydalanuvchiga ko'rsatadi.
+- Login yo'q: tarix brauzerga bog'langan, brauzer ma'lumotlari tozalansa, yo'qoladi.
 
-## Deploy notes
+## Ishlar davomida
 
-- **Speed:** on a laptop CPU one 32-frame inference takes ~8 s (measured), so CPU is not real-time. Use a GPU host (free option: [Colab](deploy/COLAB.md)), or `SIGN_VARIANTS=rsl=mvit16-4` (half the frames) for a CPU demo.
+Loyiha qanday rivojlangani rasmlarda: dizayn izlanishlari, Colab GPU va tayyor sayt. Hammasi: [`docs/progress/`](docs/progress/README.md).
 
-- One uvicorn worker per machine (models are loaded once per process). Scale by adding machines.
-- CPU works for demos, but MViTv2 on 32 frames is heavy; for several simultaneous users use a GPU host and install `onnxruntime-gpu` (the recognizer picks CUDA automatically). If the server falls behind it drops old frames and sends an `overloaded` notice rather than lagging.
-- Tables are created on startup (`create_all`); migrations (Alembic) come later.
+| | |
+| --- | --- |
+| ![Bosh sahifa](docs/progress/10-sayt-bosh-sahifa.png) | ![Tarjima](docs/progress/11-sayt-tarjima-jonli.png) |
+| Bosh sahifa | Jonli tarjima (lokal sinov: sinov kamerasi va sinov modeli) |
 
-## Licenses
+## Hujjatlar
 
-Slovo dataset and models: CC BY-SA 4.0, © ai-forever (Kapitanov et al., "Slovo: Russian Sign Language Dataset", 2023). Attribute them in the product's About page. Whisper: MIT.
+| Hujjat | Kim uchun |
+| --- | --- |
+| [`docs/API.md`](docs/API.md) | Server API: har bir so'rov va javob (inglizcha) |
+| [`backend/README.md`](backend/README.md) | Server sozlamalari va texnik tafsilotlar (inglizcha) |
+| [`frontend/README.md`](frontend/README.md) | Sayt kodi qanday tuzilgan |
+| [`frontend-resources/README.md`](frontend-resources/README.md) | Dizayn qoidalari |
+| [`deploy/COLAB.md`](deploy/COLAB.md) | Colab'da ishga tushirish |
+| [`CHANGELOG.md`](CHANGELOG.md) | O'zgarishlar tarixi |
+
+## Litsenziyalar
+
+- Slovo ma'lumotlar to'plami va rus modellari: CC BY-SA 4.0, © ai-forever (Kapitanov va boshq., "Slovo: Russian Sign Language Dataset", 2023).
+- ASL modeli (SignFlow-A) WLASL asosida: faqat notijorat foydalanish (C-UDA).
+- Whisper: MIT.
+- Shriftlar Golos Text va Geologica: SIL Open Font License 1.1.
