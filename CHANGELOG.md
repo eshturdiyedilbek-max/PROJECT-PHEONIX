@@ -10,11 +10,36 @@ Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 - Kaggle uchun qo'shimcha tekshiruvlar: internet yoqilganmi, Python 3.11+, P100 ogohlantirishi, T4 x2 da bitta GPU ishlatiladi. Fayllar `/tmp` da, notebook natijasiga qo'shilmaydi.
 - `deploy/KAGGLE.md`: o'zbekcha qadam-baqadam qo'llanma (akkaunt, telefon tasdig'i, token, import, GPU, Secrets, muammolar jadvali).
 
+## 2026-11-25: yangi dizayn (oq va qizil)
+
+### Qo'shildi
+- Bosh sahifa: ikki kishining qo'llari "xush kelibsiz" deb imo-ishora qiladi (three.js 3D tasvir, "3D" belgisi bilan; model MIT, `frontend/assets/hands/`), ostida tanlangan tilda "Xush kelibsiz".
+- Uch til: o'zbek, rus, ingliz. Til almashtirgich saytdagi har bir bo'limga ta'sir qiladi (bosh sahifa, tarjima, lug'at, tarix, sozlamalar, xato va holat xabarlari, namoyish rejimi).
+- Pastda shisha (liquid glass) dock: sichqoncha yaqinlashganda belgilar kattalashadi, telefonda yozuvlari bilan to'liq kenglikda.
+- Aylantirganda storyboard: "Bir suhbat, besh lahza", kamera, so'zlar, gap, ovoz va javob ketma-ket.
+- `PRODUCT.md`, `DESIGN.md`, `.impeccable/`: impeccable dizayn ko'nikmasi bo'yicha mahsulot va dizayn tizimi hujjatlari.
+- `docs/progress/` ga yangi dizayn rasmlari.
+
+### O'zgardi
+- Ranglar: toza oq fon va bitta qizil (#d9241c). Standart mavzu yorug', standart til o'zbekcha.
+
+### Olib tashlandi
+- Oldingi dizayndagi skelet 3D qo'l (`hero3d.js`, `hand-model.js`) va skelet qo'lli demo video (`demo.mp4`, `demo-poster.jpg`). Haqiqiy yozuv `frontend/assets/demo/real.mp4` ga qo'yilsa, bosh sahifada o'zi chiqadi.
+
 ## 2026-11-25: bosh sahifa uchun demo video
 
 ### Qo'shildi
 - Motion-graphics demo video (`frontend/assets/demo/demo.mp4`): 87 soniya, 1080p, 120 fps, o'zbekcha matn. To'rt vaziyat (shifoxona, do'kon, ko'cha, idora; RSL va ASL), ikki tomonlama suhbat, ish jarayoni, ochiq resurslar va texnologiyalar, tillar, sinov natijalari. Videoda tashqi xizmat nomlari ko'rsatilmaydi (gap tuzish qadami "Phoenix" deb chiqadi). Bosh sahifadagi "Jonli namoyish" bo'limida avtomatik chiqadi, muqovasi `demo-poster.jpg`.
 - Video manbasi `tools/motion-video/`: canvas sahnasi, Playwright bilan kadrlarni chizish, ffmpeg bilan yig'ish. Videoni bitta buyruq bilan qayta yaratish mumkin.
+
+## 2026-11-25: namoyish rejimi (serversiz ishlaydi)
+
+### Qo'shildi
+- Sayt endi ikki rejimda ishlaydi. Server javob bersa **jonli** (`/ws/sign`, `/api/*`), javob bermasa **namoyish** rejimi. Namoyish standart: GPU yoki server bo'lmasa ham sayt doim ochiladi.
+- Namoyish rejimida tarjima namuna imo-ishoralar ketma-ketligini (RSL va ASL, 4 tadan gap) ishonch foizi va muqobillari bilan ko'rsatadi, "Tugatish" bosilsa tanlangan tilda gap chiqadi va o'qiladi. Kamera ruxsat berilmasa ham ishlaydi.
+- Namoyishda subtitr namuna javoblar bilan (mikrofon ishlatilmaydi), lug'at to'liq 3000 ta imo-ishora bilan (`frontend/js/demo-dictionary.js`, `backend/scripts/make_demo_dictionary.py` yaratadi), tarix brauzerda saqlanadi. Video yuborish faqat jonli rejimda.
+- Ekranda doim "Namoyish rejimi" belgisi va tarjima sahifasida tushuntirish turadi, shuning uchun namuna so'zlar haqiqiy tanish deb ko'rsatilmaydi.
+- Sozlamalar > Ish rejimi: Avtomatik, Faqat server, Namoyish.
 
 ## 2026-11-25: haqiqiy sayt va tartibli repo
 
