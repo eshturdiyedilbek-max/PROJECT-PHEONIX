@@ -1,4 +1,4 @@
-// Phoenix website entry: page router (#landing, #translate, #learn, #history, #resurslar, #sozlamalar), site language,
+// Phoenix website entry: page router (#landing, #translate, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt), site language,
 // entrance animation, landing storyboard, bottom dock.
 import { applyTheme, initSettingsView, settings } from './settings.js';
 import { api, apiBase, getMode, resolveMode } from './api.js';
@@ -9,11 +9,13 @@ import { initHistory } from './history.js';
 import { RM } from './motion.js';
 import { initFly, initProgress, replayFly } from './fly.js';
 import { initResources } from './resources.js';
+import { initPricing } from './pricing.js';
+import { initAccount } from './account.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-const VIEWS = ['landing', 'translate', 'learn', 'history', 'resurslar', 'sozlamalar'];
+const VIEWS = ['landing', 'translate', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt'];
 const pages = {};   // view name -> { enter(), leave() }
 let routed = false;  // the first view arrives with the intro, later ones fade in
 
@@ -26,7 +28,7 @@ function route() {
     if (on && routed && !RM) { v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter'); replayFly(v); }
   });
   routed = true;
-  $$('.dock-item').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + name));
+  $$('.dock-item, .top-link, .top-acct').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + name));
   document.documentElement.dataset.view = name;
   pages[name]?.enter?.();
   if (location.hash && location.hash !== '#landing') scrollTo(0, 0);
@@ -157,6 +159,8 @@ async function init() {
   pages.history = initHistory();
   pages.sozlamalar = { enter: checkApi };
   pages.resurslar = initResources();
+  pages.narxlar = initPricing();
+  pages.akkaunt = initAccount();
   $('#to-how')?.addEventListener('click', () => $('#how').scrollIntoView({ behavior: RM ? 'auto' : 'smooth' }));
   intro();
   initStory();
