@@ -1,4 +1,4 @@
-// Phoenix website entry: page router (#landing, #translate, #learn, #history, #sozlamalar), site language,
+// Phoenix website entry: page router (#landing, #translate, #learn, #history, #resurslar, #sozlamalar), site language,
 // entrance animation, landing storyboard, bottom dock.
 import { applyTheme, initSettingsView, settings } from './settings.js';
 import { api, apiBase, getMode, resolveMode } from './api.js';
@@ -7,11 +7,13 @@ import { initTranslate } from './translate.js';
 import { initLearn } from './learn.js';
 import { initHistory } from './history.js';
 import { RM } from './motion.js';
+import { initFly, replayFly } from './fly.js';
+import { initResources } from './resources.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-const VIEWS = ['landing', 'translate', 'learn', 'history', 'sozlamalar'];
+const VIEWS = ['landing', 'translate', 'learn', 'history', 'resurslar', 'sozlamalar'];
 const pages = {};   // view name -> { enter(), leave() }
 let routed = false;  // the first view arrives with the intro, later ones fade in
 
@@ -21,7 +23,7 @@ function route() {
     const on = v.dataset.view === name;
     if (!on && !v.hidden) pages[v.dataset.view]?.leave?.();
     v.hidden = !on;
-    if (on && routed && !RM) { v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter'); }
+    if (on && routed && !RM) { v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter'); replayFly(v); }
   });
   routed = true;
   $$('.dock-item').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + name));
@@ -154,10 +156,12 @@ async function init() {
   pages.learn = initLearn();
   pages.history = initHistory();
   pages.sozlamalar = { enter: checkApi };
+  pages.resurslar = initResources();
   $('#to-how')?.addEventListener('click', () => $('#how').scrollIntoView({ behavior: RM ? 'auto' : 'smooth' }));
   intro();
   initStory();
   initReveal();
+  initFly();
   initDock();
   const onScroll = () => document.documentElement.classList.toggle('scrolled', scrollY > 8);
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
