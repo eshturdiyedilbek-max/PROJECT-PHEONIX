@@ -48,6 +48,20 @@ export function apiBase() {
   return custom || siteApi || location.origin;
 }
 
+// ---------- sign-in (Account page) ----------
+// After Google/GitHub sign-in the server gives a session token; it replaces X-Client-Id so history follows the account.
+const AUTH_KEY = 'phoenix_auth';
+let auth = null;
+try { auth = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (e) { /* storage blocked */ }
+const authListeners = new Set();
+export const getAuth = () => auth;
+export const onAuthChange = fn => authListeners.add(fn);
+export function setAuth(next) {
+  auth = next && next.token ? { token: next.token, expires_at: next.expires_at, user: next.user } : null;
+  try { auth ? localStorage.setItem(AUTH_KEY, JSON.stringify(auth)) : localStorage.removeItem(AUTH_KEY); } catch (e) {}
+  authListeners.forEach(fn => fn(auth));
+}
+
 export function wsUrl(path, params) {
   const u = new URL(path, apiBase() + '/');
   u.protocol = u.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -65,7 +79,7 @@ const ERROR_TEXT = code => { const k = 'err.' + code, m = t(k); return m === k ?
 export async function request(path, { method = 'GET', body, json, query, timeout = 30000 } = {}) {
   const u = new URL(path, apiBase() + '/');
   if (query) Object.entries(query).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') u.searchParams.set(k, v); });
-  const headers = { 'X-Client-Id': clientId() };
+  const headers = auth?.token ? { Authorization: `Bearer ${auth.token}` } : { 'X-Client-Id': clientId() };
   if (json !== undefined) { headers['Content-Type'] = 'application/json'; body = JSON.stringify(json); }
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeout);
@@ -81,6 +95,7 @@ export async function request(path, { method = 'GET', body, json, query, timeout
   if (!res.ok) {
     const code = data?.error?.code || 'internal_error';
     if (code === 'invalid_client_id') newClientId();
+    if (res.status === 401 && auth?.token && (code === 'session_expired' || code === 'not_signed_in')) setAuth(null);
     throw new ApiError(res.status, code, ERROR_TEXT(code) || data?.error?.message);
   }
   return data;
@@ -91,6 +106,12 @@ const liveApi = {
   languages: () => request('api/languages', { timeout: 8000 }),
   dictionary: q => request('api/dictionary', { query: q }),
   history: q => request('api/history', { query: q }),
+  authProviders: () => request('api/auth/providers', { timeout: 8000 }),
+  loginGoogle: id_token => request('api/auth/google', { method: 'POST', json: { id_token } }),
+  githubDevice: () => request('api/auth/github/device', { method: 'POST' }),
+  githubPoll: device_code => request('api/auth/github/poll', { method: 'POST', json: { device_code } }),
+  me: () => request('api/auth/me', { timeout: 8000 }),
+  logout: () => request('api/auth/logout', { method: 'POST' }),
   deleteHistory: id => request(`api/history/${id}`, { method: 'DELETE' }),
   clearHistory: () => request('api/history', { method: 'DELETE' }),
   sentence: (signs, sign_lang, target_lang) => request('api/sentence', { method: 'POST', json: { signs, sign_lang, target_lang } }),
@@ -138,5 +159,5 @@ export const api = new Proxy({}, { get: (_, k) => (mode === 'demo' ? demoApi : l
 
 /** WS /ws/sign in live mode, an in-browser stand-in with the same messages in demo mode. */
 export function openSignSocket(lang) {
-  return mode === 'demo' ? new DemoSocket(lang) : new WebSocket(wsUrl('ws/sign', { client_id: clientId(), lang }));
+  return mode === 'demo' ? new DemoSocket(lang) : new WebSocket(wsUrl('ws/sign', auth?.token ? { token: auth.token, lang } : { client_id: clientId(), lang }));
 }
