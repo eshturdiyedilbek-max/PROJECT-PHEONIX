@@ -161,6 +161,7 @@ async function init() {
   intro();
   initStory();
   initReveal();
+  if (window.Capacitor?.isNativePlatform?.()) document.documentElement.classList.add('is-app');
   initFly();
   initProgress();
   initDock();
