@@ -91,8 +91,8 @@ spacing:
   "4": "24px"
   "5": "32px"
   "6": "48px"
-  "7": "72px"
-  "8": "120px"
+  "7": "64px"
+  "8": "96px"
 components:
   button-primary:
     backgroundColor: "{colors.red}"
@@ -172,7 +172,7 @@ components:
     backgroundColor: "{colors.red}"
     textColor: "{colors.on-red}"
     rounded: "{rounded.xl}"
-    padding: "120px 0 72px"
+    padding: "96px 0 64px"
   story-stage:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
@@ -264,7 +264,7 @@ Dark mode inverts the ground to a red-black (`dark-surface`, with `dark-surface-
 
 ## Layout
 
-A single centered column, max width 1280px, with a 16px side gutter on phones (respecting safe-area insets) and 32px from 720px up. Spacing runs on an eight-step scale (4, 8, 16, 24, 32, 48, 72, 120px); sections breathe at 120px top and 72px bottom.
+Full screen width with a fluid side gutter, clamp(16px, 3.2vw, 56px), respecting safe-area insets. Spacing runs on an eight-step scale (4, 8, 16, 24, 32, 48, 64, 96px). Chapters sit 96px apart (64px on phones); inside a chapter, heading to lead is 16px and lead to content is 48px. Each chapter picks its own composition (huge headline, collage left, centred stack, split header, staggered cards, numerals row, sticky title); never repeat text-left/image-right twice in a row.
 
 The landing is a vertical story, not a grid of cards. The hero is a wide, full-column media stage (`clamp(240px, 39vh, 520px)` tall; 4:3 on phones), the welcome word centered directly under it, then a hairline-topped row with headline and lead on the left (1.35fr) and actions right-aligned on the right (1fr). The storyboard is a two-column grid: steps scroll on the left (each about 52vh tall), and a sticky stage holds the right column, vertically centered. Below 960px the stage sticks at the top (`min(42vh, 360px)`) and the steps scroll under it. Lists (what it does, history, settings) are ruled tables: a 1px ink rule on top, 1px line rules between rows, a two-column term and description grid that collapses to one column under 960px.
 

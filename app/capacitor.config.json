@@ -1,0 +1,9 @@
+{
+  "appId": "uz.phoenix.signs",
+  "appName": "Phoenix",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#ffffff"
+  }
+}

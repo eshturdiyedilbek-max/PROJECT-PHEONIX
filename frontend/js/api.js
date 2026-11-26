@@ -28,10 +28,24 @@ export function newClientId() {
   return id;
 }
 
-/** Base URL of the API: Settings > Server, else the server that served this page. */
+// server.json next to index.html names the shared server (the current Colab tunnel), so the site
+// works for everyone without ?api=. Settings > Server still wins for this browser.
+let siteApi = '';
+let siteApiLoaded = null;
+function loadSiteApi() {
+  // When the page comes from the Phoenix server itself (the Colab link), use that server, never server.json.
+  siteApiLoaded ||= fetch('api/health', { cache: 'no-store', signal: AbortSignal.timeout?.(2500) })
+    .then(r => (r.ok ? r.json() : null)).catch(() => null)
+    .then(h => (h && h.status === 'ok') ? {} : fetch('server.json', { cache: 'no-store' }).then(r => (r.ok ? r.json() : {})))
+    .then(j => { if (/^https?:\/\//.test(j.api || '')) siteApi = j.api.trim().replace(/\/+$/, ''); })
+    .catch(() => {});
+  return siteApiLoaded;
+}
+
+/** Base URL of the API: Settings > Server, else server.json, else the server that served this page. */
 export function apiBase() {
   const custom = (settings.get('api') || '').trim().replace(/\/+$/, '');
-  return custom || location.origin;
+  return custom || siteApi || location.origin;
 }
 
 export function wsUrl(path, params) {
@@ -108,6 +122,7 @@ export const onModeChange = fn => modeListeners.add(fn);
  * auto = live if the server (Settings > Server, else this site's own server) answers /api/health within 3 s, else demo.
  */
 export async function resolveMode() {
+  await loadSiteApi();
   const pref = settings.get('mode') || 'auto';
   let next = pref;
   if (pref === 'auto') {
