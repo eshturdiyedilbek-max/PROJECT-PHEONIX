@@ -396,7 +396,7 @@ select.sel{min-height:44px;border:1px solid color-mix(in srgb,var(--ink) 22%,tra
 .word.in{opacity:1;animation:phx-fade var(--fade-dur) var(--ease-out) both}
 .sent .sw,#sub-text .sw{display:inline-block;opacity:0}
 .sent.show .sw,#sub-text.show .sw{opacity:1;animation:phx-fade var(--fade-dur) var(--ease-out) calc(var(--i)*var(--fade-step)) backwards}
-[data-view].enter{animation:phx-fade var(--fade-dur) var(--ease-out) backwards}
+section[data-view].enter{animation:phx-fade var(--fade-dur) var(--ease-out) backwards}
 .card,.h-item{animation:phx-fade var(--fade-dur) var(--ease-out) calc(var(--i,0)*var(--fade-step)) backwards}
 
 /* entrance overlay: the logo draws itself in red, then the sheet lifts */

@@ -17,7 +17,7 @@ let routed = false;  // the first view arrives with the intro, later ones fade i
 
 function route() {
   const name = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'landing';
-  $$('[data-view]').forEach(v => {
+  $$('section[data-view]').forEach(v => {
     const on = v.dataset.view === name;
     if (!on && !v.hidden) pages[v.dataset.view]?.leave?.();
     v.hidden = !on;
@@ -33,7 +33,7 @@ function route() {
 // Entrance: the logo draws itself, the overlay wipes up, then the hero assembles.
 function intro() {
   const html = document.documentElement, ov = $('#intro');
-  const view = $('[data-view]:not([hidden])');
+  const view = $('section[data-view]:not([hidden])');
   const items = $$('header[data-intro]').concat(view ? $$('[data-intro]', view) : []);
   items.forEach((el, i) => el.style.setProperty('--d', i));
   if (RM || !ov) { ov?.remove(); html.classList.remove('phx-pre'); html.classList.add('phx-ready'); return; }
