@@ -144,23 +144,47 @@ export function initTranslate() {
   }
 
   // ---------- camera ----------
+  // Why the camera did not open, in words the visitor can act on. Each case gets its own banner.
+  const IN_FRAME = (() => { try { return window.top !== window.self; } catch (e) { return true; } })();
+  function camProblem(e) {
+    if (!window.isSecureContext) return 'insecure';
+    if (!navigator.mediaDevices?.getUserMedia) return 'nosupport';
+    const n = e?.name || '';
+    if (n === 'NotAllowedError' || n === 'SecurityError' || n === 'PermissionDeniedError') return IN_FRAME ? 'frame' : 'denied';
+    if (n === 'NotFoundError' || n === 'DevicesNotFoundError' || n === 'OverconstrainedError') return 'missing';
+    if (n === 'NotReadableError' || n === 'TrackStartError' || n === 'AbortError') return 'busy';
+    return 'other';
+  }
+  const toSamples = { label: 'cam.trySample', run: () => { const f = $('#samples-row .sample'); f?.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'center' }); f?.focus({ preventScroll: true }); } };
+  function camBanner(kind, e) {
+    banner('cam', st.demoNoCam ? 'warn' : 'danger', 'cam.' + kind + '.l', ['cam.' + kind + '.t', { name: e?.name || '' }], toSamples);
+  }
+
   async function openCamera() {
     if (st.cam) return true;
-    if (!navigator.mediaDevices?.getUserMedia && isDemo()) return true;
-    if (!navigator.mediaDevices?.getUserMedia) {
-      banner('cam', 'danger', 'b.camNo.l', 'b.camNo.t');
-      return false;
+    st.demoNoCam = false;
+    let err = null;
+    if (window.isSecureContext && navigator.mediaDevices?.getUserMedia) {
+      status('camera');
+      try {
+        st.cam = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
+      } catch (e) {
+        // a camera that cannot do 640x480 or "user" facing: try once more with no wishes at all
+        if (e?.name === 'OverconstrainedError') { try { st.cam = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }); } catch (e2) { err = e2; } }
+        else err = e;
+      }
     }
-    status('camera');
-    try {
-      st.cam = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
-    } catch (e) {
-      const denied = e && (e.name === 'NotAllowedError' || e.name === 'SecurityError');
-      if (isDemo()) {   // the demo does not need the picture, so carry on without it
+    if (!st.cam) {
+      const kind = camProblem(err);
+      console.warn('[phoenix] camera:', kind, err);
+      if (isDemo()) {   // the demo does not need the picture, so it carries on, but says why there is no picture
+        st.demoNoCam = true;
         setCamText('tx.noCam', 'tx.noCam', 'tx.noCamHint');
+        camBanner(kind, err);
         return true;
       }
-      banner('cam', 'danger', denied ? 'b.camDenied.l' : 'b.camMissing.l', denied ? 'b.camDenied.t' : 'b.camMissing.t');
+      camBanner(kind, err);
+      setCamText('tx.camOff', 'cam.' + kind + '.l', 'cam.short');
       status('off');
       return false;
     }
@@ -340,7 +364,7 @@ export function initTranslate() {
     banner('model'); banner('idle');
     if (left() <= 0) { limitBanner(); return; }
     if (!(await openCamera())) return;
-    takeAttempt();
+    if (!st.demoNoCam) takeAttempt();   // no picture, no attempt used
     st.live = true;
     el.start.dataset.i18n = 'tx.camStop'; el.start.textContent = t('tx.camStop');
     el.start.classList.add('ph-btn--quiet');

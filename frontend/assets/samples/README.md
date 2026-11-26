@@ -7,3 +7,5 @@
 | `asl-welcome-3d.mp4` | The site's 3D signer doing ASL WELCOME | Our own render of the home-page scene (hand model: WebXR Input Profiles "generic-hand", © Amazon, MIT). A render, not a real person, so recognition may be weaker than on real video. |
 
 To add a clip: put the MP4 here and list it in `SAMPLES` at the top of `js/translate.js`. Use only clips you have the right to publish (WLASL videos are not redistributable).
+
+The same clips are reused as video guides in the Dictionary (`OWN` in `js/learn.js`). Words without our own clip link to Spread The Sign (RSL and ASL) and SignASL (ASL), which open in a new tab.

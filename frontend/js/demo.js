@@ -135,7 +135,9 @@ export const demoApi = {
     const all = (DEMO_DICTIONARY[lang] || []).map((text, i) => ({ id: (lang === 'asl' ? 100000 : 0) + i + 1, lang, text, category: categorize(text),
       translations: { ru: lang === 'rsl' ? text : null, en: lang === 'asl' ? text : null, uz: null }, video_url: null }));
     const needle = q.trim().toLowerCase();
-    const hits = all.filter(it => (!category || it.category === category) && (!needle || it.text.toLowerCase().includes(needle)));
+    const rank = it => { const w = it.text.toLowerCase(); return w === needle ? 0 : w.startsWith(needle) ? 1 : 2; };
+    const hits = all.filter(it => (!category || it.category === category) && (!needle || it.text.toLowerCase().includes(needle)))
+      .sort((a, b) => needle ? rank(a) - rank(b) : 0);
     return { items: hits.slice(offset, offset + limit), total: hits.length, limit, offset };
   },
   async history({ limit = 20, offset = 0 } = {}) {

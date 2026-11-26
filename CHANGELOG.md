@@ -2,6 +2,13 @@
 
 Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
+
+## 2026-11-26: kamera xabarlari va lug'at video qo'llanmasi
+
+- Kamera ochilmasa, endi sababi aniq yoziladi (oldindan ko'rish oynasi bloklagan, ruxsat yo'q, boshqa dastur band qilgan, https emas, kamera yo'q) va nima qilish kerakligi aytiladi. Yonida "Namuna video bilan sinash" tugmasi bor. Kamera ochilmasa urinish sarflanmaydi.
+- Lug'atdagi har bir so'zda video qo'llanma: o'zimizdagi kliplar (Slovo RSL, 3D ASL) sahifaning o'zida o'ynaydi, qolganlari uchun tirik odam ko'rsatgan video Spread The Sign / SignASL'da yangi oynada ochiladi.
+- Qidiruvda aniq mos so'z birinchi chiqadi.
+
 ## 2026-11-26: ro'yxatdan o'tish, Pro va voucher
 
 ### Qo'shildi
