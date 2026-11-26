@@ -2,6 +2,10 @@
 
 Loyiha qanday rivojlangani rasmlarda. Eng yangisi tepada.
 
+## 5. Hozirgi sayt (2026-11-26)
+
+Eng oxirgi rasmlar: [`docs/screenshots/`](../screenshots/README.md). Pastdagilar oldingi versiyalar.
+
 ## 4. Yangi dizayn: oq va qizil (2026-11-25)
 
 Toza oq fon, bitta qizil rang, ikki kishining "xush kelibsiz" degan 3D qo'llari, uch til va pastda shisha dock. Rasmlar namoyish rejimida (serversiz) olingan.
