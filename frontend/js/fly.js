@@ -11,7 +11,7 @@ export function initFly() {
     if (!e.isIntersecting) return;
     e.target.classList.add('in');
     io.unobserve(e.target);
-  }), { rootMargin: '0px 0px -8% 0px', threshold: .12 });
+  }), { rootMargin: '0px 0px -22% 0px', threshold: .2 });
   // siblings entering together get a small stagger
   document.querySelectorAll('[data-fly]').forEach(el => {
     const sib = [...el.parentElement.children].filter(c => c.hasAttribute('data-fly'));
