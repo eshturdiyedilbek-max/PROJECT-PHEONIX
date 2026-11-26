@@ -158,7 +158,7 @@ function initDock() {
   dock.addEventListener('pointerleave', () => { x = null; dock.classList.remove('magnify'); raf ||= requestAnimationFrame(paint); });
 }
 
-// Real demo recording: shown once frontend/assets/demo/real.mp4 exists (temur's screen + camera recording).
+// Real demo recording: shown once frontend/assets/demo/real.mp4 exists (screen + camera recording).
 async function loadDemoVideo() {
   const src = 'assets/demo/real.mp4';
   try {
