@@ -1,8 +1,8 @@
 // Landing hero: two people's hands signing "welcome", rendered in 3D.
 // Skinned hand meshes from the WebXR Input Profiles "generic-hand" asset (MIT, © Amazon, assets/hands/LICENSE.md),
 // lit and posed here with three.js. It is a render, and the page labels it as one.
-// The gesture: open hands, palms up, start toward the guest and sweep back toward the signer's own body,
-// the shared shape of "welcome" in Russian and American Sign Language. Person A signs, then person B answers.
+// The gesture is the ASL sign WELCOME (see KEY below): one flat hand sweeps from out in front, palm across,
+// in to the chest, palm up. Person A signs it, then person B answers with the same sign.
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from '../vendor/three/addons/utils/SkeletonUtils.js';
@@ -10,7 +10,7 @@ import { RoomEnvironment } from '../vendor/three/addons/environments/RoomEnviron
 import { RM } from './motion.js';
 
 const FINGERS = ['index', 'middle', 'ring', 'pinky'];
-const CYCLE = 6.4;                      // seconds: A signs, B signs, both rest
+const CYCLE = 7;                        // seconds: A signs, B answers, both rest
 const ease = t => (t < .5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const clamp01 = t => Math.min(1, Math.max(0, t));
 const v3 = (a) => new THREE.Vector3().fromArray(a);
@@ -76,15 +76,19 @@ function rigHand(src, isLeft, skin) {
   };
 }
 
-/** A sleeve from the wrist back toward the elbow, so the hands belong to people. */
-function sleeve(color) {
-  const len = 1.7;
-  const g = new THREE.CylinderGeometry(.056, .034, len, 40, 1, false);
-  g.rotateZ(Math.PI / 2);
-  g.translate(-len / 2 - .012, 0, 0);
-  const cuff = new THREE.Mesh(g, new THREE.MeshPhysicalMaterial({ color, roughness: .82, sheen: .35, sheenRoughness: .7, sheenColor: new THREE.Color(color).lerp(new THREE.Color('#ffffff'), .25) }));
-  cuff.castShadow = true;
-  return cuff;
+/** A tapered tube between two points (forearm, upper arm), re-aimed every frame. */
+function limb(color, r0, r1) {
+  const g = new THREE.CylinderGeometry(r1, r0, 1, 32, 1, false);  // top = far end, bottom = near end
+  g.translate(0, .5, 0);
+  const m = new THREE.Mesh(g, new THREE.MeshPhysicalMaterial({ color, roughness: .82, sheen: .35, sheenRoughness: .7, sheenColor: new THREE.Color(color).lerp(new THREE.Color('#ffffff'), .25) }));
+  m.castShadow = true; m.receiveShadow = true;
+  const up = new THREE.Vector3(0, 1, 0), d = new THREE.Vector3();
+  m.aim = (a, b) => {
+    d.subVectors(b, a); const len = d.length();
+    m.position.copy(a); m.scale.set(1, len, 1);
+    m.quaternion.setFromUnitVectors(up, d.divideScalar(len));
+  };
+  return m;
 }
 
 function skinMaterial(hex) {
@@ -95,45 +99,107 @@ function skinMaterial(hex) {
   });
 }
 
-/**
- * A person = two hands plus sleeves. dir = +1 faces right (person stands on the left), -1 faces left.
- * pose(p): p=0 hands offered toward the other person, p=1 drawn back to the signer's own body.
+// Person-local space: +x forward (toward the other person), +y up, +z the signer's right.
+const P = (fwd, up, right) => new THREE.Vector3(fwd, up, right);
+const D = (fwd, up, right) => new THREE.Vector3(fwd, up, right).normalize();
+
+/*
+ * ASL WELCOME (one-handed): the dominant hand in the flat "B" handshape starts about half an arm's
+ * length in front of and beside the chest, palm facing across, and sweeps in a large horizontal arc
+ * to the centre of the chest, ending palm up. Sources: Lifeprint (ASL University) "WELCOME";
+ * Wiktionary ASL entry OpenB@DistalSideChesthigh-PalmAcross ... OpenB@NearCenterTrunkhigh-PalmUp.
+ * F = finger direction, N = palm normal, k = finger curl (0 = flat B).
  */
-function person(hands, dir, skinHex, sleeveHex) {
+const KEY = {
+  rest:  { p: P(.07, -.21, .20),  F: D(.25, -1, -.05),  N: D(-.15, 0, -1),  k: .45 },
+  start: { p: P(.38, .06, .28),   F: D(1, .08, -.42),   N: D(.25, .15, -1), k: 0 },
+  end:   { p: P(.21, .07, .115),  F: D(.25, .05, -1),   N: D(0, 1, 0),      k: 0 }
+};
+const SWEEP_CTRL = P(.40, .09, .12);         // pulls the path outward so the hand travels a round arc
+const LEFT_REST = { p: P(.07, -.22, -.20), F: D(.25, -1, .05), N: D(-.15, 0, 1), k: .45 };
+const SHOULDER_R = P(-.01, .27, .185), SHOULDER_L = P(-.01, .27, -.185);
+const UPPER = .29, FORE = .26;
+
+function orient(F, N) {
+  const f = F.clone().normalize();
+  const n = N.clone().sub(f.clone().multiplyScalar(N.dot(f))).normalize();
+  const t = new THREE.Vector3().crossVectors(f, n);
+  return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(f, n, t));
+}
+for (const k of [KEY.rest, KEY.start, KEY.end, LEFT_REST]) k.q = orient(k.F, k.N);
+
+/** Two-bone arm: elbow from shoulder S and wrist W, bending down and out to the side. */
+function elbowFor(S, W, out) {
+  const sw = new THREE.Vector3().subVectors(W, S);
+  const d = Math.min(sw.length(), UPPER + FORE - 1e-3);
+  sw.normalize();
+  const a = (UPPER * UPPER - FORE * FORE + d * d) / (2 * d);
+  const h = Math.sqrt(Math.max(0, UPPER * UPPER - a * a));
+  const pole = P(-.35, -1, .45 * out).normalize();
+  pole.sub(sw.clone().multiplyScalar(pole.dot(sw))).normalize();
+  return S.clone().addScaledVector(sw, a).addScaledVector(pole, h);
+}
+
+/** A person: right hand signs, left hand rests. Placed with its forward axis toward the other person. */
+function person(hands, skinHex, sleeveHex) {
   const skin = skinMaterial(skinHex);
   const group = new THREE.Group();
-  const parts = ['right', 'left'].map(side => {
-    const isLeft = side === 'left';
-    const h = rigHand(hands[side], isLeft, skin);
-    h.pivot.add(sleeve(sleeveHex));
-    group.add(h.pivot);
-    // facing +x, the right hand is on +z (near the camera); facing -x it is on -z
-    const zSide = (isLeft ? -1 : 1) * dir;
-    return { h, zSide, isLeft };
-  });
+  // Torso, cropped by the frame above the shoulders: the scene is about the hands, not faces.
+  const cloth = limb(sleeveHex, .05, .05).material;
+  // a lathe profile (radius, height): sloped shoulders, chest, waist; flattened front to back
+  const prof = [[0, .425], [.09, .41], [.15, .39], [.185, .355], [.2, .3], [.198, .18], [.182, 0], [.172, -.3], [.176, -1.3], [0, -1.3]]
+    .map(([r, y]) => new THREE.Vector2(r, y));
+  const torso = new THREE.Mesh(new THREE.LatheGeometry(prof, 48), cloth);
+  torso.scale.set(.58, 1, 1);
+  torso.position.x = -.07;
+  torso.castShadow = torso.receiveShadow = true;
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.052, .06, .2, 32), skin);
+  neck.position.set(-.075, .5, 0);
+  group.add(neck);
+  group.add(torso);
+  const joint = r => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 24, 16), cloth); m.castShadow = m.receiveShadow = true; group.add(m); return m; };
+  const arm = (side, S, out) => {
+    const h = rigHand(hands[side], side === 'left', skin);
+    const fore = limb(sleeveHex, .034, .046), upper = limb(sleeveHex, .047, .058);
+    const elbow = joint(.047), shoulder = joint(.057);
+    shoulder.position.copy(S);
+    group.add(h.pivot, fore, upper);
+    return {
+      set(p, q, k) {
+        h.pivot.position.copy(p); h.pivot.quaternion.copy(q); h.shape(k);
+        // the cuff starts a little behind the wrist, along the forearm
+        const E = elbowFor(S, p, out);
+        const W = p.clone().lerp(E, .05);
+        fore.aim(W, E); upper.aim(E, S); elbow.position.copy(E);
+      }
+    };
+  };
+  const right = arm('right', SHOULDER_R, 1), left = arm('left', SHOULDER_L, -1);
+  const tmpQ = new THREE.Quaternion(), tmpP = new THREE.Vector3();
+  const bez = (a, c, b, s) => {
+    const u = 1 - s;
+    return tmpP.set(0, 0, 0).addScaledVector(a, u * u).addScaledVector(c, 2 * u * s).addScaledVector(b, s * s);
+  };
   return {
     group,
-    pose(p, breathe) {
-      parts.forEach(({ h, zSide }, i) => {
-        const e = p;
-        const lag = i * .06;
-        const q = clamp01((e - lag) / (1 - lag));
-        // wrist path: forward and low -> close to the body and a little higher
-        const x = dir * THREE.MathUtils.lerp(-.13, -.33, q);
-        const y = THREE.MathUtils.lerp(-.02, .035, Math.sin(q * Math.PI / 2)) + breathe * .004;
-        const z = zSide * THREE.MathUtils.lerp(.11, .085, q);
-        h.pivot.position.set(x, y, z);
-        // fingers point toward the guest at the start, then turn inward and up as the hand comes home
-        const yaw = dir > 0 ? 0 : Math.PI;
-        const inward = THREE.MathUtils.lerp(.18, .62, q) * zSide * -1 * dir;
-        const lift = THREE.MathUtils.lerp(.22, .48, q);
-        const roll = zSide * dir * THREE.MathUtils.lerp(.12, .04, q);
-        h.pivot.rotation.set(0, 0, 0);
-        h.pivot.rotateY(yaw + inward);
-        h.pivot.rotateZ(lift);
-        h.pivot.rotateX(roll * (dir > 0 ? 1 : -1));
-        h.shape(THREE.MathUtils.lerp(.15, .55, q));
-      });
+    /** stage: 0 rest -> 1 start (raise) -> 2 end (the sign) -> 3 rest again. */
+    pose(stage, breathe) {
+      const b = breathe * .003;
+      let p, q, k;
+      if (stage <= 1) {
+        const s = ease(clamp01(stage));
+        p = tmpP.copy(KEY.rest.p).lerp(KEY.start.p, s); q = tmpQ.copy(KEY.rest.q).slerp(KEY.start.q, s);
+        k = THREE.MathUtils.lerp(KEY.rest.k, 0, s);
+      } else if (stage <= 2) {
+        const s = ease(stage - 1);
+        p = bez(KEY.start.p, SWEEP_CTRL, KEY.end.p, s); q = tmpQ.copy(KEY.start.q).slerp(KEY.end.q, s); k = 0;
+      } else {
+        const s = ease(clamp01(stage - 2));
+        p = tmpP.copy(KEY.end.p).lerp(KEY.rest.p, s); q = tmpQ.copy(KEY.end.q).slerp(KEY.rest.q, s);
+        k = THREE.MathUtils.lerp(0, KEY.rest.k, s);
+      }
+      right.set(p.clone().setY(p.y + b), q, k);
+      left.set(LEFT_REST.p.clone().setY(LEFT_REST.p.y + b), LEFT_REST.q, LEFT_REST.k);
     }
   };
 }
@@ -158,34 +224,27 @@ export async function initHeroHands(stage) {
   scene.environment = pmrem.fromScene(new RoomEnvironment(), .04).texture;
 
   const key = new THREE.DirectionalLight('#fff4ee', 2.2);
-  key.position.set(.6, 1.6, 1.1);
+  key.position.set(.5, 1.4, 1.6);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
-  Object.assign(key.shadow.camera, { left: -.7, right: .7, top: .5, bottom: -.5, near: .1, far: 4 });
+  Object.assign(key.shadow.camera, { left: -.9, right: .9, top: .7, bottom: -.7, near: .1, far: 5 });
   key.shadow.radius = 6;
   scene.add(key);
   const rim = new THREE.DirectionalLight('#ff6a55', 1.4);
-  rim.position.set(-1, .6, -1.2);
+  rim.position.set(-1.2, .8, -.6);
   scene.add(rim);
   scene.add(new THREE.HemisphereLight('#ffffff', '#f2d6d2', .6));
 
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(3, 3), new THREE.ShadowMaterial({ opacity: .14 }));
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = -.12;
-  floor.receiveShadow = true;
-  scene.add(floor);
-
   const camera = new THREE.PerspectiveCamera(30, 16 / 9, .05, 10);
-  camera.position.set(0, .62, 1.12);
-  camera.lookAt(0, .05, -.02);
 
   const gltf = new GLTFLoader();
   const [L, R] = await Promise.all(['left', 'right'].map(s => gltf.loadAsync(`assets/hands/${s}.glb`)));
   const hands = { left: L.scene, right: R.scene };
-  const A = person(hands, 1, '#c98462', '#a8100b');     // stands on the left, red sleeves
-  const B = person(hands, -1, '#7a4a30', '#2a1d1e');    // stands on the right, dark sleeves
-  A.group.position.x = -.06;
-  B.group.position.x = .06;
+  const A = person(hands, '#c98462', '#a8100b');     // stands on the left, faces right, red sleeves
+  const B = person(hands, '#7a4a30', '#2a1d1e');     // stands on the right, faces left, dark sleeves
+  // Both face the viewer, each turned a little toward the other, like two signers in one frame.
+  A.group.position.set(-.3, 0, 0); A.group.rotation.y = -Math.PI / 2 + .42;
+  B.group.position.set(.3, 0, 0);  B.group.rotation.y = -Math.PI / 2 - .42;
   scene.add(A.group, B.group);
 
   stage.prepend(renderer.domElement);
@@ -196,30 +255,33 @@ export async function initHeroHands(stage) {
     if (!w || !h) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    // frame a fixed width of the scene, so both people fit on wide and on tall (phone) frames
-    const halfW = Math.tan(THREE.MathUtils.degToRad(w / h < 1.5 ? 17 : 27));
-    camera.fov = Math.max(20, THREE.MathUtils.radToDeg(2 * Math.atan(halfW / camera.aspect)));
+    // Frame a fixed width (both people with their reach), and keep the top edge just above the shoulders,
+    // so a tall phone frame shows more torso, never empty space where heads would be.
+    const dist = 1.6, halfW = camera.aspect < 1.5 ? .76 : .98, halfH = halfW / camera.aspect;
+    camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(halfH / dist));
+    const cy = .43 - halfH;
+    camera.position.set(0, cy + .12, dist);
+    camera.lookAt(0, cy, 0);
     camera.updateProjectionMatrix();
   }
   new ResizeObserver(resize).observe(stage);
   resize();
 
-  // A signs (0.0-1.6 s), holds, B signs (1.9-3.5 s), both hold, then both lower back to the offered pose.
+  // Per person: raise (0.5 s), sign (1.3 s), hold (0.9 s), lower (0.7 s). A starts at 0.2 s, B answers at 2.9 s.
+  const stageAt = c => (c < 0 ? 0 : c < .5 ? c / .5 : c < 1.8 ? 1 + (c - .5) / 1.3 : c < 2.7 ? 2 : c < 3.4 ? 2 + (c - 2.7) / .7 : 3);
   function poseAt(t) {
-    const c = t % CYCLE;
-    const a = c < 4.6 ? ease(clamp01(c / 1.6)) : 1 - ease(clamp01((c - 4.6) / 1.4));
-    const b = c < 4.6 ? ease(clamp01((c - 1.9) / 1.6)) : 1 - ease(clamp01((c - 4.6) / 1.4));
-    const br = Math.sin(t * 1.6);
-    A.pose(a, br); B.pose(b, -br);
+    const c = t % CYCLE, br = Math.sin(t * 1.6);
+    A.pose(stageAt(c - .2), br); B.pose(stageAt(c - 2.9), -br);
   }
-
   let visible = true, raf = 0, t0 = performance.now();
   const frame = now => {
     poseAt((now - t0) / 1000);
     renderer.render(scene, camera);
     raf = visible ? requestAnimationFrame(frame) : 0;
   };
-  if (RM) { A.pose(1, 0); B.pose(1, 0); renderer.render(scene, camera); return; }
+  // test hook: freeze at a time (used by screenshots)
+  window.__phxHands = t => { visible = false; cancelAnimationFrame(raf); raf = 0; if (t === 'end') { A.pose(2, 0); B.pose(2, 0); } else poseAt(t); renderer.render(scene, camera); };
+  if (RM) { A.pose(2, 0); B.pose(2, 0); renderer.render(scene, camera); return; }
   new IntersectionObserver(([e]) => {
     visible = e.isIntersecting;
     if (visible && !raf) raf = requestAnimationFrame(frame);
@@ -229,6 +291,4 @@ export async function initHeroHands(stage) {
     if (visible && !raf) raf = requestAnimationFrame(frame);
   });
   raf = requestAnimationFrame(frame);
-  // test hook: freeze at a time (used by screenshots)
-  window.__phxHands = t => { visible = false; cancelAnimationFrame(raf); raf = 0; poseAt(t); renderer.render(scene, camera); };
 }

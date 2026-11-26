@@ -42,8 +42,8 @@ const D = {
   'hero.how': ['Qanday ishlaydi', 'Как это работает', 'How it works'],
   'hero.note': ["Ro'yxatdan o'tish shart emas. Kamera brauzerda yoqiladi.", 'Регистрация не нужна. Камера включается в браузере.', 'No sign-up. The camera turns on in your browser.'],
   'hero.welcome': ['Xush kelibsiz', 'Добро пожаловать', 'Welcome'],
-  'hero.welcomeSign': ['Imo-ishora tilida «Xush kelibsiz» · 3D tasvir', '«Добро пожаловать» на жестовом языке · 3D-визуализация', '"Welcome" in sign language · 3D render'],
-  'hero.videoAria': ['Ikki kishining qo\'llari imo-ishora tilida «Xush kelibsiz» deydi, 3D tasvir', 'Руки двух людей показывают «Добро пожаловать» на жестовом языке, 3D-визуализация', 'Two people\'s hands sign "Welcome", a 3D render'],
+  'hero.welcomeSign': ['Amerika imo-ishora tilida (ASL) «Xush kelibsiz» · 3D tasvir', '«Добро пожаловать» на американском жестовом языке (ASL) · 3D-визуализация', '"Welcome" in American Sign Language (ASL) · 3D render'],
+  'hero.videoAria': ['Ikki kishi navbat bilan ASL tilida «Xush kelibsiz» belgisini ko\'rsatadi: tekis kaft yondan ko\'krakka, kaft yuqoriga qarab keladi. 3D tasvir', 'Два человека по очереди показывают жест ASL «Добро пожаловать»: ровная ладонь движется сбоку к груди, ладонью вверх. 3D-визуализация', 'Two people take turns signing ASL WELCOME: a flat hand sweeps in from the side to the chest, palm up. A 3D render'],
 
   'story.title': ['Bir suhbat, besh lahza', 'Один разговор, пять моментов', 'One conversation, five moments'],
   'story.s1.t': ['Odam kameraga imo-ishora qiladi', 'Человек показывает жесты в камеру', 'A person signs to the camera'],
