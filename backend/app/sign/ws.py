@@ -217,7 +217,7 @@ def recommended_fps(target_fps: float) -> int:
 
 
 @router.websocket("/ws/sign")
-async def sign_ws(ws: WebSocket, client_id: str | None = None, lang: str = "rsl"):
+async def sign_ws(ws: WebSocket, client_id: str | None = None, lang: str = "rsl", token: str | None = None):
     await ws.accept()
     state = ws.app.state
 
@@ -226,6 +226,14 @@ async def sign_ws(ws: WebSocket, client_id: str | None = None, lang: str = "rsl"
         await ws.close(code=close_code)
 
     cid = parse_client_id(client_id)
+    if token:  # signed in (mobile app): history goes to the account
+        from app.auth.store import user_for_token
+
+        async with state.sessionmaker() as db:
+            user = await user_for_token(db, token)
+        if user is None:
+            return await reject("session_expired", "Your sign-in has expired; sign in again", 4401)
+        cid = user.uid
     if cid is None:
         return await reject("invalid_client_id", "client_id query param must be a UUID", 4400)
     if lang not in state.registry:

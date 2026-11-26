@@ -1,4 +1,6 @@
+import json
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -35,6 +37,13 @@ class Settings(BaseSettings):
     gemini_timeout_s: float = 30.0
     smooth_by_default: bool = True  # WS final includes a Gemini sentence unless the client opts out
 
+    # Sign-in (mobile app). All optional: with nothing set, sign-in is off and everything works as before.
+    auth_config_path: str = "config/auth.json"  # committed public client IDs; the env vars below win
+    google_client_ids: str = ""  # OAuth "Web application" client ID(s) a Google ID token must be issued for
+    github_client_id: str = ""  # OAuth App client ID (device flow enabled); shown to the app, not secret
+    github_client_secret: str = ""  # optional: if set, a GitHub token must belong to this OAuth App
+    session_days: int = 60
+
     upload_dir: str = "uploads"
     # Website served at "/" by the same server (one URL for the Colab tunnel). Empty = ../frontend next to backend/.
     frontend_dir: str = ""
@@ -44,6 +53,24 @@ class Settings(BaseSettings):
     @property
     def sentence_model_list(self) -> list[str]:
         return [m.strip() for m in self.gemini_sentence_models.split(",") if m.strip()]
+
+    def model_post_init(self, _ctx) -> None:
+        """Fill sign-in client IDs from config/auth.json when the environment does not set them."""
+        path = Path(self.auth_config_path)
+        if not path.is_absolute():
+            path = Path(__file__).resolve().parents[1] / path
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return
+        if not self.google_client_ids:
+            self.google_client_ids = str(data.get("google_web_client_id") or "")
+        if not self.github_client_id:
+            self.github_client_id = str(data.get("github_client_id") or "")
+
+    @property
+    def google_client_id_list(self) -> list[str]:
+        return [c.strip() for c in self.google_client_ids.split(",") if c.strip()]
 
     @property
     def cors_origin_list(self) -> list[str]:
