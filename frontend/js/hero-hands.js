@@ -257,7 +257,7 @@ export async function initHeroHands(stage) {
     camera.aspect = w / h;
     // Frame a fixed width (both people with their reach), and keep the top edge just above the shoulders,
     // so a tall phone frame shows more torso, never empty space where heads would be.
-    const dist = 1.6, halfW = camera.aspect < 1.5 ? .76 : .98, halfH = halfW / camera.aspect;
+    const dist = 1.6, halfW = camera.aspect < 1.5 ? .76 : Math.max(.98, .27 * camera.aspect), halfH = halfW / camera.aspect;
     camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(halfH / dist));
     const cy = .43 - halfH;
     camera.position.set(0, cy + .12, dist);

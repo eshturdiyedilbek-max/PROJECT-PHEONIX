@@ -7,7 +7,7 @@ import { initTranslate } from './translate.js';
 import { initLearn } from './learn.js';
 import { initHistory } from './history.js';
 import { RM } from './motion.js';
-import { initFly, replayFly } from './fly.js';
+import { initFly, initProgress, replayFly } from './fly.js';
 import { initResources } from './resources.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -162,6 +162,7 @@ async function init() {
   initStory();
   initReveal();
   initFly();
+  initProgress();
   initDock();
   const onScroll = () => document.documentElement.classList.toggle('scrolled', scrollY > 8);
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
