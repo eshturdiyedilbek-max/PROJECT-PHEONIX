@@ -1,4 +1,4 @@
-# Builds the Phoenix Android app (APK) from frontend/ + app/.
+# Builds the Phoenix Android app (APK) from mobile/ (the phone app) + app/ (Capacitor shell).
 # - Every pull request and push: the APK is attached to the run as an artifact.
 # - Every push to main: the APK is also published as a GitHub Release, easy to download on a phone.
 #   Phoenix.apk is always attached too, so .../releases/latest/download/Phoenix.apk is a stable link (used by the site).
@@ -7,9 +7,9 @@ name: Android APK
 on:
   push:
     branches: [main]
-    paths: ['frontend/**', 'app/**', '.github/workflows/android-apk.yml']
+    paths: ['mobile/**', 'frontend/fonts/**', 'frontend/js/demo*.js', 'backend/config/auth.json', 'app/**', '.github/workflows/android-apk.yml']
   pull_request:
-    paths: ['frontend/**', 'app/**', '.github/workflows/android-apk.yml']
+    paths: ['mobile/**', 'frontend/fonts/**', 'frontend/js/demo*.js', 'backend/config/auth.json', 'app/**', '.github/workflows/android-apk.yml']
   workflow_dispatch:
 
 permissions:

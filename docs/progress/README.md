@@ -31,6 +31,15 @@ Pullik GPU server o'rniga Google Colab'ning bepul T4 GPU'si. Notebook hamma nars
 | --- | --- |
 | ![Colab notebook](20-colab-notebook.png) Notebook: ishga tushirishdan oldingi ko'rsatmalar | ![Colab sozlamalari](21-colab-sozlamalar.png) Sozlamalar: rus modeli, ASL, Whisper |
 
+## Android ilova: alohida telefon dizayni (2026-11-26)
+
+APK endi saytning nusxasi emas. Telefon uchun noldan yasalgan ilova: bitta telefon ikki odam orasida turadi, ekran qizil chiziq bilan ikkiga bo'lingan, narigi yarmi qarshidagi odam uchun 180° aylantirilgan. Google yoki GitHub bilan kirish, tarix akkauntga saqlanadi.
+
+| | |
+| --- | --- |
+| ![Kirish](40-ilova-kirish.png) Birinchi ochilish: Google yoki GitHub bilan kirish | ![Yuzma-yuz](41-ilova-yuzma-yuz.png) Suhbat: pastda imo bilan aytilgan gap, tepada (aylangan) eshituvchining gapi |
+| ![Lug'at](42-ilova-lugat.png) Lug'at | ![Profil](43-ilova-profil.png) Profil va sozlamalar |
+
 ## 1. Dizayn izlanishlari (2026-11-24 / 25)
 
 Avval 5 xil dizayn yo'nalishi sinab ko'rildi. Ular "sun'iy intellekt yasagandek" ko'rinishi sababli rad etildi. Keyin loyiha uchun o'z dizayn tizimi ([`frontend-resources/`](../../frontend-resources/README.md)) tuzildi va "Studio" varianti tanlandi.

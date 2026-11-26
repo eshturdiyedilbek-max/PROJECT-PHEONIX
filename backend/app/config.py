@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore", protected_namespaces=())
 
     database_url: str = "sqlite+aiosqlite:///./phoenix.db"
-    cors_origins: str = "http://localhost:3000,http://localhost:5173"
+    cors_origins: str = "http://localhost:3000,http://localhost:5173,https://localhost"  # https://localhost = the Android app
 
     # Sign languages/models: see config/sign_languages.json
     sign_languages_path: str = "config/sign_languages.json"
