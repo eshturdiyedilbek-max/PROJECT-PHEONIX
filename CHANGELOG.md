@@ -13,6 +13,7 @@ Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
 ### O'zgardi
 - Brauzer yorlig'idagi logo qizil (oldin eski yashil rang edi).
+- Bosh sahifadagi 3D qo'llar endi haqiqiy **ASL WELCOME** belgisini ko'rsatadi: tekis kaft (B shakli) yondan, kaft yon tomonga qarab, katta yoy bilan ko'krak markaziga keladi va kaft yuqoriga qaraydi. Ikki kishi navbat bilan, oldidan ko'rinib turadi (sviterli gavda, bo'yindan kesilgan). Manba: Lifeprint (ASL University), Wiktionary.
 
 ## 2026-11-25: yangi dizayn (oq va qizil)
 
