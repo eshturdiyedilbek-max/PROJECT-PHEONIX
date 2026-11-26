@@ -155,10 +155,10 @@ html.phx-go .welcome-sub{animation:word-in .9s var(--ease-out) .75s both}
 .story-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:var(--space-6);align-items:start}
 .story-steps{list-style:none;margin:0;padding:0;grid-column:1;grid-row:1}
 .story-stage-wrap{grid-column:2;grid-row:1;position:sticky;top:calc(50vh - min(260px,30vh));height:min(520px,60vh)}
-.step{min-height:52vh;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.step{min-height:95vh;display:flex;flex-direction:column;justify-content:center;gap:12px}
 .step h3{opacity:.72;transition:opacity .5s var(--ease-out)}
 .step.on h3{opacity:1}
-.step:last-child{min-height:50vh}
+.step:last-child{min-height:75vh}
 .step h3{margin:0;font:700 clamp(23px,2.7vw,36px)/1.08 var(--font-display);letter-spacing:-.03em;max-width:16ch}
 .step p{margin:0;font-size:16px;line-height:1.55;max-width:42ch}
 
@@ -426,7 +426,7 @@ html.phx-go [data-intro]{animation:phx-fade 900ms var(--ease-out) calc(600ms + v
   .story-grid{grid-template-columns:1fr;gap:0}
   .story-stage-wrap{grid-column:1;grid-row:1;top:76px;height:min(42vh,360px);z-index:1}
   .story-steps{grid-column:1;grid-row:2;margin-top:-30vh}
-  .step{min-height:0;justify-content:flex-start;padding:46vh 0 10vh}
+  .step{min-height:0;justify-content:flex-start;padding:72vh 0 20vh}
   .step:last-child{min-height:0;padding-bottom:14vh}
   .news > div{grid-template-columns:1fr}
   .tx-grid{grid-template-columns:1fr;grid-template-areas:"cam" "panels" "ctrl";grid-template-rows:auto}
@@ -451,7 +451,7 @@ html.phx-go [data-intro]{animation:phx-fade 900ms var(--ease-out) calc(600ms + v
 /* ---------- FLY-IN (scroll) ----------
    Content is visible by default. Only when JS runs with motion allowed does .fly-on hide
    items until they scroll in; each data-fly value enters from its own direction. */
-.fly-on [data-fly]{transition:opacity .8s var(--ease-out),transform 1.1s var(--ease-out),clip-path 1.1s var(--ease-out);transition-delay:calc(var(--fd,0) * 90ms)}
+.fly-on [data-fly]{transition:opacity 1.3s var(--ease-out),transform 1.7s var(--ease-out),clip-path 1.7s var(--ease-out);transition-delay:calc(var(--fd,0) * 170ms)}
 .fly-on [data-fly]:not(.in){opacity:0}
 .fly-on [data-fly=left]:not(.in){transform:translate3d(-72px,0,0)}
 .fly-on [data-fly=right]:not(.in){transform:translate3d(72px,0,0)}
@@ -553,7 +553,7 @@ html.phx-go [data-intro]{animation:phx-fade 900ms var(--ease-out) calc(600ms + v
 .mq-b span:nth-child(4n+1){color:var(--ink);-webkit-text-stroke:0}
 
 /* Resources: the journey of one word (sticky, scroll-driven) */
-.res-journey{position:relative;height:440vh;background:var(--surface-sunken)}
+.res-journey{position:relative;height:760vh;background:var(--surface-sunken)}
 .res-journey-stage{position:sticky;top:0;height:100vh;height:100svh;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
 .res-journey-in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:var(--space-6);align-items:center;width:100%}
 .rj-steps{list-style:none;margin:var(--space-4) 0 0;padding:0;display:grid;gap:var(--space-2)}
