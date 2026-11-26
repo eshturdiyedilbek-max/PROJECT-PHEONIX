@@ -2,7 +2,7 @@
 
 <!-- impeccable:product-schema 1 -->
 
-_Written 2026-11-25 from temur's confirmed project decisions (project memory, README, docs/API.md). Facts marked (inferred) were not asked directly._
+_Written 2026-11-25 from the team's confirmed project decisions (README, docs/API.md). Facts marked (inferred) were not asked directly._
 
 ## Platform
 
@@ -34,13 +34,13 @@ Two-way on one screen, in the browser, with Uzbek as an output language: Russian
 ## Brand Commitments
 - Name: Phoenix. Logo: the four-arc mark in `frontend/assets/logo.svg`.
 - Fonts: Golos Text (text) and Geologica (display), self-hosted, SIL OFL.
-- 2026-11-25 redesign brief from temur (binding): white and red; animated landing; no skeleton or wireframe hands anywhere; the hero is real footage of two people signing "Welcome" with the localized caption under it; the whole site in Uzbek, Russian and English with a switch that changes every section; an Apple-style bottom dock with a liquid-glass look; a scroll-driven storyboard.
+- 2026-11-25 redesign brief (binding): white and red; animated landing; no skeleton or wireframe hands anywhere; the hero is real footage of two people signing "Welcome" with the localized caption under it; the whole site in Uzbek, Russian and English with a switch that changes every section; an Apple-style bottom dock with a liquid-glass look; a scroll-driven storyboard.
 - Voice: plain, friendly, concrete. No "it's not X, it's Y" constructions, no hype.
 
 ## Evidence on Hand
 - Real backend with tests; demo mode for when no GPU is running.
-- No licensed footage of signers yet: the hero welcome clip is a labelled placeholder until temur films it (`frontend/assets/hero/README.md`).
-- The existing motion-graphics demo video (`frontend/assets/demo/demo.mp4`) drew skeleton hands, so it was removed from the site; temur will supply a real demo recording.
+- No licensed footage of signers yet: the hero welcome clip is a labelled placeholder until the team films it (`frontend/assets/hero/README.md`).
+- The existing motion-graphics demo video (`frontend/assets/demo/demo.mp4`) drew skeleton hands, so it was removed from the site; the team will supply a real demo recording.
 - No testimonials, users, accuracy benchmarks or partners exist. Do not invent them.
 
 ## Product Principles
