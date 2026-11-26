@@ -479,6 +479,12 @@ const D = {
   "cel.g3": ["sovg'a qildi", "дарит вам Pro", "gave you this gift"],
   "cel.go": ["Tarjimani boshlash", "Начать перевод", "Start translating"],
   "cel.close": ["Yopish", "Закрыть", "Close"],
+  "smp.t": ["Kamerasiz sinab ko'ring", "Попробуйте без камеры", "Try it without a camera"],
+  "smp.p": ["Namuna videoni bosing: u kamera o'rnida o'ynaydi va xuddi shu tanish tizimidan o'tadi.", "Нажмите на пример: видео играет вместо камеры и проходит через то же распознавание.", "Tap a sample: the clip plays in place of the camera and goes through the same recognizer."],
+  "smp.rsl1": ["Rus imo-ishorasi: «я», «я тебя»", "РЖЯ: «я», «я тебя»", "RSL: «я», «я тебя»"],
+  "smp.rsl2": ["Rus imo-ishorasi: salomlashish", "РЖЯ: приветствие", "RSL: a greeting"],
+  "smp.asl1": ["ASL: WELCOME (3D tasvir)", "ASL: WELCOME (3D-модель)", "ASL: WELCOME (3D render)"],
+  "smp.on": ["Namuna video", "Видео-пример", "Sample clip"],
 };
 
 const IDX = { uz: 0, ru: 1, en: 2 };

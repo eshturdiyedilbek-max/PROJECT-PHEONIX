@@ -21,6 +21,18 @@ const SIGN_NAME = s => t('sign.' + s);
 // A text spec is an i18n key, or [key, vars]; banners and status keep the spec so a language switch re-renders them.
 const T = x => !x ? '' : Array.isArray(x) ? t(x[0], x[1]) : t(x);
 
+// Sample clips for trying the recognizer without a camera (assets/samples/README.md lists sources and licences).
+// A sample plays in the camera frame and goes through the same pipeline: frames over /ws/sign, words back.
+const SAMPLES = {
+  rsl: [
+    { id: 'rsl-1', src: 'assets/res/slovo-demo.mp4', label: 'smp.rsl1', src_note: 'Slovo · CC BY-SA 4.0' },
+    { id: 'rsl-2', src: 'assets/samples/rsl-slovo-2.mp4', label: 'smp.rsl2', src_note: 'Slovo · CC BY-SA 4.0' }
+  ],
+  asl: [
+    { id: 'asl-1', src: 'assets/samples/asl-welcome-3d.mp4', label: 'smp.asl1', src_note: 'Phoenix 3D' }
+  ]
+};
+
 export function initTranslate() {
   const el = {
     video: $('#cam'), empty: $('#cam-empty'), dot: $('#cam-dot'), camState: $('#cam-state'), fps: $('#fps'),
@@ -39,7 +51,7 @@ export function initTranslate() {
     sign: settings.get('sign'), target: settings.get('target'), smooth: settings.get('smooth'),
     cam: null, ws: null, live: false, ready: false, timer: 0, encoding: false,
     sent: 0, fpsAt: performance.now(), retry: 0, retryTimer: 0, wantOpen: false,
-    lastFinal: null, newPhrase: false, health: null, languages: null
+    lastFinal: null, newPhrase: false, health: null, languages: null, sample: null
   };
 
   // ---------- banners (status messages above the camera) ----------
@@ -162,6 +174,7 @@ export function initTranslate() {
 
   function closeCamera() {
     st.cam?.getTracks().forEach(t => t.stop());
+    if (st.sample) { el.video.pause(); el.video.removeAttribute('src'); el.video.load(); el.video.classList.remove('sample'); st.sample = null; paintSamples(); }
     st.cam = null; el.video.srcObject = null; el.video.hidden = true; el.empty.hidden = false;
     el.dot.classList.add('off'); setCamText('tx.camOff', 'tx.camOff', 'tx.camHint'); el.fps.textContent = '0';
   }
@@ -177,9 +190,16 @@ export function initTranslate() {
     if (!ws || ws.readyState !== 1 || !st.ready || st.encoding || ws.bufferedAmount > MAX_BUFFERED) return;
     if (el.video.readyState < 2) return;
     const vw = el.video.videoWidth, vh = el.video.videoHeight;
-    // centre-crop to 4:3 so the model sees the same framing as the preview
-    const scale = Math.max(FRAME_W / vw, FRAME_H / vh), sw = FRAME_W / scale, sh = FRAME_H / scale;
-    cctx.drawImage(el.video, (vw - sw) / 2, (vh - sh) / 2, sw, sh, 0, 0, FRAME_W, FRAME_H);
+    if (st.sample) {
+      // sample clips are often portrait: fit the whole picture (grey bars, like the model's own letterbox)
+      const k = Math.min(FRAME_W / vw, FRAME_H / vh), dw = vw * k, dh = vh * k;
+      cctx.fillStyle = '#727272'; cctx.fillRect(0, 0, FRAME_W, FRAME_H);
+      cctx.drawImage(el.video, (FRAME_W - dw) / 2, (FRAME_H - dh) / 2, dw, dh);
+    } else {
+      // centre-crop to 4:3 so the model sees the same framing as the preview
+      const scale = Math.max(FRAME_W / vw, FRAME_H / vh), sw = FRAME_W / scale, sh = FRAME_H / scale;
+      cctx.drawImage(el.video, (vw - sw) / 2, (vh - sh) / 2, sw, sh, 0, 0, FRAME_W, FRAME_H);
+    }
     st.encoding = true;
     canvas.toBlob(b => {
       st.encoding = false;
@@ -272,6 +292,49 @@ export function initTranslate() {
     banner('limit', 'warn', 'b.limit.l', pro ? 'b.limitPro.t' : 'b.limit.t', pro ? null : { label: 'pr.buy', run: () => { location.hash = '#tolov'; } });
   }
 
+  // ---------- sample clips (no camera needed, no attempt used) ----------
+  function paintSamples() {
+    const row = $('#samples-row'); if (!row) return;
+    const list = SAMPLES[st.sign] || [];
+    row.replaceChildren(...list.map(s => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'sample'; b.dataset.id = s.id;
+      b.setAttribute('aria-pressed', String(st.sample?.id === s.id));
+      const v = document.createElement('video');
+      Object.assign(v, { src: s.src + '#t=1', muted: true, playsInline: true, preload: 'metadata', loop: true });
+      v.setAttribute('aria-hidden', 'true');
+      b.addEventListener('pointerenter', () => v.play().catch(() => {}));
+      b.addEventListener('pointerleave', () => v.pause());
+      const txt = document.createElement('span');
+      txt.innerHTML = '<b></b><small></small>';
+      txt.querySelector('b').textContent = t(s.label);
+      txt.querySelector('small').textContent = s.src_note;
+      const play = document.createElement('i'); play.setAttribute('aria-hidden', 'true');
+      b.append(v, play, txt);
+      b.addEventListener('click', () => (st.sample?.id === s.id ? stopAll() : startSample(s)));
+      return b;
+    }));
+  }
+
+  async function startSample(s) {
+    if (st.live) stopAll();
+    banner('model'); banner('idle'); banner('cam'); banner('limit');
+    st.sample = s;
+    el.video.srcObject = null;
+    el.video.classList.add('sample');
+    Object.assign(el.video, { src: s.src, loop: true, muted: true });
+    el.video.hidden = false; el.empty.hidden = true;
+    await el.video.play().catch(() => {});
+    el.dot.classList.remove('off'); setCamText('smp.on');
+    st.live = true;
+    el.start.dataset.i18n = 'tx.camStop'; el.start.textContent = t('tx.camStop');
+    el.start.classList.add('ph-btn--quiet');
+    el.stop.disabled = false; el.reset.disabled = false;
+    clearPhrase();
+    paintSamples();
+    connect();
+  }
+
   async function startAll() {
     if (st.live) { stopAll(); return; }
     banner('model'); banner('idle');
@@ -333,6 +396,8 @@ export function initTranslate() {
     html.classList.toggle('asl', st.sign === 'asl');
     el.signName.textContent = SIGN_NAME(st.sign);
     el.panel.lang = st.sign === 'asl' ? 'en' : 'ru';
+    if (st.sample && !SAMPLES[st.sign]?.some(x => x.id === st.sample.id)) stopAll();
+    paintSamples();
     checkModel();
   }
 
@@ -491,7 +556,7 @@ export function initTranslate() {
   });
 
   applySign(); applySmooth(); status('off');
-  paintQuota(); onPlanChange(paintQuota); onLangChange(paintQuota);
+  paintQuota(); onPlanChange(paintQuota); onLangChange(paintQuota); onLangChange(paintSamples);
   document.querySelectorAll('input[name=sign]').forEach(r => {
     const small = r.closest('label').querySelector('small');
     if (small && small.dataset.count) small.textContent = t('tx.signs', { n: small.dataset.count });

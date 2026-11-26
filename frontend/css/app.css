@@ -1144,3 +1144,21 @@ html.cel-open{overflow:hidden}
   .cel-logo path{stroke-dashoffset:0}
   .cc-in{transition:none}
 }
+
+/* ---------- sample clips on Translate ---------- */
+.frame video.sample{transform:none;object-fit:contain;background:#171011}
+.samples{display:grid;gap:6px;margin-top:var(--space-4);padding-top:var(--space-3);border-top:1px solid var(--line)}
+.samples-h{margin:0;font:700 17px/1.25 var(--font-display);letter-spacing:-.01em}
+.samples-p{margin:0;color:var(--ink-muted);max-width:52ch}
+.samples-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--space-2);margin-top:var(--space-2)}
+.sample{position:relative;appearance:none;display:grid;grid-template-rows:auto auto;padding:0;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface);color:var(--ink);text-align:left;cursor:pointer;overflow:hidden;transition:border-color .2s,transform .45s var(--ease-out),box-shadow .45s var(--ease-out)}
+.sample:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--red) 50%,transparent);box-shadow:var(--shadow-soft)}
+.sample video{width:100%;aspect-ratio:4/3;object-fit:cover;background:#171011;display:block}
+.sample i{position:absolute;top:calc((100% - 52px) / 2 - 22px);left:50%;width:40px;height:40px;margin-left:-20px;border-radius:50%;background:var(--red);box-shadow:0 6px 16px -6px rgba(0,0,0,.5);transition:transform .4s var(--ease-out)}
+.sample i::after{content:"";position:absolute;left:15px;top:12px;border-style:solid;border-width:8px 0 8px 13px;border-color:transparent transparent transparent #fff}
+.sample:hover i{transform:scale(1.12)}
+.sample[aria-pressed=true]{border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 22%,transparent)}
+.sample[aria-pressed=true] i::after{left:13px;top:13px;width:14px;height:14px;border:0;background:#fff;border-radius:2px}
+.sample span{display:grid;gap:2px;padding:10px 12px;min-height:52px}
+.sample b{font:600 13.5px/1.3 var(--font-sans)}
+.sample small{font-size:11.5px;color:var(--ink-muted)}
