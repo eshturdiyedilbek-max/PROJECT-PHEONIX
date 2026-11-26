@@ -10,6 +10,7 @@ import { initDict } from './dict.js';
 import { initHistory } from './history.js';
 import { initMe, chooseSign, chooseTarget } from './me.js';
 import * as signin from './signin.js';
+import { startStage } from './stage.js';
 
 applyTheme();
 
@@ -35,6 +36,7 @@ signinEl.addEventListener('click', async e => {
   if (ok) showApp();
 });
 $('#in-skip').addEventListener('click', showApp);
+startStage(() => !signinEl.hidden && !document.hidden);
 
 // ---------- tabs ----------
 const screens = { talk: initTalk(), dict: initDict(), history: initHistory(), me: initMe() };

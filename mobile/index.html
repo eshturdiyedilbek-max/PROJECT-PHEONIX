@@ -38,7 +38,13 @@
     <div class="signin__top">
       <div class="seg seg--on-red" role="group" aria-label="Til / Язык / Language" data-ui-lang></div>
     </div>
-    <svg class="signin__mark" viewBox="0 14 96 82" aria-hidden="true"><path d="M46 96A46 46 0 0 0 0 50M50 96A46 46 0 0 1 96 50M76 96A76 76 0 0 0 0 20M20 96A76 76 0 0 1 96 20" fill="none" stroke="currentColor" stroke-width="12"/></svg>
+    <!-- a miniature of the talk screen: two people, one line, sentences crossing it -->
+    <div class="stage" aria-hidden="true">
+      <p class="stage__far" id="stage-far"></p>
+      <span class="stage__line"><i></i></span>
+      <p class="stage__near" id="stage-near"></p>
+    </div>
+    <svg class="signin__mark" viewBox="0 14 96 82" aria-hidden="true"><path pathLength="1" d="M46 96A46 46 0 0 0 0 50M50 96A46 46 0 0 1 96 50" fill="none" stroke="currentColor" stroke-width="12"/><path pathLength="1" d="M76 96A76 76 0 0 0 0 20M20 96A76 76 0 0 1 96 20" fill="none" stroke="currentColor" stroke-width="12"/></svg>
     <p class="signin__brand">Phoenix</p>
     <h1 id="in-title" class="signin__title" data-i18n="in.title"></h1>
     <p class="signin__lead" data-i18n="in.lead"></p>
