@@ -2,6 +2,18 @@
 
 Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
+## 2026-11-26: sayt internetda va Android ilovasi
+
+### Qo'shildi
+- Android ilovasi (`app/`, Capacitor 8): saytning o'zi telefon ichida, kamera va mikrofon ruxsatlari bilan, gapni telefonning ovoz dvigateli o'qiydi. Ikonka va ochilish ekrani oq-qizil uslubda.
+- GitHub Actions APK ni o'zi yig'adi: har PR'da "Artifacts", `main` ga har push'da "Releases".
+- Vercel uchun `vercel.json`: sayt bepul doimiy manzilda, `main` o'zgarsa o'zi yangilanadi.
+- Saytni telefonga o'rnatish (PWA): `manifest.webmanifest`, ikonkalar.
+- Qadam-baqadam ko'rsatma: `deploy/SAYT-VA-ILOVA.md`.
+
+### O'zgardi
+- Brauzer yorlig'idagi logo qizil (oldin eski yashil rang edi).
+
 ## 2026-11-25: yangi dizayn (oq va qizil)
 
 ### Qo'shildi
