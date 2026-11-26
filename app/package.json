@@ -1,0 +1,20 @@
+{
+  "name": "phoenix-app",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Phoenix Android ilovasi: frontend/ saytini Capacitor ichida ishga tushiradi",
+  "scripts": {
+    "web": "node scripts/copy-web.mjs",
+    "sync": "npm run web && cap sync android",
+    "apk": "npm run sync && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor-community/text-to-speech": "8.0.2",
+    "@capacitor/android": "8.6.0",
+    "@capacitor/core": "8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "4.0.0",
+    "@capacitor/cli": "8.6.0"
+  }
+}
