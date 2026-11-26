@@ -54,6 +54,40 @@ function intro() {
 }
 
 // Site language: UZ / RU / EN buttons in the top bar and the select in Settings.
+// Theme button: light <-> dark. A big "Phoenix" fades in at the centre, the theme flips behind it, then it fades out.
+function effectiveTheme() {
+  const d = document.documentElement.dataset.theme;
+  return d || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
+function initThemeToggle() {
+  const btn = $('#theme-toggle'), wipe = $('#theme-wipe');
+  if (!btn) return;
+  const paint = () => {
+    const dark = effectiveTheme() === 'dark';
+    btn.setAttribute('aria-label', t(dark ? 'theme.toLight' : 'theme.toDark'));
+    btn.dataset.now = dark ? 'dark' : 'light';
+  };
+  let busy = false;
+  btn.addEventListener('click', () => {
+    if (busy) return;
+    const next = effectiveTheme() === 'dark' ? 'light' : 'dark';
+    const flip = () => {
+      settings.set('theme', next); applyTheme(); paint();
+      const sel = $('[data-set=theme]'); if (sel) sel.value = next;
+    };
+    if (RM || !wipe) { flip(); return; }
+    busy = true;
+    wipe.dataset.to = next;
+    wipe.classList.remove('out'); wipe.classList.add('on');
+    setTimeout(flip, 620);
+    setTimeout(() => { wipe.classList.add('out'); }, 1050);
+    setTimeout(() => { wipe.classList.remove('on', 'out'); busy = false; }, 1800);
+  });
+  settings.onChange(k => { if (k === 'theme') paint(); });
+  onLangChange(paint);
+  paint();
+}
+
 function initLanguage() {
   applyI18n();
   $$('[data-ui-lang]').forEach(b => b.addEventListener('click', () => setLang(b.dataset.uiLang)));
@@ -153,6 +187,7 @@ async function checkApi() {
 async function init() {
   applyTheme();
   initLanguage();
+  initThemeToggle();
   initSettingsView();
   pages.translate = initTranslate();
   pages.learn = initLearn();
