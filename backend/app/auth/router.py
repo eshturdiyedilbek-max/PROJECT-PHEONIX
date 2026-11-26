@@ -10,12 +10,13 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Header, Request, Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
 from app.auth import store
-from app.auth.providers import InvalidCredential, Profile, ProviderUnavailable
+from app.auth.providers import InvalidCredential, Profile, ProviderUnavailable, github_device_poll, github_device_start
 from app.deps import bearer_token, current_user, get_db, parse_client_id
 from app.errors import ApiError
 from app.models import User
@@ -29,6 +30,10 @@ class GoogleLogin(BaseModel):
 
 class GithubLogin(BaseModel):
     access_token: str = Field(min_length=10, max_length=512)
+
+
+class GithubPoll(BaseModel):
+    device_code: str = Field(min_length=10, max_length=200)
 
 
 def _iso(dt: datetime) -> str:
@@ -97,6 +102,45 @@ async def login_github(body: GithubLogin, request: Request, x_client_id: str | N
     except ProviderUnavailable as e:
         raise ApiError(502, "provider_unavailable", "Could not reach GitHub to verify the sign-in") from e
     return await _finish(request, db, profile, x_client_id)
+
+
+def _github_client_id(request: Request) -> str:
+    cid = request.app.state.settings.github_client_id
+    if not cid:
+        raise ApiError(503, "auth_unavailable", "GitHub sign-in is not set up on this server (GITHUB_CLIENT_ID)")
+    return cid
+
+
+@router.post("/github/device")
+async def github_device(request: Request):
+    """Browser version of GitHub's device flow, step 1: get a code for the person to enter on github.com."""
+    cid = _github_client_id(request)
+    try:
+        d = await github_device_start(cid, request.app.state.github_http())
+    except ProviderUnavailable as e:
+        raise ApiError(502, "provider_unavailable", f"Could not get a code from GitHub: {e}") from e
+    return {k: d.get(k) for k in ("device_code", "user_code", "verification_uri", "interval", "expires_in")}
+
+
+@router.post("/github/poll")
+async def github_poll(body: GithubPoll, request: Request, x_client_id: str | None = Header(None),
+                      db: AsyncSession = Depends(get_db)):
+    """Step 2, call every `interval` seconds: 202 while waiting, the normal login response once approved."""
+    cid = _github_client_id(request)
+    try:
+        r = await github_device_poll(cid, body.device_code, request.app.state.github_http())
+    except ProviderUnavailable as e:
+        raise ApiError(502, "provider_unavailable", "Could not reach GitHub") from e
+    if r.get("access_token"):
+        return await login_github(GithubLogin(access_token=r["access_token"]), request, x_client_id, db)
+    err = r.get("error")
+    if err in ("authorization_pending", "slow_down"):
+        return JSONResponse({"status": "pending", "interval": r.get("interval")}, status_code=202)
+    if err == "expired_token":
+        raise ApiError(410, "code_expired", "The code expired; start again")
+    if err == "access_denied":
+        raise ApiError(403, "access_denied", "Sign-in was declined on GitHub")
+    raise ApiError(400, "invalid_request", r.get("error_description") or str(err))
 
 
 @router.get("/me")

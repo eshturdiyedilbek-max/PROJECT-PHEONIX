@@ -208,3 +208,33 @@ def test_client_ids_from_config_file(tmp_path):
     assert (s.google_client_id_list, s.github_client_id) == (["w.apps"], "Ov23x")
     s = Settings(auth_config_path=str(f), github_client_id="env-wins")
     assert s.github_client_id == "env-wins"
+
+
+async def test_github_device_proxy(client, fakes, app):
+    polls = {"n": 0}
+
+    def h(req):
+        if req.url.path == "/login/device/code":
+            assert json.loads(req.content)["client_id"] == "Iv1.abc"
+            return httpx.Response(200, json={"device_code": "dc-123456789", "user_code": "ABCD-1234",
+                                             "verification_uri": "https://github.com/login/device",
+                                             "interval": 5, "expires_in": 900})
+        if req.url.path == "/login/oauth/access_token":
+            polls["n"] += 1
+            body = json.loads(req.content)
+            if body["device_code"] == "dc-expired-0000":
+                return httpx.Response(200, json={"error": "expired_token"})
+            if polls["n"] == 1:
+                return httpx.Response(200, json={"error": "authorization_pending"})
+            return httpx.Response(200, json={"access_token": "555555555555:dev@x.uz"})
+        return httpx.Response(404)
+
+    app.state.github_http = lambda: httpx.AsyncClient(transport=httpx.MockTransport(h))
+    d = (await client.post("/api/auth/github/device")).json()
+    assert d["user_code"] == "ABCD-1234" and d["device_code"] == "dc-123456789"
+    r = await client.post("/api/auth/github/poll", json={"device_code": d["device_code"]})
+    assert r.status_code == 202 and r.json()["status"] == "pending"
+    r = await client.post("/api/auth/github/poll", json={"device_code": d["device_code"]})
+    assert r.status_code == 200 and r.json()["user"]["email"] == "dev@x.uz" and r.json()["token"]
+    r = await client.post("/api/auth/github/poll", json={"device_code": "dc-expired-0000"})
+    assert r.status_code == 410 and r.json()["error"]["code"] == "code_expired"

@@ -82,6 +82,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.state.verify_google = verify_google  # tests swap these for fakes
     app.state.verify_github = verify_github
+    app.state.github_http = lambda: None  # None = a real client per call; tests return a mocked httpx client
 
     app.add_middleware(
         CORSMiddleware,
