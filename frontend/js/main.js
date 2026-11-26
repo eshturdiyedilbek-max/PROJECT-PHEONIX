@@ -1,4 +1,4 @@
-// Phoenix website entry: page router (#landing, #translate, #learn, #history, #sozlamalar), site language,
+// Phoenix website entry: page router (#landing, #translate, #learn, #history, #resurslar, #sozlamalar), site language,
 // entrance animation, landing storyboard, bottom dock.
 import { applyTheme, initSettingsView, settings } from './settings.js';
 import { api, apiBase, getMode, resolveMode } from './api.js';
@@ -7,21 +7,23 @@ import { initTranslate } from './translate.js';
 import { initLearn } from './learn.js';
 import { initHistory } from './history.js';
 import { RM } from './motion.js';
+import { initFly, initProgress, replayFly } from './fly.js';
+import { initResources } from './resources.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-const VIEWS = ['landing', 'translate', 'learn', 'history', 'sozlamalar'];
+const VIEWS = ['landing', 'translate', 'learn', 'history', 'resurslar', 'sozlamalar'];
 const pages = {};   // view name -> { enter(), leave() }
 let routed = false;  // the first view arrives with the intro, later ones fade in
 
 function route() {
   const name = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'landing';
-  $$('[data-view]').forEach(v => {
+  $$('section[data-view]').forEach(v => {
     const on = v.dataset.view === name;
     if (!on && !v.hidden) pages[v.dataset.view]?.leave?.();
     v.hidden = !on;
-    if (on && routed && !RM) { v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter'); }
+    if (on && routed && !RM) { v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter'); replayFly(v); }
   });
   routed = true;
   $$('.dock-item').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + name));
@@ -33,7 +35,7 @@ function route() {
 // Entrance: the logo draws itself, the overlay wipes up, then the hero assembles.
 function intro() {
   const html = document.documentElement, ov = $('#intro');
-  const view = $('[data-view]:not([hidden])');
+  const view = $('section[data-view]:not([hidden])');
   const items = $$('header[data-intro]').concat(view ? $$('[data-intro]', view) : []);
   items.forEach((el, i) => el.style.setProperty('--d', i));
   if (RM || !ov) { ov?.remove(); html.classList.remove('phx-pre'); html.classList.add('phx-ready'); return; }
@@ -154,10 +156,14 @@ async function init() {
   pages.learn = initLearn();
   pages.history = initHistory();
   pages.sozlamalar = { enter: checkApi };
+  pages.resurslar = initResources();
   $('#to-how')?.addEventListener('click', () => $('#how').scrollIntoView({ behavior: RM ? 'auto' : 'smooth' }));
   intro();
   initStory();
   initReveal();
+  if (window.Capacitor?.isNativePlatform?.()) document.documentElement.classList.add('is-app');
+  initFly();
+  initProgress();
   initDock();
   const onScroll = () => document.documentElement.classList.toggle('scrolled', scrollY > 8);
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
