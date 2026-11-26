@@ -1,6 +1,7 @@
 # Builds the Phoenix Android app (APK) from frontend/ + app/.
 # - Every pull request and push: the APK is attached to the run as an artifact.
 # - Every push to main: the APK is also published as a GitHub Release, easy to download on a phone.
+#   Phoenix.apk is always attached too, so .../releases/latest/download/Phoenix.apk is a stable link (used by the site).
 name: Android APK
 
 on:
@@ -51,6 +52,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
           cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/Phoenix-${{ github.run_number }}.apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/Phoenix.apk"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -63,7 +65,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "apk-${{ github.run_number }}" "Phoenix-${{ github.run_number }}.apk" \
+          gh release create "apk-${{ github.run_number }}" "Phoenix-${{ github.run_number }}.apk" Phoenix.apk \
             --title "Phoenix ilovasi (Android) #${{ github.run_number }}" \
-            --notes "Telefonga yuklab olib o'rnating: Phoenix-${{ github.run_number }}.apk. Commit ${{ github.sha }}." \
+            --notes "Telefonga yuklab olib o'rnating: Phoenix.apk (doimiy havola: releases/latest/download/Phoenix.apk). Commit ${{ github.sha }}." \
             --latest
