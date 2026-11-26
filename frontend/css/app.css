@@ -21,7 +21,7 @@
   --ink:#1b1112;--ink-muted:#6b5b5c;--border:#9a8a8b;--line:#efe3e1;
   --accent:var(--red);--on-accent:#ffffff;--focus:var(--ink);
   --status-ok:var(--ink);--status-warn:#8a5300;--status-danger:#a3160f;
-  --space-1:4px;--space-2:8px;--space-3:16px;--space-4:24px;--space-5:28px;--space-6:40px;--space-7:60px;--space-8:96px;
+  --space-1:4px;--space-2:8px;--space-3:16px;--space-4:24px;--space-5:32px;--space-6:48px;--space-7:64px;--space-8:96px;
   --radius-sm:6px;--radius-md:12px;--radius-lg:20px;--radius-xl:28px;
   --font-sans:"Golos Text",system-ui,"Segoe UI","Noto Sans",Arial,sans-serif;
   --font-display:"Geologica","Golos Text",system-ui,"Segoe UI",Arial,sans-serif;
@@ -645,3 +645,111 @@ html.phx-go [data-intro]{animation:phx-fade 900ms var(--ease-out) calc(600ms + v
   html.phx-pre .welcome-word,html.phx-pre .welcome-sub{opacity:1}
 }
 .set-row .ph-btn{white-space:nowrap;flex-shrink:0}
+
+/* ---------- Composition: every chapter gets its own layout ----------
+   Rhythm: chapters 96px apart (64px on phones); heading -> lead 16px; lead -> content 48px. */
+.res-ch{padding-block:var(--space-8)}
+.res h2{margin:0 0 var(--space-3)}
+.res-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--space-3) var(--space-6);align-items:end;margin-bottom:var(--space-6)}
+.res-split h2{margin:0}
+.res-split p{margin:0;color:var(--ink-muted);font-size:17px;line-height:1.55;max-width:46ch;justify-self:end}
+
+/* hero: one huge headline across the screen, lead tucked under its right half */
+.res-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:var(--space-6);padding-block:var(--space-7) var(--space-6)}
+.res-title{grid-column:1/-1;max-width:none;font-size:clamp(44px,9.4vw,150px)}
+.res-lead{grid-column:2;margin-top:var(--space-4)}
+.res-stats{grid-column:1/-1}
+
+/* Slovo: collage on the left, story on the right */
+.res-data{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:var(--space-7)}
+.res-data .res-slovo{grid-column:1;grid-row:1}
+.res-data .res-copy{grid-column:2;grid-row:1}
+
+/* ASL: a centred stack under giant letters */
+.res-asl{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center;gap:var(--space-5)}
+.res-word{font-size:clamp(140px,27vw,400px);justify-content:center}
+.res-asl .res-copy{display:grid;justify-items:center}
+.res-asl h2{max-width:20ch}
+.res-asl .res-copy > p{margin-inline:auto}
+.res-asl .res-note{border-left:0;padding:var(--space-3) 0 0;border-top:3px solid var(--red);max-width:52ch}
+
+/* journey: scene left, steps right */
+.res-journey-in{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:var(--space-7)}
+.rj-copy{grid-column:2;grid-row:1}
+.rj-scene{grid-column:1;grid-row:1}
+
+/* red pipeline: centred title, wide screenshot, four steps under it */
+.res-flow .wrap{display:grid;justify-items:center}
+.res-flow h2{text-align:center;max-width:18ch;font-size:clamp(32px,5.4vw,80px)}
+.res-flow .res-shot{max-width:min(1120px,100%);margin:var(--space-5) 0 0}
+.res-flow .res-shot figcaption{text-align:center}
+.res-steps{width:100%;margin:var(--space-7) 0 0}
+
+/* two-way: split header, cards staggered */
+.res-two-lead{margin:0}
+.res-two-grid{align-items:start}
+.res-two-grid .two-side:last-child{margin-top:var(--space-8)}
+.two-line{align-self:center}
+
+/* numbers: giant numerals in a row, Colab screenshot hangs off the left */
+.res-nums{grid-template-columns:minmax(0,1fr);gap:0}
+.res-bars{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-5);padding:0}
+.bar{grid-template-columns:minmax(0,1fr);grid-template-areas:"num" "track" "label";gap:var(--space-2);align-items:start}
+.bar b{grid-area:num;font:800 clamp(48px,6.6vw,104px)/.9 var(--font-display);letter-spacing:-.04em;color:var(--red)}
+.bar i{grid-area:track;grid-column:auto;grid-row:auto;height:6px}
+.bar span{grid-area:label}
+.res-colab{grid-column:1;justify-self:start;max-width:min(820px,72%);margin-top:var(--space-7)}
+
+/* week: title centred over the timeline */
+.res-week h2{text-align:center;margin-inline:auto}
+
+/* licences: title pinned on the left while the table scrolls */
+.res-lic{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:var(--space-6);align-items:start}
+.res-lic h2{position:sticky;top:96px}
+.res-lic .res-table{margin-top:0}
+
+/* closing band: centred */
+.res-end .wrap{display:grid;justify-items:center;text-align:center}
+.res-end-t{max-width:16ch}
+.res-end-p{margin-inline:auto}
+.res-end-cta{justify-content:center}
+
+/* landing storyboard: stage in the middle, steps alternate sides */
+.story-head{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
+.story-lead{margin-inline:auto}
+@media (min-width:961px){
+  .story-grid{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,1fr);gap:var(--space-6)}
+  .story-steps{display:contents}
+  .story-stage-wrap{grid-column:2;grid-row:1 / 6;align-self:start}
+  .step{grid-row:var(--row)}
+  .step:nth-child(1){grid-row:1}.step:nth-child(2){grid-row:2}.step:nth-child(3){grid-row:3}.step:nth-child(4){grid-row:4}.step:nth-child(5){grid-row:5}
+  .step:nth-child(odd){grid-column:1}
+  .step:nth-child(even){grid-column:3;align-items:flex-end;text-align:right}
+}
+/* landing list: staggered rows */
+@media (min-width:961px){
+  .news > div:nth-child(even){padding-left:16%}
+  .news > div:nth-child(3n){padding-left:32%}
+}
+.close-in{justify-items:center;text-align:center}
+
+@media (max-width:960px){
+  .res-split{grid-template-columns:minmax(0,1fr)}
+  .res-split p{justify-self:start}
+  .res-hero{grid-template-columns:minmax(0,1fr)}
+  .res-lead{grid-column:1}
+  .res-data{grid-template-columns:minmax(0,1fr);gap:var(--space-6)}
+  .res-data .res-slovo,.res-data .res-copy{grid-column:1;grid-row:auto}
+  .res-journey-in{grid-template-columns:minmax(0,1fr);gap:var(--space-3)}
+  .rj-copy{grid-column:1;grid-row:1}
+  .rj-scene{grid-column:1;grid-row:2}
+  .res-two-grid .two-side:last-child{margin-top:0}
+  .res-bars{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .res-colab{max-width:100%}
+  .res-lic{grid-template-columns:minmax(0,1fr);gap:var(--space-3)}
+  .res-lic h2{position:static}
+}
+@media (max-width:560px){
+  .res-ch{padding-block:var(--space-7)}
+  .res-word{font-size:clamp(120px,40vw,200px)}
+}
