@@ -14,6 +14,8 @@ const D = {
   'nav.learn': ["Lug'at", 'Словарь', 'Dictionary'],
   'nav.history': ['Tarix', 'История', 'History'],
   'nav.settings': ['Sozlamalar', 'Настройки', 'Settings'],
+  "theme.toLight": ["Yorug' mavzuga o'tish", "Включить светлую тему", "Switch to light theme"],
+  "theme.toDark": ["Qorong'i mavzuga o'tish", "Включить тёмную тему", "Switch to dark theme"],
   "nav.price": ["Narxlar", "Цены", "Pricing"],
   "nav.acct": ["Akkaunt", "Аккаунт", "Account"],
   "pr.title": ["Narxlar", "Цены", "Pricing"],
@@ -410,8 +412,32 @@ export function t(key, vars) {
   return s;
 }
 
-export function applyI18n(root = document) {
-  root.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+// Language switch: short visible labels rebuild letter by letter, each letter jumping into place.
+const JUMP_MAX = 60;
+function jumpText(el, text) {
+  const r = el.getBoundingClientRect();
+  if (!r.width || r.bottom < 0 || r.top > innerHeight || text.length > JUMP_MAX || el.children.length) { el.textContent = text; return; }
+  const frag = document.createDocumentFragment();
+  let i = 0;
+  text.split(/(\s+)/).forEach(part => {
+    if (!part) return;
+    if (/^\s+$/.test(part)) { frag.append(part); return; }
+    const w = document.createElement('span'); w.className = 'jw';
+    for (const ch of part) { const c = document.createElement('span'); c.className = 'jl'; c.style.setProperty('--i', Math.min(i++, 24)); c.textContent = ch; w.append(c); }
+    frag.append(w);
+  });
+  el.replaceChildren(frag);
+  el.setAttribute('aria-label', text);
+  clearTimeout(el._jt);
+  el._jt = setTimeout(() => { if (el.querySelector('.jl')) { el.textContent = text; el.removeAttribute('aria-label'); } }, 1100);
+}
+
+export function applyI18n(root = document, animate = false) {
+  const jump = animate && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  root.querySelectorAll('[data-i18n]').forEach(el => {
+    const next = t(el.dataset.i18n);
+    if (jump && el.textContent !== next) jumpText(el, next); else el.textContent = next;
+  });
   root.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
   root.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
   root.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
@@ -424,7 +450,7 @@ export function setLang(next) {
   if (IDX[next] === undefined || next === lang) return;
   lang = next;
   settings.set('uiLang', next);
-  applyI18n();
+  applyI18n(document, true);
   listeners.forEach(fn => fn(lang));
 }
 

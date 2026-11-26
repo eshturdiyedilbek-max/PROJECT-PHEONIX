@@ -109,8 +109,8 @@ html.scrolled .top{border-bottom-color:var(--line)}
 .brand .title{font:700 18px/1 var(--font-display);letter-spacing:-.02em}
 .mode-tag{display:none;text-decoration:none}
 html[data-mode=demo] .mode-tag{display:inline-flex}
-.langs{display:inline-flex;padding:3px;border-radius:999px;background:var(--surface-sunken);border:1px solid var(--line)}
-.langs button{appearance:none;border:0;background:transparent;min-width:44px;min-height:36px;padding:0 10px;border-radius:999px;font:700 13px/1 var(--font-sans);letter-spacing:.04em;color:var(--ink-muted);cursor:pointer;transition:color .2s,background-color .3s var(--ease-out)}
+.langs{display:inline-flex;padding:2px;border-radius:999px;background:var(--surface-sunken);border:1px solid var(--line)}
+.langs button{appearance:none;border:0;background:transparent;min-width:32px;min-height:28px;padding:0 8px;border-radius:999px;font:700 11.5px/1 var(--font-sans);letter-spacing:.04em;color:var(--ink-muted);cursor:pointer;transition:color .2s,background-color .3s var(--ease-out)}
 .langs button:hover{color:var(--ink)}
 .langs button[aria-pressed=true]{background:var(--red);color:var(--on-red)}
 
@@ -864,3 +864,27 @@ html.phx-go [data-intro]{animation:phx-fade 900ms var(--ease-out) calc(600ms + v
   .pr-table thead th{font-size:14px}
   .pr-table tbody th{width:46%}
 }
+
+/* ---------- language switch: letters jump into place ---------- */
+.jw{display:inline-block;white-space:nowrap}
+.jl{display:inline-block;animation:jl .62s var(--ease-out) both;animation-delay:calc(var(--i) * 18ms)}
+@keyframes jl{0%{opacity:0;transform:translateY(-.55em) rotate(-8deg)}55%{opacity:1;transform:translateY(.08em) rotate(2deg)}100%{opacity:1;transform:none}}
+
+/* ---------- theme toggle + Phoenix wipe ---------- */
+.top-theme{appearance:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface-sunken);color:var(--ink);cursor:pointer;flex-shrink:0;transition:border-color .2s,color .2s}
+.top-theme:hover{border-color:var(--red);color:var(--red)}
+.top-theme svg{width:19px;height:19px;grid-area:1/1;transition:opacity .35s var(--ease-out),transform .5s var(--ease-out)}
+.top-theme .i-sun{opacity:0;transform:rotate(-90deg) scale(.6)}
+.top-theme[data-now=dark] .i-moon{opacity:0;transform:rotate(90deg) scale(.6)}
+.top-theme[data-now=dark] .i-sun{opacity:1;transform:none}
+.top-acct{width:36px;height:36px}
+.top-acct svg{width:20px;height:20px}
+.theme-wipe{position:fixed;inset:0;z-index:200;display:grid;place-items:center;pointer-events:none;opacity:0;visibility:hidden;background:#ffffff}
+.theme-wipe[data-to=dark]{background:#140c0c}
+.theme-wipe span{font:800 clamp(64px,17vw,280px)/1 var(--font-display);letter-spacing:-.05em;color:#d9241c;transform:scale(.55);opacity:0;filter:blur(12px)}
+.theme-wipe[data-to=dark] span{color:#ff5a4f}
+.theme-wipe.on{visibility:visible;opacity:1;transition:opacity .55s var(--ease-out)}
+.theme-wipe.on span{transform:scale(1);opacity:1;filter:none;transition:transform .9s var(--ease-out),opacity .55s var(--ease-out),filter .6s var(--ease-out)}
+.theme-wipe.out{opacity:0;transition:opacity .7s var(--ease-io)}
+.theme-wipe.out span{transform:scale(1.12);opacity:0;filter:blur(8px);transition:transform .75s var(--ease-io),opacity .6s var(--ease-io),filter .6s}
+@media (max-width:560px){.top-theme,.top-acct{width:34px;height:34px}.langs button{min-width:30px;padding:0 6px}}
