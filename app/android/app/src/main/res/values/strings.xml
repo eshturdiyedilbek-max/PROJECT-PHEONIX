@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Phoenix</string>
+    <string name="title_activity_main">Phoenix</string>
+    <string name="package_name">uz.phoenix.signs</string>
+    <string name="custom_url_scheme">uz.phoenix.signs</string>
+</resources>
