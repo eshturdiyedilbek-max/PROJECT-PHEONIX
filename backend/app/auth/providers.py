@@ -112,3 +112,41 @@ async def verify_github(access_token: str, client_id: str = "", client_secret: s
     finally:
         if own:
             await http.aclose()
+
+
+# ---------- GitHub device flow, proxied for browsers (github.com/login/* has no CORS) ----------
+GITHUB_WEB = "https://github.com"
+
+
+async def github_device_start(client_id: str, http: httpx.AsyncClient | None = None) -> dict:
+    """Asks GitHub for a device code. Returns GitHub's JSON (device_code, user_code, verification_uri, ...)."""
+    own = http is None
+    http = http or httpx.AsyncClient(timeout=10.0)
+    try:
+        r = await http.post(f"{GITHUB_WEB}/login/device/code", headers={"Accept": "application/json"},
+                            json={"client_id": client_id, "scope": "read:user user:email"})
+        data = r.json() if r.content else {}
+    except (httpx.HTTPError, ValueError) as e:
+        raise ProviderUnavailable(str(e)) from e
+    finally:
+        if own:
+            await http.aclose()
+    if r.status_code != 200 or "device_code" not in data:
+        raise ProviderUnavailable(data.get("error_description") or data.get("error") or f"HTTP {r.status_code}")
+    return data
+
+
+async def github_device_poll(client_id: str, device_code: str, http: httpx.AsyncClient | None = None) -> dict:
+    """One poll. Returns GitHub's JSON: {access_token: ...} once approved, else {error: authorization_pending|...}."""
+    own = http is None
+    http = http or httpx.AsyncClient(timeout=10.0)
+    try:
+        r = await http.post(f"{GITHUB_WEB}/login/oauth/access_token", headers={"Accept": "application/json"},
+                            json={"client_id": client_id, "device_code": device_code,
+                                  "grant_type": "urn:ietf:params:oauth:grant-type:device_code"})
+        return r.json() if r.content else {"error": f"HTTP {r.status_code}"}
+    except (httpx.HTTPError, ValueError) as e:
+        raise ProviderUnavailable(str(e)) from e
+    finally:
+        if own:
+            await http.aclose()

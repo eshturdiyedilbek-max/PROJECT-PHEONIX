@@ -32,6 +32,8 @@ Optional. The phone proves who the person is, the server checks the proof and re
 | `GET /api/auth/providers` | | `{"google": {"client_id"} \| null, "github": {"client_id"} \| null}`. Public IDs from `backend/config/auth.json` (or `GOOGLE_CLIENT_IDS`, `GITHUB_CLIENT_ID` env). `null` = that button is off. |
 | `POST /api/auth/google` | `{"id_token"}` | Google ID token from Android's account picker, issued for the **Web** client ID. Signature, audience, issuer and expiry are checked. |
 | `POST /api/auth/github` | `{"access_token"}` | GitHub token from the device flow (`github.com/login/device`). The server asks GitHub whose token it is. With `GITHUB_CLIENT_SECRET` set it also checks the token belongs to our OAuth App. |
+| `POST /api/auth/github/device` | | For browsers (github.com/login/* has no CORS; the app calls GitHub directly). Returns `{"device_code", "user_code", "verification_uri", "interval", "expires_in"}`. Show `user_code`, open `verification_uri`. |
+| `POST /api/auth/github/poll` | `{"device_code"}` | Call every `interval` s. `202 {"status": "pending", "interval"}` while waiting (use the new `interval` if given); the normal login response once approved. `410 code_expired`, `403 access_denied`. Send X-Client-Id as with the other logins. |
 | `GET /api/auth/me` | | `{"user"}` |
 | `POST /api/auth/logout` | | 204, deletes the session. |
 
