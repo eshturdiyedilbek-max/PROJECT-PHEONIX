@@ -1,8 +1,8 @@
-// Landing hero: two people's hands signing "welcome", rendered in 3D.
+// Landing hero: one person signing "welcome", rendered in 3D.
 // Skinned hand meshes from the WebXR Input Profiles "generic-hand" asset (MIT, © Amazon, assets/hands/LICENSE.md),
 // lit and posed here with three.js. It is a render, and the page labels it as one.
 // The gesture is the ASL sign WELCOME (see KEY below): one flat hand sweeps from out in front, palm across,
-// in to the chest, palm up. Person A signs it, then person B answers with the same sign.
+// in to the chest, palm up. One signer, centred, repeats it with a calm pause between.
 import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/three/addons/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from '../vendor/three/addons/utils/SkeletonUtils.js';
@@ -10,7 +10,7 @@ import { RoomEnvironment } from '../vendor/three/addons/environments/RoomEnviron
 import { RM } from './motion.js';
 
 const FINGERS = ['index', 'middle', 'ring', 'pinky'];
-const CYCLE = 7;                        // seconds: A signs, B answers, both rest
+const CYCLE = 4.6;                      // seconds: sign, hold, rest
 const ease = t => (t < .5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const clamp01 = t => Math.min(1, Math.max(0, t));
 const v3 = (a) => new THREE.Vector3().fromArray(a);
@@ -140,7 +140,7 @@ function elbowFor(S, W, out) {
   return S.clone().addScaledVector(sw, a).addScaledVector(pole, h);
 }
 
-/** A person: right hand signs, left hand rests. Placed with its forward axis toward the other person. */
+/** A person: right hand signs, left hand rests. +x of its local space is where it faces. */
 function person(hands, skinHex, sleeveHex) {
   const skin = skinMaterial(skinHex);
   const group = new THREE.Group();
@@ -240,12 +240,10 @@ export async function initHeroHands(stage) {
   const gltf = new GLTFLoader();
   const [L, R] = await Promise.all(['left', 'right'].map(s => gltf.loadAsync(`assets/hands/${s}.glb`)));
   const hands = { left: L.scene, right: R.scene };
-  const A = person(hands, '#c98462', '#a8100b');     // stands on the left, faces right, red sleeves
-  const B = person(hands, '#7a4a30', '#2a1d1e');     // stands on the right, faces left, dark sleeves
-  // Both face the viewer, each turned a little toward the other, like two signers in one frame.
-  A.group.position.set(-.3, 0, 0); A.group.rotation.y = -Math.PI / 2 + .42;
-  B.group.position.set(.3, 0, 0);  B.group.rotation.y = -Math.PI / 2 - .42;
-  scene.add(A.group, B.group);
+  const A = person(hands, '#c98462', '#a8100b');     // red sleeves
+  // One signer in the middle, facing the viewer, turned a touch so the sweep reads in depth.
+  A.group.position.set(-.04, 0, 0); A.group.rotation.y = -Math.PI / 2 + .3;
+  scene.add(A.group);
 
   stage.prepend(renderer.domElement);
   stage.classList.add('has-hands');
@@ -255,9 +253,9 @@ export async function initHeroHands(stage) {
     if (!w || !h) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    // Frame a fixed width (both people with their reach), and keep the top edge just above the shoulders,
-    // so a tall phone frame shows more torso, never empty space where heads would be.
-    const dist = 1.6, halfW = camera.aspect < 1.5 ? .76 : Math.max(.98, .27 * camera.aspect), halfH = halfW / camera.aspect;
+    // Frame the signer with their reach, and keep the top edge just above the shoulders,
+    // so a tall phone frame shows more torso, never empty space where a head would be.
+    const dist = 1.6, halfW = camera.aspect < 1.5 ? .5 : Math.max(.62, .27 * camera.aspect), halfH = halfW / camera.aspect;
     camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(halfH / dist));
     const cy = .43 - halfH;
     camera.position.set(0, cy + .12, dist);
@@ -267,11 +265,11 @@ export async function initHeroHands(stage) {
   new ResizeObserver(resize).observe(stage);
   resize();
 
-  // Per person: raise (0.5 s), sign (1.3 s), hold (0.9 s), lower (0.7 s). A starts at 0.2 s, B answers at 2.9 s.
+  // Raise (0.5 s), sign (1.3 s), hold (0.9 s), lower (0.7 s), starting 0.3 s into each cycle, then rest.
   const stageAt = c => (c < 0 ? 0 : c < .5 ? c / .5 : c < 1.8 ? 1 + (c - .5) / 1.3 : c < 2.7 ? 2 : c < 3.4 ? 2 + (c - 2.7) / .7 : 3);
   function poseAt(t) {
     const c = t % CYCLE, br = Math.sin(t * 1.6);
-    A.pose(stageAt(c - .2), br); B.pose(stageAt(c - 2.9), -br);
+    A.pose(stageAt(c - .3), br);
   }
   let visible = true, raf = 0, t0 = performance.now();
   const frame = now => {
@@ -280,8 +278,8 @@ export async function initHeroHands(stage) {
     raf = visible ? requestAnimationFrame(frame) : 0;
   };
   // test hook: freeze at a time (used by screenshots)
-  window.__phxHands = t => { visible = false; cancelAnimationFrame(raf); raf = 0; if (t === 'end') { A.pose(2, 0); B.pose(2, 0); } else poseAt(t); renderer.render(scene, camera); };
-  if (RM) { A.pose(2, 0); B.pose(2, 0); renderer.render(scene, camera); return; }
+  window.__phxHands = t => { visible = false; cancelAnimationFrame(raf); raf = 0; if (t === 'end') A.pose(2, 0); else poseAt(t); renderer.render(scene, camera); };
+  if (RM) { A.pose(2, 0); renderer.render(scene, camera); return; }
   new IntersectionObserver(([e]) => {
     visible = e.isIntersecting;
     if (visible && !raf) raf = requestAnimationFrame(frame);

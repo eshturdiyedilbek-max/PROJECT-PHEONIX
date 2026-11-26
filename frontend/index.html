@@ -47,13 +47,12 @@
 <section id="landing" data-view="landing">
   <div class="wrap hero">
     <figure class="welcome">
-      <!-- 3D render: two people's hands sign "welcome" (js/hero-hands.js). -->
+      <!-- 3D render: one person signs "welcome" (js/hero-hands.js). -->
       <div class="welcome-stage" id="welcome-stage" data-i18n-aria="hero.videoAria" role="img">
         <span class="render-tag caption" data-i18n="hero.render"></span>
       </div>
       <figcaption>
         <span class="welcome-word" id="welcome-word" data-i18n="hero.welcome"></span>
-        <span class="welcome-sub caption" data-i18n="hero.welcomeSign"></span>
       </figcaption>
     </figure>
     <div class="hero-row">
@@ -62,7 +61,11 @@
         <p class="lead" data-intro data-i18n="hero.lead"></p>
       </div>
       <div class="hero-act" data-intro>
-        <a class="ph-btn ph-btn--big" href="#translate"><span data-i18n="hero.try"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
+        <a class="tx-launch" href="#translate" id="tx-launch">
+          <span class="tx-launch-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+          <span class="tx-launch-t"><b data-i18n="launch.t"></b><small id="launch-left"></small></span>
+          <svg class="tx-launch-go" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </a>
         <button class="ph-btn ph-btn--quiet ph-btn--big" type="button" id="to-how" data-i18n="hero.how"></button>
         <p class="caption muted" data-i18n="hero.note"></p>
       </div>
@@ -152,6 +155,7 @@
           <button class="ph-btn ph-btn--quiet ph-btn--big" id="btn-stop" type="button" disabled data-i18n="tx.finish"></button>
           <button class="ph-btn ph-btn--quiet ph-btn--big" id="btn-reset" type="button" disabled data-i18n="tx.reset"></button>
         </div>
+        <div class="tx-quota" id="tx-quota"><div class="meter-bar"><i id="tx-quota-fill"></i></div><p class="caption"><span id="tx-quota-t"></span> <a href="#narxlar" id="tx-quota-pro" data-i18n="q.more"></a></p></div>
       </div>
       <div class="controls">
         <fieldset class="seg" id="sign-picker"><legend data-i18n="tx.signLang"></legend>
@@ -406,35 +410,46 @@
     </header>
 
     <div class="pr-plans">
-      <article class="pr-free" data-fly="left">
-        <div class="pr-plan-top"><h2 data-i18n="pr.free"></h2><span class="ph-tag pr-now" data-i18n="pr.now"></span></div>
+      <article class="pr-plan pr-free" data-fly="left">
+        <div class="pr-plan-top"><h2 data-i18n="pr.free"></h2><span class="ph-tag" data-plan-now="free" data-i18n="pr.yours" hidden></span></div>
         <p class="pr-price"><b>0</b> <span data-i18n="pr.cur"></span></p>
+        <p class="pr-quota"><b>15</b> <span data-i18n="pr.freeQ"></span></p>
         <p class="pr-desc" data-i18n="pr.freeD"></p>
-        <ul class="pr-feat"><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.f1"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.f2"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.f3"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.f4"></span></li></ul>
-        <a class="ph-btn ph-btn--big ph-btn--invert" href="#translate"><span data-i18n="hero.try"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
+        <ul class="pr-feat"><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.f1"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.f2"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.f3"></span></li></ul>
+        <a class="ph-btn ph-btn--big ph-btn--quiet" href="#translate"><span data-i18n="pr.freeGo"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
       </article>
-      <div class="pr-side">
-        <article class="pr-plan" data-fly="right">
-          <div class="pr-plan-top"><h2 data-i18n="pr.pro"></h2><span class="ph-tag" data-i18n="pr.soon"></span></div>
-          <p class="pr-price"><b data-price-m="39 000" data-price-y="390 000">39 000</b> <span data-i18n="pr.cur"></span><small data-per></small></p>
-          <p class="pr-desc" data-i18n="pr.proD"></p>
-          <ul class="pr-feat"><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.p1"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.p2"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.p3"></span></li></ul>
-        </article>
-        <article class="pr-plan" data-fly="right">
-          <div class="pr-plan-top"><h2 data-i18n="pr.org"></h2><span class="ph-tag" data-i18n="pr.soon"></span></div>
-          <p class="pr-price pr-price--text" data-i18n="pr.deal"></p>
-          <p class="pr-desc" data-i18n="pr.orgD"></p>
-          <ul class="pr-feat"><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.o1"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.o2"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.o3"></span></li></ul>
-        </article>
-      </div>
+
+      <article class="pr-pro" data-fly="right">
+        <svg class="pr-pro-arcs" viewBox="0 14 96 82" aria-hidden="true"><path d="M46 96A46 46 0 0 0 0 50M50 96A46 46 0 0 1 96 50M76 96A76 76 0 0 0 0 20M20 96A76 76 0 0 1 96 20" fill="none" stroke="currentColor" stroke-width="12"/></svg>
+        <div class="pr-plan-top"><h2 data-i18n="pr.pro"></h2><span class="ph-tag pr-now" data-plan-now="pro" data-i18n="pr.yours" hidden></span></div>
+        <p class="pr-price"><b data-price-m="39 000" data-price-y="390 000">39 000</b> <span data-i18n="pr.cur"></span><small data-per></small></p>
+        <p class="pr-quota"><b>1 000</b> <span data-i18n="pr.proQ"></span></p>
+        <p class="pr-desc" data-i18n="pr.proD"></p>
+        <ol class="pr-wins">
+          <li><b data-i18n="pr.w1t"></b><span data-i18n="pr.w1"></span></li>
+          <li><b data-i18n="pr.w2t"></b><span data-i18n="pr.w2"></span></li>
+          <li><b data-i18n="pr.w3t"></b><span data-i18n="pr.w3"></span></li>
+          <li><b data-i18n="pr.w4t"></b><span data-i18n="pr.w4"></span></li>
+        </ol>
+        <a class="ph-btn ph-btn--big ph-btn--invert pr-buy" href="#tolov" id="pr-buy"><span data-i18n="pr.buy"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
+      </article>
     </div>
     <p class="pr-note" data-fly="up" data-i18n="pr.note"></p>
 
     <div class="pr-compare" data-fly="up">
       <h2 data-i18n="pr.cmpT"></h2>
       <div class="pr-table-wrap"><table class="pr-table">
-        <thead><tr><td></td><th scope="col" data-i18n="pr.free"></th><th scope="col" data-i18n="pr.pro"></th><th scope="col" data-i18n="pr.org"></th></tr></thead>
-        <tbody><tr><th scope="row" data-i18n="pr.r1"></th><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr><tr><th scope="row" data-i18n="pr.r2"></th><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr><tr><th scope="row" data-i18n="pr.r3"></th><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr><tr><th scope="row" data-i18n="pr.r4"></th><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr><tr><th scope="row" data-i18n="pr.r5"></th><td><span class='pr-no' aria-hidden='true'>—</span><span class="sr" data-i18n="pr.no"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr><tr><th scope="row" data-i18n="pr.r6"></th><td><span class='pr-no' aria-hidden='true'>—</span><span class="sr" data-i18n="pr.no"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr><tr><th scope="row" data-i18n="pr.r7"></th><td><span class='pr-no' aria-hidden='true'>—</span><span class="sr" data-i18n="pr.no"></span></td><td><span class='pr-no' aria-hidden='true'>—</span><span class="sr" data-i18n="pr.no"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr><tr><th scope="row" data-i18n="pr.r8"></th><td><span class='pr-no' aria-hidden='true'>—</span><span class="sr" data-i18n="pr.no"></span></td><td><span class='pr-no' aria-hidden='true'>—</span><span class="sr" data-i18n="pr.no"></span></td><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr></tbody>
+        <thead><tr><td></td><th scope="col" data-i18n="pr.free"></th><th scope="col" class="pr-col-pro" data-i18n="pr.pro"></th></tr></thead>
+        <tbody>
+          <tr><th scope="row" data-i18n="pr.rq"></th><td class="pr-num">15</td><td class="pr-num pr-col-pro" data-i18n="pr.rqPro"></td></tr>
+          <tr><th scope="row" data-i18n="pr.r1"></th><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td class="pr-col-pro"><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr>
+          <tr><th scope="row" data-i18n="pr.r2"></th><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td class="pr-col-pro"><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr>
+          <tr><th scope="row" data-i18n="pr.r3"></th><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td class="pr-col-pro"><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr>
+          <tr><th scope="row" data-i18n="pr.r4"></th><td><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td><td class="pr-col-pro"><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr>
+          <tr><th scope="row" data-i18n="pr.r6"></th><td><span class="pr-no" aria-hidden="true">—</span><span class="sr" data-i18n="pr.no"></span></td><td class="pr-col-pro"><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr>
+          <tr><th scope="row" data-i18n="pr.r5"></th><td><span class="pr-no" aria-hidden="true">—</span><span class="sr" data-i18n="pr.no"></span></td><td class="pr-col-pro"><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr>
+          <tr><th scope="row" data-i18n="pr.r9"></th><td><span class="pr-no" aria-hidden="true">—</span><span class="sr" data-i18n="pr.no"></span></td><td class="pr-col-pro"><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="sr" data-i18n="pr.yes"></span></td></tr>
+        </tbody>
       </table></div>
     </div>
 
@@ -442,6 +457,7 @@
       <h2 data-fly="left" data-i18n="pr.faqT"></h2>
       <div class="pr-qs">
         <details data-fly="up"><summary data-i18n="pr.q1"></summary><p data-i18n="pr.a1"></p></details>
+        <details data-fly="up"><summary data-i18n="pr.q5"></summary><p data-i18n="pr.a5"></p></details>
         <details data-fly="up"><summary data-i18n="pr.q2"></summary><p data-i18n="pr.a2"></p></details>
         <details data-fly="up"><summary data-i18n="pr.q3"></summary><p data-i18n="pr.a3"></p></details>
         <details data-fly="up"><summary data-i18n="pr.q4"></summary><p data-i18n="pr.a4"></p></details>
@@ -455,11 +471,29 @@
   <div class="wrap page acct">
     <h1 class="title" data-fly="left" data-i18n="ac.title"></h1>
     <p class="intro" data-fly="right" data-i18n="ac.intro"></p>
+    <p class="acct-next" id="acct-next" hidden><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 9v5.5M10 5.5V7" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="ac.nextPro"></span></p>
 
     <div class="acct-grid">
-      <article class="acct-card" id="acct-out" data-fly="up">
-        <h2 data-i18n="ac.signT"></h2>
-        <p class="muted" data-i18n="ac.signP"></p>
+      <article class="acct-card acct-auth" id="acct-out" data-fly="up">
+        <div class="auth-tabs" role="tablist" data-i18n-aria="ac.tabs">
+          <button type="button" role="tab" id="auth-tab-in" aria-controls="auth-form" aria-selected="true" data-auth="in" data-i18n="ac.tabIn"></button>
+          <button type="button" role="tab" id="auth-tab-up" aria-controls="auth-form" aria-selected="false" data-auth="up" data-i18n="ac.tabUp"></button>
+          <span class="auth-tabs-ink" aria-hidden="true"></span>
+        </div>
+        <form class="auth-form" id="auth-form" novalidate data-mode="in">
+          <h2 class="auth-h" id="auth-h" data-i18n="ac.inT"></h2>
+          <label class="field auth-only-up"><span data-i18n="ac.name"></span><input name="name" autocomplete="name" maxlength="60" data-i18n-ph="ac.namePh"></label>
+          <label class="field"><span data-i18n="ac.email"></span><input name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="ism@pochta.uz" required></label>
+          <label class="field"><span data-i18n="ac.pw"></span>
+            <span class="pw-wrap"><input name="password" type="password" autocomplete="current-password" minlength="6" required><button type="button" class="pw-eye" id="pw-eye" aria-pressed="false" data-i18n-aria="ac.pwShow"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="eye-open" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path class="eye-slash" d="M4 20 20 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></span>
+          </label>
+          <p class="auth-hint caption auth-only-up" data-i18n="ac.pwHint"></p>
+          <p class="auth-err" id="auth-err" role="alert"></p>
+          <button class="ph-btn ph-btn--big auth-go" type="submit"><span id="auth-go" data-i18n="ac.goIn"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+          <p class="auth-switch caption"><span id="auth-switch-q" data-i18n="ac.noAcc"></span> <button type="button" class="linkish" id="auth-switch" data-i18n="ac.tabUp"></button></p>
+        </form>
+
+        <div class="auth-or" id="auth-or" hidden><span data-i18n="ac.or"></span></div>
         <div class="acct-google" id="acct-google"></div>
         <p class="acct-status caption" id="acct-status" aria-live="polite"></p>
         <button class="ph-btn ph-btn--quiet acct-gh" type="button" id="acct-gh" hidden><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg><span data-i18n="ac.ghBtn"></span></button>
@@ -474,14 +508,16 @@
         <div class="acct-who"><img id="acct-avatar" alt="" width="64" height="64" hidden><span class="acct-initial" id="acct-initial" aria-hidden="true"></span>
           <div><h2 id="acct-name"></h2><p class="muted" id="acct-email"></p></div></div>
         <p class="acct-via caption"><span data-i18n="ac.via"></span> <span id="acct-providers"></span></p>
-        <p data-i18n="ac.synced"></p>
+        <p id="acct-synced" data-i18n="ac.synced"></p>
         <button class="ph-btn ph-btn--quiet" type="button" id="acct-logout" data-i18n="ac.logout"></button>
       </article>
 
       <aside class="acct-side" data-fly="up">
         <div class="acct-plan">
           <p class="caption muted" data-i18n="ac.plan"></p>
-          <p class="acct-plan-name" data-i18n="pr.free"></p>
+          <p class="acct-plan-name" id="acct-plan-name" data-i18n="pr.free"></p>
+          <div class="meter" id="acct-meter"><div class="meter-bar"><i id="acct-meter-fill"></i></div><p class="caption" id="acct-meter-t"></p></div>
+          <a class="ph-btn acct-upgrade" href="#tolov" id="acct-upgrade" data-i18n="pr.buy"></a>
           <a href="#narxlar" data-i18n="ac.plans"></a>
         </div>
         <dl class="acct-facts">
@@ -493,7 +529,110 @@
     </div>
   </div>
 </section>
+
+<!-- ============ TO'LOV (Pro checkout) ============ -->
+<section id="tolov" data-view="tolov" hidden>
+  <div class="wrap co">
+    <a class="co-back" href="#narxlar"><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H5M9 5l-5 5 5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="co.back"></span></a>
+    <div class="co-grid">
+      <aside class="co-sum" data-fly="left">
+        <p class="co-plan">Phoenix <b>Pro</b></p>
+        <div class="pr-toggle co-period" role="group" data-i18n-aria="pr.period">
+          <button type="button" data-co-period="m" aria-pressed="true" data-i18n="pr.monthly"></button><button type="button" data-co-period="y" aria-pressed="false"><span data-i18n="pr.yearly"></span> <em data-i18n="pr.save"></em></button>
+        </div>
+        <ul class="co-gets">
+          <li><b>1 000</b> <span data-i18n="co.g1"></span></li>
+          <li data-i18n="pr.w2t"></li>
+          <li data-i18n="pr.w3t"></li>
+        </ul>
+        <dl class="co-bill">
+          <div><dt data-i18n="co.price"></dt><dd id="co-sub"></dd></div>
+          <div class="co-disc" id="co-disc" hidden><dt><span data-i18n="co.voucher"></span> · <span id="co-disc-name"></span></dt><dd id="co-disc-sum"></dd></div>
+          <div class="co-total"><dt data-i18n="co.total"></dt><dd id="co-total"></dd></div>
+        </dl>
+      </aside>
+
+      <div class="co-pay" data-fly="right">
+        <h1 class="co-title" data-i18n="co.title"></h1>
+        <div class="co-who" id="co-who"></div>
+        <div class="co-done" id="co-done" hidden>
+          <p class="co-done-t" data-i18n="co.already"></p>
+          <a class="ph-btn ph-btn--big" href="#translate"><span data-i18n="cel.go"></span></a>
+        </div>
+
+        <div class="co-forms" id="co-forms">
+          <div class="co-tabs" role="tablist" data-i18n-aria="co.method">
+            <button type="button" role="tab" aria-selected="true" aria-controls="co-card" id="co-tab-card" data-co-tab="card"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M2.5 9.5h19M6 15h4" stroke="currentColor" stroke-width="1.8"/></svg><span data-i18n="co.byCard"></span></button>
+            <button type="button" role="tab" aria-selected="false" aria-controls="co-voucher" id="co-tab-voucher" data-co-tab="voucher"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h15A1.5 1.5 0 0 1 21 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5V14a2 2 0 0 0 0-4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 6.5v11" stroke="currentColor" stroke-width="1.8" stroke-dasharray="2 2.2"/></svg><span data-i18n="co.byVoucher"></span></button>
+            <span class="co-tabs-ink" aria-hidden="true"></span>
+          </div>
+
+          <form class="co-card" id="co-card" role="tabpanel" aria-labelledby="co-tab-card" novalidate>
+            <div class="cc" id="cc" aria-hidden="true">
+              <div class="cc-in">
+                <div class="cc-face cc-front">
+                  <svg class="cc-arcs" viewBox="0 14 96 82"><path d="M46 96A46 46 0 0 0 0 50M50 96A46 46 0 0 1 96 50M76 96A76 76 0 0 0 0 20M20 96A76 76 0 0 1 96 20" fill="none" stroke="currentColor" stroke-width="12"/></svg>
+                  <span class="cc-chip"></span>
+                  <span class="cc-brand" id="cc-brand"></span>
+                  <span class="cc-num" id="cc-num">•••• •••• •••• ••••</span>
+                  <span class="cc-exp"><small data-i18n="co.expS"></small><b id="cc-exp">MM/YY</b></span>
+                </div>
+                <div class="cc-face cc-back">
+                  <span class="cc-stripe"></span>
+                  <span class="cc-cvv"><small>CVV</small><b id="cc-cvv">•••</b></span>
+                </div>
+              </div>
+            </div>
+
+            <label class="field co-num"><span data-i18n="co.num"></span>
+              <span class="co-num-wrap"><input id="co-num" name="cardnumber" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" maxlength="23"><span class="co-num-brand" id="co-num-brand" aria-live="polite"></span></span>
+            </label>
+            <div class="co-row">
+              <label class="field"><span data-i18n="co.exp"></span><input id="co-exp" name="exp" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY" maxlength="5"></label>
+              <label class="field"><span>CVV</span><input id="co-cvv" name="cvc" inputmode="numeric" autocomplete="cc-csc" placeholder="123" maxlength="4"></label>
+            </div>
+            <div class="field co-vfield"><label for="co-v1" data-i18n="co.voucher"></label>
+              <span class="co-vrow"><input id="co-v1" name="voucher" autocomplete="off" autocapitalize="characters" spellcheck="false" data-i18n-ph="co.vPh"><button class="ph-btn ph-btn--quiet" type="button" id="co-v1-apply" data-i18n="co.apply"></button></span>
+              <span class="co-vmsg caption" id="co-v1-msg" aria-live="polite"></span>
+            </div>
+            <p class="co-err" id="co-card-err" role="alert"></p>
+            <button class="ph-btn ph-btn--big co-go" type="submit"><span id="co-card-go"></span></button>
+          </form>
+
+          <form class="co-vonly" id="co-voucher" role="tabpanel" aria-labelledby="co-tab-voucher" novalidate hidden>
+            <p class="co-vonly-p" data-i18n="co.vOnly"></p>
+            <label class="field"><span data-i18n="co.voucher"></span><input id="co-v2" name="voucher" autocomplete="off" autocapitalize="characters" spellcheck="false" data-i18n-ph="co.vPh"></label>
+            <p class="co-err" id="co-v-err" role="alert"></p>
+            <button class="ph-btn ph-btn--big co-go" type="submit"><span data-i18n="co.unlock"></span></button>
+          </form>
+          <p class="co-safe caption"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="9" width="12" height="8.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6.8 9V6.6a3.2 3.2 0 0 1 6.4 0V9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span data-i18n="co.safe"></span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
+
+<!-- Pro unlocked: a full-screen welcome (js/celebrate.js) -->
+<div class="cel" id="cel" role="dialog" aria-modal="true" aria-labelledby="cel-title" hidden>
+  <canvas class="cel-fx" id="cel-fx" aria-hidden="true"></canvas>
+  <div class="cel-in">
+    <svg class="cel-logo" viewBox="0 14 96 82" aria-hidden="true"><path d="M46 96A46 46 0 0 0 0 50" fill="none" stroke="currentColor" stroke-width="12"/><path d="M50 96A46 46 0 0 1 96 50" fill="none" stroke="currentColor" stroke-width="12"/><path d="M76 96A76 76 0 0 0 0 20" fill="none" stroke="currentColor" stroke-width="12"/><path d="M20 96A76 76 0 0 1 96 20" fill="none" stroke="currentColor" stroke-width="12"/></svg>
+    <span class="cel-badge"><span data-i18n="cel.badge"></span></span>
+    <h2 class="cel-title" id="cel-title" data-i18n="cel.title"></h2>
+    <p class="cel-name" id="cel-name"></p>
+    <p class="cel-words" data-i18n="cel.words"></p>
+    <ul class="cel-gets">
+      <li><b>1 000</b><span data-i18n="cel.g1"></span></li>
+      <li><b data-i18n="cel.g2b"></b><span data-i18n="cel.g2"></span></li>
+      <li><b id="cel-gift"></b><span data-i18n="cel.g3"></span></li>
+    </ul>
+    <div class="cel-act">
+      <a class="ph-btn ph-btn--big ph-btn--invert" href="#translate" id="cel-go"><span data-i18n="cel.go"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
+      <button class="ph-btn ph-btn--big cel-close" type="button" id="cel-close" data-i18n="cel.close"></button>
+    </div>
+  </div>
+</div>
 
 <footer><div class="wrap">
   <p data-i18n="footer.line"></p>
@@ -504,7 +643,7 @@
 <!-- Dock: the main navigation, pinned to the bottom of the screen -->
 <nav class="dock" data-i18n-aria="nav.dock">
   <a href="#landing" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.home"></span><span class="l-short" data-i18n="nav.homeS"></span></span></a>
-  <a href="#translate" class="dock-item dock-main"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.translate"></span><span class="l-short" data-i18n="nav.translateS"></span></span></a>
+  <a href="#translate" class="dock-item dock-main" id="dock-tx" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.translate"></span><span class="l-short" data-i18n="nav.translateS"></span></span></a>
   <a href="#learn" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.learn"></span><span class="l-short" data-i18n="nav.learnS"></span></span></a>
   <a href="#history" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.history"></span><span class="l-short" data-i18n="nav.historyS"></span></span></a>
   <a href="#resurslar" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 4.5-9 4.5-9-4.5z M3 12l9 4.5 9-4.5 M3 16.5L12 21l9-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.res"></span><span class="l-short" data-i18n="nav.resS"></span></span></a>

@@ -1,4 +1,4 @@
-// Phoenix website entry: page router (#landing, #translate, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt), site language,
+// Phoenix website entry: page router (#landing, #translate, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt, #tolov), site language,
 // entrance animation, landing storyboard, bottom dock.
 import { applyTheme, initSettingsView, settings } from './settings.js';
 import { api, apiBase, getMode, resolveMode } from './api.js';
@@ -11,11 +11,14 @@ import { initFly, initProgress, replayFly } from './fly.js';
 import { initResources } from './resources.js';
 import { initPricing } from './pricing.js';
 import { initAccount } from './account.js';
+import { initCheckout } from './checkout.js';
+import { initCelebrate } from './celebrate.js';
+import { isPro, left, onPlanChange } from './plan.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-const VIEWS = ['landing', 'translate', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt'];
+const VIEWS = ['landing', 'translate', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt', 'tolov'];
 const pages = {};   // view name -> { enter(), leave() }
 let routed = false;  // the first view arrives with the intro, later ones fade in
 
@@ -28,10 +31,32 @@ function route() {
     if (on && routed && !RM) { v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter'); replayFly(v); }
   });
   routed = true;
+  if (name === 'translate') unlockTranslate();
   $$('.dock-item, .top-link, .top-acct').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + name));
   document.documentElement.dataset.view = name;
   pages[name]?.enter?.();
   if (location.hash && location.hash !== '#landing') scrollTo(0, 0);
+}
+
+// Translate lives behind the big button on the home page. Once the visitor has gone in, it joins the dock
+// (with a little pop the first time) and stays there on later visits.
+const TX_KEY = 'phoenix_tx_dock';
+function unlockTranslate(first = true) {
+  const item = $('#dock-tx'); if (!item || !item.hidden) return;
+  item.hidden = false;
+  try { localStorage.setItem(TX_KEY, '1'); } catch (e) {}
+  if (first && !RM) { item.classList.add('arrive'); setTimeout(() => item.classList.remove('arrive'), 1400); }
+}
+function initTranslateDock() {
+  let on = false; try { on = localStorage.getItem(TX_KEY) === '1'; } catch (e) {}
+  if (on) unlockTranslate(false);
+}
+
+// The big button's second line: attempts left on this plan.
+function paintLaunch() {
+  const out = $('#launch-left'); if (!out) return;
+  const n = left(), pro = isPro();
+  out.textContent = n <= 0 && !pro ? t('launch.none') : t(pro ? 'launch.leftPro' : 'launch.left', { n: n.toLocaleString('ru-RU') });
 }
 
 // Entrance: the logo draws itself, the overlay wipes up, then the hero assembles.
@@ -196,6 +221,10 @@ async function init() {
   pages.resurslar = initResources();
   pages.narxlar = initPricing();
   pages.akkaunt = initAccount();
+  pages.tolov = initCheckout();
+  initCelebrate();
+  initTranslateDock();
+  paintLaunch(); onPlanChange(paintLaunch); onLangChange(paintLaunch);
   $('#to-how')?.addEventListener('click', () => $('#how').scrollIntoView({ behavior: RM ? 'auto' : 'smooth' }));
   intro();
   initStory();

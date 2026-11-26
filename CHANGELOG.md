@@ -2,6 +2,20 @@
 
 Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
+## 2026-11-26: ro'yxatdan o'tish, Pro va voucher
+
+### Qo'shildi
+- Email va parol bilan ro'yxatdan o'tish va kirish (Akkaunt sahifasi). Namoyish versiyasi: akkaunt shu brauzerda saqlanadi, parol faqat PBKDF2 xeshi ko'rinishida.
+- To'lov sahifasi (`#tolov`): karta raqamidan turini aniqlaydi (Visa, Mastercard, UzCard, Humo, Mir, Amex, UnionPay), muddat, CVV, voucher. "Faqat voucher" usuli kartasiz ochadi. `TBA ACADEMY` voucheri Pro'ni bepul ochadi. Karta orqali to'lov hali hech qanday to'lov tizimiga ulanmagan va sayt buni ochiq aytadi.
+- Bepul rejada 15 ta urinish, Pro'da oyiga 1 000 ta. Tarjima sahifasida qolgan urinishlar ko'rinadi.
+- Pro ochilganda tabrik ekrani: konfetti, logotip chiziladi, iliq so'zlar.
+- Bosh sahifada katta "Tarjimani boshlash" tugmasi.
+
+### O'zgardi
+- Narxlar: "Tashkilot" rejasi olib tashlandi, Pro afzalliklari aniq ko'rsatildi.
+- Tarjima dock'da boshida yo'q: katta tugma orqali kirilgandan keyin dock'da paydo bo'ladi.
+- "Xush kelibsiz" 3D sahnasida endi bitta odam; ostidagi ASL yozuvi olib tashlandi.
+
 ## 2026-11-26: sayt internetda va Android ilovasi
 
 ### Qo'shildi

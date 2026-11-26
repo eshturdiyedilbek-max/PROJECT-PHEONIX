@@ -7,6 +7,7 @@ import { api, isDemo, newClientId, onModeChange, openSignSocket } from './api.js
 import { settings } from './settings.js';
 import { RM } from './motion.js';
 import { t, onLangChange } from './i18n.js';
+import { isPro, left, limit, onPlanChange, takeAttempt } from './plan.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -257,10 +258,26 @@ export function initTranslate() {
   }
 
   // ---------- controls ----------
+  // ---------- attempts (plan.js): one per camera session ----------
+  function paintQuota() {
+    const l = left(), lim = limit(), pro = isPro();
+    $('#tx-quota-fill').style.setProperty('--k', String(l / lim));
+    $('#tx-quota').dataset.low = String(l <= Math.ceil(lim / 5));
+    $('#tx-quota-t').textContent = t(pro ? 'q.leftPro' : 'q.left', { left: l.toLocaleString('ru-RU'), limit: lim.toLocaleString('ru-RU') });
+    $('#tx-quota-pro').hidden = pro;
+    if (l > 0) banner('limit');
+  }
+  function limitBanner() {
+    const pro = isPro();
+    banner('limit', 'warn', 'b.limit.l', pro ? 'b.limitPro.t' : 'b.limit.t', pro ? null : { label: 'pr.buy', run: () => { location.hash = '#tolov'; } });
+  }
+
   async function startAll() {
     if (st.live) { stopAll(); return; }
     banner('model'); banner('idle');
+    if (left() <= 0) { limitBanner(); return; }
     if (!(await openCamera())) return;
+    takeAttempt();
     st.live = true;
     el.start.dataset.i18n = 'tx.camStop'; el.start.textContent = t('tx.camStop');
     el.start.classList.add('ph-btn--quiet');
@@ -474,6 +491,7 @@ export function initTranslate() {
   });
 
   applySign(); applySmooth(); status('off');
+  paintQuota(); onPlanChange(paintQuota); onLangChange(paintQuota);
   document.querySelectorAll('input[name=sign]').forEach(r => {
     const small = r.closest('label').querySelector('small');
     if (small && small.dataset.count) small.textContent = t('tx.signs', { n: small.dataset.count });
