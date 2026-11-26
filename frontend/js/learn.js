@@ -1,5 +1,5 @@
 // Learn page: search the dictionary (GET /api/dictionary) and send a recorded sample (POST /api/contributions).
-import { api, onModeChange } from './api.js';
+import { api, apiBase, onModeChange } from './api.js';
 import { t, onLangChange } from './i18n.js';
 
 const $ = s => document.querySelector(s);
@@ -12,12 +12,30 @@ const OWN = {
   rsl: { 'я': SLOVO, 'тебя': { ...SLOVO, poster: 'assets/res/slovo-tebya.jpg' } },
   asl: { welcome: { src: 'assets/samples/asl-welcome-3d.mp4', poster: 'assets/samples/asl-welcome-3d.jpg', credit: 'Phoenix 3D' } }
 };
-// Free online sign dictionaries with real people signing. They open in a new tab.
+// One Slovo clip per Russian word, made by backend/scripts/fetch_dictionary_clips.py (Colab cell 6b).
+// The list lives next to the site, or on the server when the site is hosted elsewhere.
+const CLIPS = { rsl: null, asl: null };
+async function loadClips() {
+  const bases = [...new Set([new URL('.', location.href).href, apiBase().replace(/\/?$/, '/')])];
+  for (const lang of ['rsl']) {
+    if (CLIPS[lang]) continue;
+    for (const base of bases) {
+      try {
+        const r = await fetch(base + `assets/dict/${lang}.json`, { cache: 'no-cache' });
+        if (!r.ok) continue;
+        const m = await r.json();
+        const abs = u => new URL(u, base).href;
+        CLIPS[lang] = Object.fromEntries(Object.entries(m.clips || {}).map(([w, c]) => [w, { src: abs(c.src), poster: c.poster && abs(c.poster), credit: m.credit }]));
+        break;
+      } catch (e) { /* not there: try the next place */ }
+    }
+  }
+}
+// Small secondary link when we have no clip: a free dictionary, in a new tab.
 const enc = w => encodeURIComponent(w);
 const EXT = {
-  rsl: [{ name: 'Spread The Sign', url: w => `https://www.spreadthesign.com/ru.ru/search/?q=${enc(w)}` }],
-  asl: [{ name: 'Spread The Sign', url: w => `https://www.spreadthesign.com/en.us/search/?q=${enc(w)}` },
-        { name: 'SignASL', url: w => `https://www.signasl.org/sign/${enc(w.replace(/\s+/g, '-'))}` }]
+  rsl: w => `https://www.spreadthesign.com/ru.ru/search/?q=${enc(w)}`,
+  asl: w => `https://www.spreadthesign.com/en.us/search/?q=${enc(w)}`
 };
 
 export function initLearn() {
@@ -35,7 +53,7 @@ export function initLearn() {
     if (!append) st.offset = 0;
     total.textContent = t('learn.loading');
     try {
-      const r = await api.dictionary({ ...params(), limit: PAGE, offset: st.offset });
+      const [r] = await Promise.all([api.dictionary({ ...params(), limit: PAGE, offset: st.offset }), loadClips()]);
       if (seq !== st.seq) return;   // a newer search already started
       if (!append) grid.innerHTML = '';
       r.items.forEach((it, i) => grid.appendChild(card(it, i)));
@@ -48,21 +66,19 @@ export function initLearn() {
     }
   }
 
-  // Video guide for each word. Our own clips first (Slovo for RSL, the 3D signer for ASL), then the
-  // server's video_url, else an outbound link to a free sign dictionary that opens in a new tab.
+  // Video guide for each word, always played here on the page: our own clips, the Slovo clip list,
+  // or the server's video_url. With none, the card says so and offers a small outside link.
   function guide(it) {
-    const own = it.video_url || OWN[it.lang]?.[it.text.toLowerCase()];
+    const own = OWN[it.lang]?.[it.text] || CLIPS[it.lang]?.[it.text] || (it.video_url && { src: it.video_url });
     if (own) {
-      const clip = typeof own === 'string' ? { src: own } : own;
-      return `<div class="card-guide"><video class="card-clip" src="${esc(clip.src)}" muted playsinline loop preload="none"${clip.poster ? ` poster="${esc(clip.poster)}"` : ''} aria-label="${esc(t('learn.clipAria', { w: it.text }))}"></video>
+      return `<div class="card-guide"><video class="card-clip" src="${esc(own.src)}" muted playsinline loop preload="none"${own.poster ? ` poster="${esc(own.poster)}"` : ''} aria-label="${esc(t('learn.clipAria', { w: it.text }))}"></video>
         <button type="button" class="card-play" data-i18n="learn.play">${t('learn.play')}</button>
-        ${clip.credit ? `<p class="card-credit">${esc(clip.credit)}</p>` : ''}</div>`;
+        ${own.credit ? `<p class="card-credit">${esc(own.credit)}</p>` : ''}</div>`;
     }
-    const ext = EXT[it.lang] || [];
-    if (!ext.length) return `<div class="card-guide"><p class="card-video" data-i18n="learn.noVideo">${t('learn.noVideo')}</p></div>`;
-    const links = ext.map(x => `<a class="card-ext" href="${esc(x.url(it.text))}" target="_blank" rel="noopener noreferrer"
-        aria-label="${esc(t('learn.extAria', { w: it.text, src: x.name }))}"><span data-i18n="learn.watch">${t('learn.watch')}</span><span class="card-ext-src">${esc(x.name)} ↗</span></a>`).join('');
-    return `<div class="card-guide">${links}<p class="card-video" data-i18n="learn.noOwn">${t('learn.noOwn')}</p></div>`;
+    const why = it.lang === 'rsl' && !CLIPS.rsl ? 'learn.noClipYet' : 'learn.noVideo';
+    const ext = EXT[it.lang];
+    return `<div class="card-guide"><p class="card-video" data-i18n="${why}">${t(why)}</p>
+      ${ext ? `<a class="card-ext-sm" href="${esc(ext(it.text))}" target="_blank" rel="noopener noreferrer" data-i18n="learn.elsewhere">${t('learn.elsewhere')}</a>` : ''}</div>`;
   }
 
   function card(it, i) {

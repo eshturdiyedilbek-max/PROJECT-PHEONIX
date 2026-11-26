@@ -57,7 +57,7 @@ function paintPlan() {
 
 function paintFacts() {
   $('#acct-device').textContent = clientId().slice(0, 8);
-  $('#acct-server').textContent = getMode() === 'demo' ? t('ac.demo') : apiBase().replace(/^https?:\/\//, '');
+  $('#acct-server').textContent = getMode() === 'offline' ? t('ac.offline') : apiBase().replace(/^https?:\/\//, '');
 }
 
 function stopGithub() { clearTimeout(ghTimer); ghTimer = 0; $('#acct-gh-code').hidden = true; }
@@ -95,7 +95,7 @@ async function offerSignIn() {
   $('#acct-gh').hidden = true;
   $('#auth-or').hidden = true;
   status('');
-  if (who() || getMode() === 'demo') return;
+  if (who() || getMode() === 'offline') return;
   let prov = null;
   try { prov = await api.authProviders(); } catch (e) { prov = null; }
   if (!prov?.google?.client_id && !prov?.github?.client_id) return;
@@ -167,7 +167,7 @@ async function submitAuth(e) {
 }
 
 async function refreshMe() {
-  if (!getAuth() || getMode() === 'demo') return;  // email accounts live in this browser, nothing to refresh
+  if (!getAuth() || getMode() === 'offline') return;  // email accounts live in this browser, nothing to refresh
   try { const r = await api.me(); setAuth({ ...getAuth(), user: r.user }); } catch (e) { /* 401 clears auth in api.js */ }
 }
 

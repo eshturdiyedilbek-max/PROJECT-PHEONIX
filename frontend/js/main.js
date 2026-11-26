@@ -204,7 +204,7 @@ async function checkApi() {
   const out = $('#api-status'); if (!out || $('[data-view=sozlamalar]').hidden) return;
   out.textContent = t('set.checking');
   await resolveMode();
-  if (getMode() === 'demo') { out.textContent = t('set.demoNow'); return; }
+  if (getMode() === 'offline') { out.textContent = t('set.failed', { url: apiBase() }); return; }
   try { const h = await api.health(); out.textContent = t('set.connected', { url: apiBase(), v: h.version }); }
   catch (e) { out.textContent = t('set.failed', { url: apiBase() }); }
 }
@@ -239,11 +239,11 @@ async function init() {
     console.warn('[phoenix] 3D hands:', e);
     $('#welcome-stage')?.classList.add('no-webgl');
   });
-  await resolveMode();   // live if a server answers, else demo (the site always opens)
+  await resolveMode();   // live if a server answers, else offline (the site still opens)
   addEventListener('hashchange', route);
   route();
   loadDemoVideo();
-  settings.onChange(k => { if (k === 'api' || k === 'mode') checkApi(); });
+  settings.onChange(k => { if (k === 'api') checkApi(); });
 }
 
 init();

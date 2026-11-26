@@ -2,8 +2,8 @@
 // Sign -> text: camera frames go to WS /ws/sign as small JPEGs; the server answers with each recognized sign,
 // and on "Tugatish" with a full sentence (docs/API.md section 3, UI behaviour in frontend-resources/states.md).
 // Speech -> subtitles: the microphone is recorded in 4 s chunks and each chunk is sent to POST /api/stt.
-// In demo mode (no server) the same UI runs on sample data from demo.js, and a banner says so.
-import { api, isDemo, newClientId, onModeChange, openSignSocket } from './api.js';
+// With no server the page says so plainly and does not start: nothing here fakes a recognition.
+import { api, isOffline, newClientId, onModeChange, openSignSocket, resolveMode } from './api.js';
 import { settings } from './settings.js';
 import { RM } from './motion.js';
 import { t, onLangChange } from './i18n.js';
@@ -157,12 +157,11 @@ export function initTranslate() {
   }
   const toSamples = { label: 'cam.trySample', run: () => { const f = $('#samples-row .sample'); f?.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'center' }); f?.focus({ preventScroll: true }); } };
   function camBanner(kind, e) {
-    banner('cam', st.demoNoCam ? 'warn' : 'danger', 'cam.' + kind + '.l', ['cam.' + kind + '.t', { name: e?.name || '' }], toSamples);
+    banner('cam', 'danger', 'cam.' + kind + '.l', ['cam.' + kind + '.t', { name: e?.name || '' }], toSamples);
   }
 
   async function openCamera() {
     if (st.cam) return true;
-    st.demoNoCam = false;
     let err = null;
     if (window.isSecureContext && navigator.mediaDevices?.getUserMedia) {
       status('camera');
@@ -177,12 +176,6 @@ export function initTranslate() {
     if (!st.cam) {
       const kind = camProblem(err);
       console.warn('[phoenix] camera:', kind, err);
-      if (isDemo()) {   // the demo does not need the picture, so it carries on, but says why there is no picture
-        st.demoNoCam = true;
-        setCamText('tx.noCam', 'tx.noCam', 'tx.noCamHint');
-        camBanner(kind, err);
-        return true;
-      }
       camBanner(kind, err);
       setCamText('tx.camOff', 'cam.' + kind + '.l', 'cam.short');
       status('off');
@@ -341,6 +334,7 @@ export function initTranslate() {
   }
 
   async function startSample(s) {
+    if (!(await serverUp())) return;
     if (st.live) stopAll();
     banner('model'); banner('idle'); banner('cam'); banner('limit');
     st.sample = s;
@@ -363,8 +357,9 @@ export function initTranslate() {
     if (st.live) { stopAll(); return; }
     banner('model'); banner('idle');
     if (left() <= 0) { limitBanner(); return; }
+    if (!(await serverUp())) return;
     if (!(await openCamera())) return;
-    if (!st.demoNoCam) takeAttempt();   // no picture, no attempt used
+    takeAttempt();
     st.live = true;
     el.start.dataset.i18n = 'tx.camStop'; el.start.textContent = t('tx.camStop');
     el.start.classList.add('ph-btn--quiet');
@@ -437,12 +432,7 @@ export function initTranslate() {
   const mic = { stream: null, rec: null, on: false, ctx: null, analyser: null, peak: 0, raf: 0, queue: Promise.resolve() };
 
   async function micOn() {
-    if (isDemo()) {   // no microphone in demo mode: sample replies from demo.js every few seconds
-      mic.on = true; mic.demo = true;
-      const tick = () => { if (!mic.on) return; api.stt(null, { saveHistory: settings.get('saveHistory') }).then(addSubtitle); mic.timer = setTimeout(tick, CHUNK_MS + 800); };
-      mic.timer = setTimeout(tick, 1200);
-      return true;
-    }
+    if (!(await serverUp())) return false;
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
       banner('mic', 'danger', 'b.micNo.l', 'b.micNo.t'); return false;
     }
@@ -503,12 +493,12 @@ export function initTranslate() {
     el.subText.classList.add('show');
     el.subText.appendChild(line);
     while (el.subText.textContent.length > 600) el.subText.firstChild.remove();   // keep the last few lines
-    const pk = r.engine === 'demo' ? 'tx.privacyDemo' : r.engine === 'gemini' ? 'tx.privacyGemini' : 'tx.privacyWhisper';
+    const pk = r.engine === 'gemini' ? 'tx.privacyGemini' : 'tx.privacyWhisper';
     $('#privacy').dataset.i18n = pk; $('#privacy').textContent = t(pk);
   }
 
   function micOff() {
-    mic.on = false; mic.demo = false; clearTimeout(mic.timer); cancelAnimationFrame(mic.raf);
+    mic.on = false; clearTimeout(mic.timer); cancelAnimationFrame(mic.raf);
     if (mic.rec?.state === 'recording') mic.rec.stop();
     mic.stream?.getTracks().forEach(t => t.stop()); mic.stream = null;
     mic.ctx?.close().catch(() => {}); mic.ctx = null; mic.analyser = null;
@@ -539,13 +529,22 @@ export function initTranslate() {
       if (h.sentence_smoothing === false) { el.tr.hidden = true; $('#row-smooth').hidden = true; }
       checkModel();
     } catch (e) {
-      banner('server', 'danger', 'b.server.l', 'b.server.t', { label: 'b.recheck', run: checkServer });
+      showModeBanner();
+      if (!isOffline()) banner('server', 'danger', 'b.server.l', 'b.server.t', { label: 'b.recheck', run: checkServer });
     }
   }
 
   function showModeBanner() {
-    if (isDemo()) banner('mode', 'ok', 'b.demo.l', 'b.demo.t', { label: 'b.toSettings', run: () => { location.hash = '#sozlamalar'; } });
+    if (isOffline()) banner('mode', 'danger', 'b.off.l', 'b.off.t', { label: 'b.recheck', run: () => resolveMode() });
     else banner('mode');
+  }
+  // Before the camera, a sample or the microphone: is the server there? Checks again in case it just came up.
+  async function serverUp() {
+    if (isOffline()) await resolveMode();
+    if (!isOffline()) return true;
+    showModeBanner();
+    el.banners.querySelector('[data-id=mode]')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return false;
   }
   onModeChange(() => { if (st.live) stopAll(); showModeBanner(); checkServer(); });
 

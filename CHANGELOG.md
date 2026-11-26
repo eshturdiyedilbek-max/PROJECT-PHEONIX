@@ -3,6 +3,12 @@
 Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
 
+
+## 2026-11-26: namoyish rejimi olib tashlandi, lug'at videolari saytning o'zida
+
+- "Namoyish rejimi" va "Faqat namoyish, tijorat uchun emas" yozuvlari olib tashlandi. Server bo'lmasa sayt soxta so'z va subtitr chiqarmaydi, "Tanish serveri hozir o'chiq" deb aytadi. Lug'at va tarix serversiz ham ishlaydi.
+- Lug'at videolari endi sahifaning o'zida o'ynaydi. Colab'dagi yangi 6b katak har bir rus so'ziga Slovo videosini tayyorlaydi (`backend/scripts/fetch_dictionary_clips.py`). Videosi yo'q so'zda shunday deb yoziladi, boshqa lug'atga faqat kichik havola qoldi.
+
 ## 2026-11-26: kamera xabarlari va lug'at video qo'llanmasi
 
 - Kamera ochilmasa, endi sababi aniq yoziladi (oldindan ko'rish oynasi bloklagan, ruxsat yo'q, boshqa dastur band qilgan, https emas, kamera yo'q) va nima qilish kerakligi aytiladi. Yonida "Namuna video bilan sinash" tugmasi bor. Kamera ochilmasa urinish sarflanmaydi.

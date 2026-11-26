@@ -1,9 +1,9 @@
 // Talking to the Phoenix backend (docs/API.md). No login: each browser keeps a random id.
-// Two modes: "live" talks to the server; "demo" (the default when no server answers) runs everything
-// in the browser with sample data from demo.js, so the site always opens.
+// "live" when the server answers; "offline" otherwise. Offline the site still opens: the dictionary
+// word list and history come from this browser, but nothing pretends to recognize signs or speech.
 import { t } from './i18n.js';
 import { settings } from './settings.js';
-import { DemoSocket, demoApi } from './demo.js';
+import { localApi } from './local.js';
 
 const ID_KEY = 'phoenix_client_id';
 
@@ -132,32 +132,28 @@ const liveApi = {
 };
 
 // ---------- mode ----------
-let mode = 'demo';
+let mode = 'offline';
 const modeListeners = new Set();
 export const getMode = () => mode;
-export const isDemo = () => mode === 'demo';
+export const isOffline = () => mode === 'offline';
 export const onModeChange = fn => modeListeners.add(fn);
 
-/**
- * Settings > "Ish rejimi": auto (default) | live | demo.
- * auto = live if the server (Settings > Server, else this site's own server) answers /api/health within 3 s, else demo.
- */
+/** live if the server (Settings > Server, else this site's own server) answers /api/health within 3 s. */
 export async function resolveMode() {
   await loadSiteApi();
-  const pref = settings.get('mode') || 'auto';
-  let next = pref;
-  if (pref === 'auto') {
-    try { const h = await request('api/health', { timeout: 3000 }); next = h && h.status === 'ok' ? 'live' : 'demo'; } catch (e) { next = 'demo'; }
-  }
+  let next = 'offline';
+  try { const h = await request('api/health', { timeout: 3000 }); if (h && h.status === 'ok') next = 'live'; } catch (e) { /* stays offline */ }
   if (next !== mode) { mode = next; modeListeners.forEach(fn => fn(mode)); }
   document.documentElement.dataset.mode = mode;
   return mode;
 }
 
-/** The API for the current mode; same methods and response shapes in both. */
-export const api = new Proxy({}, { get: (_, k) => (mode === 'demo' ? demoApi : liveApi)[k] });
+// Offline, only the parts that are real without a server keep working: the word list, saved history.
+const LOCAL = new Set(['dictionary', 'languages', 'history', 'deleteHistory', 'clearHistory']);
+const offlineErr = () => { throw new ApiError(0, 'offline', ERROR_TEXT('offline') || ERROR_TEXT('network')); };
+export const api = new Proxy({}, { get: (_, k) => (mode === 'live' ? liveApi[k] : LOCAL.has(k) ? localApi[k] : async () => offlineErr()) });
 
-/** WS /ws/sign in live mode, an in-browser stand-in with the same messages in demo mode. */
+/** WS /ws/sign. Only called when the server answers (translate.js checks isOffline first). */
 export function openSignSocket(lang) {
-  return mode === 'demo' ? new DemoSocket(lang) : new WebSocket(wsUrl('ws/sign', auth?.token ? { token: auth.token, lang } : { client_id: clientId(), lang }));
+  return new WebSocket(wsUrl('ws/sign', auth?.token ? { token: auth.token, lang } : { client_id: clientId(), lang }));
 }
