@@ -11,7 +11,10 @@
   "dependencies": {
     "@capacitor-community/text-to-speech": "8.0.2",
     "@capacitor/android": "8.6.0",
-    "@capacitor/core": "8.6.0"
+    "@capacitor/app": "8.1.1",
+    "@capacitor/browser": "8.0.4",
+    "@capacitor/core": "8.6.0",
+    "@capgo/capacitor-social-login": "8.7.11"
   },
   "devDependencies": {
     "@capacitor/assets": "4.0.0",
