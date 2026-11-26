@@ -248,3 +248,24 @@ def test_ws_smoothing_opt_out_and_bad_target(tc, app):
         ws.send_text(json.dumps({"type": "stop"}))
         final = _recv(ws)
     assert final["sentence"] == WORD and final["smoothed"] is False and final["sentence_lang"] == "ru"
+
+
+def test_ws_accepts_signed_in_token(tc, app):
+    from app.auth.providers import Profile
+
+    app.state.settings.github_client_id = "Iv1.x"
+
+    async def gh(token, cid, secret):
+        return Profile("github", "99", None, "t", None)
+
+    app.state.verify_github = gh
+    tok = tc.post("/api/auth/github", json={"access_token": "gho_1234567"}).json()["token"]
+    with tc.websocket_connect(f"/ws/sign?token={tok}&lang=rsl") as ws:
+        ws.send_text(json.dumps({"type": "start", "fps": 15}))
+        assert _recv(ws)["type"] == "ready"
+
+
+def test_ws_bad_token(tc):
+    with tc.websocket_connect("/ws/sign?token=nope&lang=rsl") as ws:
+        assert _recv(ws)["code"] == "session_expired"
+        assert ws.receive()["code"] == 4401
