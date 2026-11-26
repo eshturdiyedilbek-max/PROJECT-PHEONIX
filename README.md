@@ -82,6 +82,7 @@ PROJECT-PHEONIX/
 │   ├── fonts/             Shriftlar (SIL OFL litsenziyasi)
 │   ├── vendor/three/      three.js (3D uchun, MIT)
 │   └── assets/            Logo, 3D qo'l modellari, demo video joyi (real.mp4)
+├── app/                   Android ilovasi (Capacitor): saytning o'zi telefon ichida
 ├── backend/               Server: imo-ishorani taniydigan Python kodi
 │   ├── app/               FastAPI ilovasi
 │   │   ├── sign/          Imo-ishorani tanish (model, kadrlar oqimi, WebSocket)
@@ -110,6 +111,10 @@ PROJECT-PHEONIX/
 3. `Runtime > Run all` ni bosing. Taxminan 10 daqiqadan keyin ekranda **Website** havolasi chiqadi. Shu havolani oching.
 
 Batafsil: [`deploy/COLAB.md`](deploy/COLAB.md).
+
+### Doimiy sayt manzili va Android ilovasi
+
+Sayt Vercel'da bepul doimiy manzilda turadi, Android APK ni GitHub o'zi yig'adi (Releases bo'limida). Colab serveriga ulash uchun sayt manziliga `?api=<Colab havolasi>` qo'shiladi. Qadam-baqadam: [`deploy/SAYT-VA-ILOVA.md`](deploy/SAYT-VA-ILOVA.md).
 
 ### 2-usul: O'z kompyuterida
 

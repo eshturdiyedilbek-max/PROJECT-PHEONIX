@@ -6,6 +6,10 @@
 <title>Phoenix · imo-ishora tarjimoni</title>
 <meta name="description" content="Phoenix rus va amerika imo-ishora tilini kamera orqali taniydi va o'zbek, rus yoki ingliz tilida matn va ovozga aylantiradi.">
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#140c0c" media="(prefers-color-scheme: dark)">
 <link rel="preload" href="fonts/geologica-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/app.css">
 <script>
@@ -84,7 +88,7 @@
           <span class="sc-sample caption" data-i18n="story.sample"></span>
         </div>
       </div>
-      <ol class="story-steps">
+      <ol class="story-steps" role="list">
         <li class="step" data-step="1"><h3 data-i18n="story.s1.t"></h3><p data-i18n="story.s1.p"></p></li>
         <li class="step" data-step="2"><h3 data-i18n="story.s2.t"></h3><p data-i18n="story.s2.p"></p></li>
         <li class="step" data-step="3"><h3 data-i18n="story.s3.t"></h3><p data-i18n="story.s3.p"></p></li>
@@ -123,12 +127,12 @@
 <section id="translate" data-view="translate" hidden>
   <div class="wrap tx">
     <div class="tx-head">
-      <h1 class="title" data-i18n="tx.title"></h1>
+      <h1 class="title" data-fly="left" data-i18n="tx.title"></h1>
       <span class="ph-tag demo-tag" data-status="warn"><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 19 18H1z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 8v4M10 14v1.5" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="tx.demoTag"></span></span>
     </div>
     <div class="banners" id="tx-banners" aria-live="polite"></div>
     <div class="tx-grid">
-      <div>
+      <div data-fly="left">
         <div class="frame">
           <video id="cam" playsinline muted autoplay hidden></video>
           <div class="cam-empty" id="cam-empty">
@@ -156,7 +160,7 @@
           <label class="opt"><input type="radio" name="tgt" value="en"><span class="n">English</span></label>
         </fieldset>
       </div>
-      <div class="panels">
+      <div class="panels" data-fly="right">
         <section class="ph-subtitle" aria-live="polite" lang="ru" id="sign-panel">
           <div class="ph-subtitle__label caption"><span data-i18n="tx.fromSign"></span><span class="ph-subtitle__listening"><span class="ring" id="ring" hidden></span><span id="status"></span></span></div>
           <p class="ph-subtitle__text" id="words"></p>
@@ -185,10 +189,10 @@
 <!-- ============ LUG'AT ============ -->
 <section id="learn" data-view="learn" hidden>
   <div class="wrap page">
-    <h1 class="title" data-i18n="learn.title"></h1>
-    <p class="intro" data-i18n="learn.intro"></p>
-    <form class="search" id="learn-form" role="search"><input id="q" data-i18n-ph="learn.ph" data-i18n-aria="learn.searchAria"><button class="ph-btn" type="submit" data-i18n="learn.search"></button></form>
-    <div class="filters">
+    <h1 class="title" data-fly="left" data-i18n="learn.title"></h1>
+    <p class="intro" data-fly="right" data-i18n="learn.intro"></p>
+    <form data-fly="up" class="search" id="learn-form" role="search"><input id="q" data-i18n-ph="learn.ph" data-i18n-aria="learn.searchAria"><button class="ph-btn" type="submit" data-i18n="learn.search"></button></form>
+    <div class="filters" data-fly="up">
       <fieldset class="seg"><legend data-i18n="learn.lang"></legend>
         <label class="opt"><input type="radio" name="dlang" value="rsl" checked><span class="n">RSL</span></label>
         <label class="opt"><input type="radio" name="dlang" value="asl"><span class="n">ASL</span></label>
@@ -218,29 +222,170 @@
 <!-- ============ TARIX ============ -->
 <section id="history" data-view="history" hidden>
   <div class="wrap page">
-    <h1 class="title" data-i18n="hist.title"></h1>
-    <p class="intro" data-i18n="hist.intro"></p>
+    <h1 class="title" data-fly="left" data-i18n="hist.title"></h1>
+    <p class="intro" data-fly="right" data-i18n="hist.intro"></p>
     <ol id="history-list"></ol>
     <p class="empty" id="history-empty" hidden></p>
     <button class="ph-btn ph-btn--quiet more" type="button" id="history-more" hidden data-i18n="learn.more"></button>
   </div>
 </section>
 
+<!-- ============ RESURSLAR ============ -->
+<section id="resurslar" data-view="resurslar" hidden>
+  <div class="res">
+    <header class="wrap res-hero">
+      <h1 class="res-title" data-fly="up" data-i18n="res.title"></h1>
+      <p class="res-lead" data-fly="up" data-i18n="res.lead"></p>
+      <dl class="res-stats">
+        <div data-fly="left"><dt data-count="1000">1000</dt><dd data-i18n="res.s1"></dd></div>
+        <div data-fly="down"><dt data-count="2000">2000</dt><dd data-i18n="res.s2"></dd></div>
+        <div data-fly="up"><dt data-count="3">3</dt><dd data-i18n="res.s3"></dd></div>
+        <div data-fly="right"><dt data-count="108">108</dt><dd data-i18n="res.s4"></dd></div>
+      </dl>
+    </header>
+    <div class="res-marquee" data-progress="pass" aria-hidden="true">
+      <div class="mq mq-a"><div><span>хлеб</span><span>вода</span><span>дом</span><span>школа</span><span>друг</span><span>утро</span><span>улица</span><span>семья</span><span>мать</span><span>любовь</span><span>собака</span><span>город</span><span>хлеб</span><span>вода</span><span>дом</span><span>школа</span><span>друг</span><span>утро</span><span>улица</span><span>семья</span><span>мать</span><span>любовь</span><span>собака</span><span>город</span></div></div>
+      <div class="mq mq-b"><div><span>hello</span><span>thank you</span><span>father</span><span>computer</span><span>rabbit</span><span>book</span><span>water</span><span>mother</span><span>friend</span><span>school</span><span>help</span><span>family</span><span>hello</span><span>thank you</span><span>father</span><span>computer</span><span>rabbit</span><span>book</span><span>water</span><span>mother</span><span>friend</span><span>school</span><span>help</span><span>family</span></div></div>
+    </div>
+
+    <article class="wrap res-ch res-data">
+      <div class="res-copy">
+        <h2 data-fly="left" data-i18n="res.c1.t"></h2>
+        <p data-fly="left" data-i18n="res.c1.p"></p>
+        <ul class="res-facts" data-fly="up">
+          <li><b data-i18n="res.c1.n1">20 400</b><span data-i18n="res.c1.f1"></span></li>
+          <li><b>194</b><span data-i18n="res.c1.f2"></span></li>
+          <li><b data-i18n="res.c1.n3">9,2</b><span data-i18n="res.c1.f3"></span></li>
+        </ul>
+        <p class="res-src" data-fly="up"><a href="https://github.com/ai-forever/slovo" target="_blank" rel="noopener">github.com/ai-forever/slovo</a> · <a href="https://arxiv.org/abs/2305.14527" target="_blank" rel="noopener">arXiv 2305.14527</a> · CC BY-SA 4.0</p>
+      </div>
+      <figure class="res-media res-slovo">
+        <div class="res-stack">
+        <div class="res-frame" data-fly="right"><video src="assets/res/slovo-demo.mp4" poster="assets/res/slovo-ready.jpg" muted loop playsinline preload="metadata" data-i18n-aria="res.c1.video"></video></div>
+        <img class="res-snap s1" data-fly="tilt-l" src="assets/res/slovo-ya.jpg" alt="" width="480" height="398" loading="lazy">
+        <img class="res-snap s2" data-fly="tilt-r" src="assets/res/slovo-tebya.jpg" alt="" width="480" height="398" loading="lazy">
+        </div>
+        <figcaption data-fly="up" data-i18n="res.c1.cap"></figcaption>
+      </figure>
+    </article>
+
+    <article class="wrap res-ch res-asl">
+      <p class="res-word" aria-hidden="true"><span data-fly="up">A</span><span data-fly="down">S</span><span data-fly="right">L</span></p>
+      <div class="res-copy">
+        <h2 data-fly="up" data-i18n="res.c2.t"></h2>
+        <p data-fly="up" data-i18n="res.c2.p"></p>
+        <p class="res-note" data-fly="up" data-i18n="res.c2.note"></p>
+      </div>
+    </article>
+
+    <article class="res-journey" data-progress="sticky">
+      <div class="res-journey-stage">
+        <div class="wrap res-journey-in">
+          <div class="rj-copy">
+            <h2 data-i18n="res.j.t"></h2>
+            <ol class="rj-steps">
+              <li data-step="0"><b data-i18n="res.j.1t"></b><span data-i18n="res.j.1"></span></li>
+              <li data-step="1"><b data-i18n="res.j.2t"></b><span data-i18n="res.j.2"></span></li>
+              <li data-step="2"><b data-i18n="res.j.3t"></b><span data-i18n="res.j.3"></span></li>
+              <li data-step="3"><b data-i18n="res.j.4t"></b><span data-i18n="res.j.4"></span></li>
+              <li data-step="4"><b data-i18n="res.j.5t"></b><span data-i18n="res.j.5"></span></li>
+            </ol>
+          </div>
+          <div class="rj-scene" aria-hidden="true">
+            <img class="rj-photo" src="assets/res/slovo-ya.jpg" alt="" width="480" height="398" loading="lazy">
+            <div class="rj-strip"><img src="assets/res/strip-0.jpg" alt="" width="160" height="160" loading="lazy" style="--k:0;--c:0"><img src="assets/res/strip-1.jpg" alt="" width="160" height="160" loading="lazy" style="--k:1;--c:1"><img src="assets/res/strip-2.jpg" alt="" width="160" height="160" loading="lazy" style="--k:2;--c:2"><img src="assets/res/strip-3.jpg" alt="" width="160" height="160" loading="lazy" style="--k:3;--c:3"><img src="assets/res/strip-4.jpg" alt="" width="160" height="160" loading="lazy" style="--k:4;--c:0"><img src="assets/res/strip-5.jpg" alt="" width="160" height="160" loading="lazy" style="--k:5;--c:1"><img src="assets/res/strip-6.jpg" alt="" width="160" height="160" loading="lazy" style="--k:6;--c:2"><img src="assets/res/strip-7.jpg" alt="" width="160" height="160" loading="lazy" style="--k:7;--c:3"></div>
+            <div class="rj-model"><span>MViTv2</span><i></i><i></i><i></i></div>
+            <div class="rj-word"><b>я</b><small data-i18n="res.j.wordGloss"></small></div>
+            <div class="rj-sentence"><p data-i18n="res.j.sentence"></p><small data-i18n="res.j.sample"></small><span class="rj-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+          </div>
+        </div>
+        <div class="rj-bar"><i></i></div>
+      </div>
+    </article>
+
+    <article class="res-ch res-flow">
+      <div class="wrap">
+        <h2 data-fly="up" data-i18n="res.c3.t"></h2>
+        <figure class="res-shot" data-fly="zoom" data-progress="pass"><img src="assets/res/shot-translate.jpg" alt="" width="960" height="570" loading="lazy"><figcaption data-i18n="res.c3.cap"></figcaption></figure>
+        <ol class="res-steps">
+          <li data-fly="down"><b>1</b><h3 data-i18n="res.c3.s1t"></h3><p data-i18n="res.c3.s1"></p></li>
+          <li data-fly="up"><b>2</b><h3 data-i18n="res.c3.s2t"></h3><p data-i18n="res.c3.s2"></p></li>
+          <li data-fly="down"><b>3</b><h3 data-i18n="res.c3.s3t"></h3><p data-i18n="res.c3.s3"></p></li>
+          <li data-fly="up"><b>4</b><h3 data-i18n="res.c3.s4t"></h3><p data-i18n="res.c3.s4"></p></li>
+        </ol>
+      </div>
+    </article>
+
+    <article class="wrap res-ch res-two" data-progress="pass">
+      <div class="res-split"><h2 data-fly="left" data-i18n="res.two.t"></h2><p class="res-two-lead" data-fly="right" data-i18n="res.two.p"></p></div>
+      <div class="res-two-grid">
+        <div class="two-side" data-fly="left">
+          <img src="assets/res/slovo-tebya.jpg" alt="" width="480" height="398" loading="lazy">
+          <h3 data-i18n="res.two.at"></h3><p data-i18n="res.two.a"></p>
+        </div>
+        <div class="two-line" aria-hidden="true"><i></i><span>↔</span></div>
+        <div class="two-side" data-fly="right">
+          <div class="two-sub"><span class="ph-tag" data-i18n="res.two.subTag"></span><p data-i18n="res.two.subText"></p></div>
+          <h3 data-i18n="res.two.bt"></h3><p data-i18n="res.two.b"></p>
+        </div>
+      </div>
+    </article>
+
+    <article class="wrap res-ch res-nums">
+      <div class="res-split"><h2 data-fly="left" data-i18n="res.c4.t"></h2><p data-fly="right" data-i18n="res.c4.p"></p></div>
+      <div class="res-bars">
+        <div class="bar" data-fly="up" style="--v:65"><span data-i18n="res.c4.b1"></span><i></i><b>65%</b></div>
+        <div class="bar" data-fly="down" style="--v:88"><span data-i18n="res.c4.b2"></span><i></i><b>88%</b></div>
+        <div class="bar" data-fly="up" style="--v:74"><span data-i18n="res.c4.b3"></span><i></i><b>74%</b></div>
+        <div class="bar" data-fly="down" style="--v:100"><span data-i18n="res.c4.b4"></span><i></i><b>100%</b></div>
+      </div>
+      <figure class="res-shot res-colab" data-fly="tilt-r" data-progress="pass"><img src="assets/res/shot-colab.jpg" alt="" width="1000" height="602" loading="lazy"><figcaption data-i18n="res.c4.cap"></figcaption></figure>
+    </article>
+
+    <article class="wrap res-ch res-week" data-progress="pass">
+      <h2 data-fly="zoom" data-i18n="res.week.t"></h2>
+      <ol class="res-tl"><span class="tl-line" aria-hidden="true"><i></i></span><li data-fly="left"><time>24.11</time><p data-i18n="res.w1"></p></li><li data-fly="right"><time>25.11</time><p data-i18n="res.w2"></p></li><li data-fly="left"><time>25.11</time><p data-i18n="res.w3"></p></li><li data-fly="right"><time>25.11</time><p data-i18n="res.w4"></p></li><li data-fly="left"><time>26.11</time><p data-i18n="res.w5"></p></li><li data-fly="right"><time>26.11</time><p data-i18n="res.w6"></p></li></ol>
+    </article>
+
+    <article class="wrap res-ch res-lic">
+      <h2 data-fly="left" data-i18n="res.c5.t"></h2>
+      <div class="res-table">
+        <div class="row" data-fly="left"><span>Slovo</span><span>CC BY-SA 4.0</span><span class="ok" data-i18n="res.yes"></span></div>
+        <div class="row" data-fly="right"><span>WLASL</span><span>C-UDA</span><span class="no" data-i18n="res.research"></span></div>
+        <div class="row" data-fly="left"><span>Whisper</span><span>MIT</span><span class="ok" data-i18n="res.yes"></span></div>
+        <div class="row" data-fly="right"><span>Gemini API</span><span>Google</span><span class="ok" data-i18n="res.terms"></span></div>
+        <div class="row" data-fly="left"><span>three.js</span><span>MIT</span><span class="ok" data-i18n="res.yes"></span></div>
+        <div class="row" data-fly="right"><span data-i18n="res.handsModel"></span><span>MIT</span><span class="ok" data-i18n="res.yes"></span></div>
+        <div class="row" data-fly="left"><span>Geologica, Golos Text</span><span>SIL OFL 1.1</span><span class="ok" data-i18n="res.yes"></span></div>
+      </div>
+    </article>
+
+    <div class="res-end">
+      <div class="wrap">
+        <p class="res-end-t" data-fly="zoom" data-i18n="res.end.t"></p>
+        <p class="res-end-p" data-fly="up" data-i18n="res.end.p"></p>
+        <div class="res-end-cta" data-fly="up"><a class="ph-btn ph-btn--big ph-btn--invert" href="#translate"><span data-i18n="hero.try"></span></a><a class="ph-btn ph-btn--big ph-btn--ghost web-only" href="https://github.com/eshturdiyedilbek-max/PROJECT-PHEONIX/releases/latest/download/Phoenix.apk" rel="noopener"><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10M5 9l5 5 5-5M4 17h12" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="apk.btn"></span></a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ SOZLAMALAR ============ -->
 <section id="sozlamalar" data-view="sozlamalar" hidden>
   <div class="wrap page">
-    <h1 class="title" data-i18n="set.title"></h1>
-    <p class="intro" data-i18n="set.intro"></p>
+    <h1 class="title" data-fly="left" data-i18n="set.title"></h1>
+    <p class="intro" data-fly="right" data-i18n="set.intro"></p>
     <div class="settings">
-      <div class="set-row"><p><span data-i18n="set.uiLang"></span><small data-i18n="set.uiLangHint"></small></p><select class="sel" id="ui-lang" data-i18n-aria="set.uiLang"><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
-      <div class="set-row"><p><span data-i18n="set.voice"></span><small data-i18n="set.voiceHint"></small></p><input class="switch" type="checkbox" data-set="voice" data-i18n-aria="set.voice"></div>
-      <div class="set-row" id="row-smooth"><p><span data-i18n="set.smooth"></span><small data-i18n="set.smoothHint"></small></p><input class="switch" type="checkbox" data-set="smooth" data-i18n-aria="set.smooth"></div>
-      <div class="set-row"><p><span data-i18n="set.speech"></span><small data-i18n="set.speechHint"></small></p><select class="sel" data-set="speechLang" data-i18n-aria="set.speech"><option value="auto" data-i18n="set.auto"></option><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
-      <div class="set-row"><p><span data-i18n="set.hist"></span><small data-i18n="set.histHint"></small></p><input class="switch" type="checkbox" data-set="saveHistory" data-i18n-aria="set.hist"></div>
-      <div class="set-row"><p data-i18n="set.theme"></p><select class="sel" data-set="theme" data-i18n-aria="set.theme"><option value="auto" data-i18n="set.themeAuto"></option><option value="light" data-i18n="set.themeLight"></option><option value="dark" data-i18n="set.themeDark"></option></select></div>
-      <div class="set-row"><p><span data-i18n="set.mode"></span><small data-i18n="set.modeHint"></small></p><select class="sel" data-set="mode" data-i18n-aria="set.mode"><option value="auto" data-i18n="set.auto"></option><option value="live" data-i18n="set.modeLive"></option><option value="demo" data-i18n="set.modeDemo"></option></select></div>
-      <div class="set-row col"><label class="field"><span><span data-i18n="set.api"></span><small class="muted" data-i18n="set.apiHint"></small></span><input type="url" data-set="api" placeholder="https://….trycloudflare.com" inputmode="url" spellcheck="false"></label><span class="caption muted" id="api-status"></span></div>
-      <div class="set-row"><p><span data-i18n="set.clear"></span><small data-i18n="set.clearHint"></small></p><button class="ph-btn ph-btn--quiet" type="button" id="clear-history" data-i18n="set.clearBtn"></button></div>
+      <div data-fly="left" class="set-row"><p><span data-i18n="set.uiLang"></span><small data-i18n="set.uiLangHint"></small></p><select class="sel" id="ui-lang" data-i18n-aria="set.uiLang"><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
+      <div data-fly="right" class="set-row"><p><span data-i18n="set.voice"></span><small data-i18n="set.voiceHint"></small></p><input class="switch" type="checkbox" data-set="voice" data-i18n-aria="set.voice"></div>
+      <div data-fly="left" class="set-row" id="row-smooth"><p><span data-i18n="set.smooth"></span><small data-i18n="set.smoothHint"></small></p><input class="switch" type="checkbox" data-set="smooth" data-i18n-aria="set.smooth"></div>
+      <div data-fly="right" class="set-row"><p><span data-i18n="set.speech"></span><small data-i18n="set.speechHint"></small></p><select class="sel" data-set="speechLang" data-i18n-aria="set.speech"><option value="auto" data-i18n="set.auto"></option><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
+      <div data-fly="left" class="set-row"><p><span data-i18n="set.hist"></span><small data-i18n="set.histHint"></small></p><input class="switch" type="checkbox" data-set="saveHistory" data-i18n-aria="set.hist"></div>
+      <div data-fly="right" class="set-row"><p data-i18n="set.theme"></p><select class="sel" data-set="theme" data-i18n-aria="set.theme"><option value="auto" data-i18n="set.themeAuto"></option><option value="light" data-i18n="set.themeLight"></option><option value="dark" data-i18n="set.themeDark"></option></select></div>
+      <div data-fly="left" class="set-row"><p><span data-i18n="set.mode"></span><small data-i18n="set.modeHint"></small></p><select class="sel" data-set="mode" data-i18n-aria="set.mode"><option value="auto" data-i18n="set.auto"></option><option value="live" data-i18n="set.modeLive"></option><option value="demo" data-i18n="set.modeDemo"></option></select></div>
+      <div data-fly="right" class="set-row col"><label class="field"><span><span data-i18n="set.api"></span><small class="muted" data-i18n="set.apiHint"></small></span><input type="url" data-set="api" placeholder="https://….trycloudflare.com" inputmode="url" spellcheck="false"></label><span class="caption muted" id="api-status"></span></div>
+      <div data-fly="right" class="set-row web-only"><p><span data-i18n="apk.t"></span><small data-i18n="apk.hint"></small></p><a class="ph-btn ph-btn--quiet" href="https://github.com/eshturdiyedilbek-max/PROJECT-PHEONIX/releases/latest/download/Phoenix.apk" rel="noopener"><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10M5 9l5 5 5-5M4 17h12" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="apk.btn"></span></a></div>
+      <div data-fly="left" class="set-row"><p><span data-i18n="set.clear"></span><small data-i18n="set.clearHint"></small></p><button class="ph-btn ph-btn--quiet" type="button" id="clear-history" data-i18n="set.clearBtn"></button></div>
     </div>
   </div>
 </section>
@@ -254,12 +399,13 @@
 
 <!-- Dock: the main navigation, pinned to the bottom of the screen -->
 <nav class="dock" data-i18n-aria="nav.dock">
-  <a href="#landing" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label" data-i18n="nav.home"></span></a>
-  <a href="#translate" class="dock-item dock-main"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label" data-i18n="nav.translate"></span></a>
-  <a href="#learn" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label" data-i18n="nav.learn"></span></a>
-  <a href="#history" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="dock-label" data-i18n="nav.history"></span></a>
+  <a href="#landing" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.home"></span><span class="l-short" data-i18n="nav.homeS"></span></span></a>
+  <a href="#translate" class="dock-item dock-main"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.translate"></span><span class="l-short" data-i18n="nav.translateS"></span></span></a>
+  <a href="#learn" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.learn"></span><span class="l-short" data-i18n="nav.learnS"></span></span></a>
+  <a href="#history" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.history"></span><span class="l-short" data-i18n="nav.historyS"></span></span></a>
+  <a href="#resurslar" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 4.5-9 4.5-9-4.5z M3 12l9 4.5 9-4.5 M3 16.5L12 21l9-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.res"></span><span class="l-short" data-i18n="nav.resS"></span></span></a>
   <span class="dock-sep" aria-hidden="true"></span>
-  <a href="#sozlamalar" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="dock-label" data-i18n="nav.settings"></span></a>
+  <a href="#sozlamalar" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.settings"></span><span class="l-short" data-i18n="nav.settingsS"></span></span></a>
 </nav>
 
 <script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js"}}</script>

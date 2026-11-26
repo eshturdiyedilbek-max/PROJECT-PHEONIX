@@ -114,7 +114,14 @@ export function initTranslate() {
   }
 
   function speak(text, lang) {
-    if (!settings.get('voice') || !('speechSynthesis' in window) || !text) return;
+    if (!settings.get('voice') || !text) return;
+    // Inside the Android app the phone's own voice engine speaks (the WebView has no reliable speechSynthesis).
+    const native = window.Capacitor?.isNativePlatform?.() && window.Capacitor.Plugins?.TextToSpeech;
+    if (native) {
+      native.stop().catch(() => {}).finally(() => native.speak({ text, lang: TTS[lang] || lang }).catch(() => {}));
+      return;
+    }
+    if (!('speechSynthesis' in window)) return;
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = TTS[lang] || lang;
@@ -474,6 +481,6 @@ export function initTranslate() {
 
   return {
     enter() { checkServer(); },
-    leave() { if (st.live) stopAll(); if (mic.on) { micOff(); el.sub.setAttribute('aria-pressed', 'false'); el.subPanel.hidden = true; } speechSynthesis?.cancel?.(); }
+    leave() { if (st.live) stopAll(); if (mic.on) { micOff(); el.sub.setAttribute('aria-pressed', 'false'); el.subPanel.hidden = true; } window.speechSynthesis?.cancel?.(); window.Capacitor?.Plugins?.TextToSpeech?.stop?.().catch(() => {}); }
   };
 }
