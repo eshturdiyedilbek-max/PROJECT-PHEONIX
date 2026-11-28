@@ -1,4 +1,4 @@
-// Phoenix website entry: page router (#landing, #translate, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt, #tolov), site language,
+// Phoenix website entry: page router (#landing, #suhbat, #translate, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt, #tolov), site language,
 // entrance animation, landing storyboard, bottom dock.
 import { applyTheme, initSettingsView, settings } from './settings.js';
 import { api, apiBase, getMode, resolveMode } from './api.js';
@@ -13,12 +13,13 @@ import { initPricing } from './pricing.js';
 import { initAccount } from './account.js';
 import { initCheckout } from './checkout.js';
 import { initCelebrate } from './celebrate.js';
+import { chooseRole, initChat } from './chat.js';
 import { isPro, left, onPlanChange } from './plan.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-const VIEWS = ['landing', 'translate', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt', 'tolov'];
+const VIEWS = ['landing', 'suhbat', 'translate', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt', 'tolov'];
 const pages = {};   // view name -> { enter(), leave() }
 let routed = false;  // the first view arrives with the intro, later ones fade in
 
@@ -127,19 +128,51 @@ function initLanguage() {
   });
 }
 
-// Storyboard: the step closest to the middle of the screen picks the scene on the sticky stage.
+// Storyboard: a long scroll drives one continuous position (0..5) through the five scenes.
+// Each step is tall, so a scene stays on the stage for a good stretch of scrolling, and the
+// position eases toward the scroll instead of jumping, so a fast flick still plays each scene through.
+// Inside a scene, --lp (0..1) moves its parts: chips arrive one by one, the sentence writes itself, and so on.
 function initStory() {
-  const stage = $('#story-stage'), steps = $$('.story-steps .step');
-  if (!stage || !steps.length) return;
-  const set = n => {
-    stage.dataset.scene = n;
-    steps.forEach(s => s.classList.toggle('on', s.dataset.step === String(n)));
+  const stage = $('#story-stage'), steps = $$('.story-steps .step'), story = $('#how');
+  if (!stage || !steps.length || !story) return;
+  const chips = $$('.sc-chip', stage);
+  const narrow = matchMedia('(max-width: 960px)');
+  let target = 0, cur = 0, raf = 0, near = false, shown = -1;
+
+  const measure = () => {
+    const line = innerHeight * (narrow.matches ? 0.72 : 0.55);   // the reading line
+    let pos = 0;
+    steps.forEach((s, i) => {
+      const r = s.getBoundingClientRect();
+      if (r.top <= line) pos = i + Math.min(1, (line - r.top) / Math.max(1, r.height));
+    });
+    target = Math.min(steps.length - 0.001, pos);
   };
-  set(1);
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) set(e.target.dataset.step); });
-  }, { rootMargin: matchMedia('(max-width: 960px)').matches ? '-72% 0px -24% 0px' : '-45% 0px -45% 0px' });
-  steps.forEach(s => io.observe(s));
+  const paint = () => {
+    const scene = Math.floor(cur) + 1, lp = cur - Math.floor(cur);
+    stage.style.setProperty('--lp', lp.toFixed(3));
+    if (scene !== shown) {
+      shown = scene;
+      stage.dataset.scene = scene;
+      steps.forEach(s => s.classList.toggle('on', s.dataset.step === String(scene)));
+    }
+    // scene 2: the three words arrive one after another as the scene is scrolled
+    chips.forEach((c, i) => c.classList.toggle('on', scene > 2 || (scene === 2 && lp > 0.08 + i * 0.2)));
+  };
+  const frame = () => {
+    raf = 0;
+    measure();
+    const d = target - cur;
+    cur = RM || Math.abs(d) < 0.0015 ? target : cur + d * 0.075;   // ease toward the scroll position
+    paint();
+    if (near && cur !== target) raf = requestAnimationFrame(frame);
+  };
+  const wake = () => { if (!raf) raf = requestAnimationFrame(frame); };
+  // only work while the storyboard is on screen
+  new IntersectionObserver(([e]) => { near = e.isIntersecting; if (near) wake(); }, { rootMargin: '20% 0px' }).observe(story);
+  addEventListener('scroll', () => { if (near) wake(); }, { passive: true });
+  addEventListener('resize', wake);
+  measure(); cur = target; paint();
   // the frame counter on scene 1 ticks like a live camera
   const fps = $('#story-fps');
   if (fps && !RM) setInterval(() => { if (stage.dataset.scene === '1') fps.textContent = 14 + Math.round(Math.random() * 2); }, 700);
@@ -222,6 +255,9 @@ async function init() {
   pages.narxlar = initPricing();
   pages.akkaunt = initAccount();
   pages.tolov = initCheckout();
+  pages.suhbat = initChat();
+  // home page: the two mode buttons open the conversation page with that side already picked
+  $$('.meet-btn').forEach(a => a.addEventListener('click', () => chooseRole(a.dataset.role)));
   initCelebrate();
   initTranslateDock();
   paintLaunch(); onPlanChange(paintLaunch); onLangChange(paintLaunch);

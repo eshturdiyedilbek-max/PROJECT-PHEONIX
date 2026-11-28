@@ -25,6 +25,7 @@ Phoenix kar va eshitmaydigan odamlar bilan eshitadigan odamlar o'rtasidagi suhba
 | So'zlardan gap | Imo-ishora tilida grammatika boshqacha. Tanilgan so'zlar ("men", "shifokor", "kerak") Gemini yordamida odatdagi gapga aylanadi va tanlangan tilga o'giriladi. |
 | Ovoz | Tayyor gap brauzer ovozi bilan o'qib beriladi. |
 | Nutqdan subtitr | Eshituvchi gapiradi, uning gapi matn bo'lib chiqadi (Gemini yoki Whisper). |
+| Ikki kishilik suhbat | Har kim o'z telefonidan: biri "Imo-ishora rejimi"da, boshqasi "Ovozli rejim"da. Server ularni tasodifiy navbat yoki 6 belgili xona kodi orqali ulaydi va gaplarini bir-biriga matn qilib yetkazadi (`WS /ws/chat`). |
 | Lug'at | Tizim taniydigan 3000 ta imo-ishorani qidirish (1000 RSL + 2000 ASL). |
 | Tarix | Oldingi tarjimalar. Login yo'q: har bir brauzer o'z tasodifiy identifikatoriga ega. |
 | Ma'lumot yig'ish | Foydalanuvchi roziligi bilan imo-ishora videosini yuborish (kelajakda o'zbek imo-ishora tili uchun). |
@@ -169,7 +170,7 @@ cd backend
 .venv/bin/pytest
 ```
 
-108 ta test haqiqiy modellar va internetsiz ishlaydi: kichik soxta model, SQLite va soxta nutq tanish ishlatiladi. Ular WebSocket oqimini, xatolarni, tarixni, lug'atni, nutqni tanishni, Gemini'ni va saytni berishni tekshiradi.
+115 ta test haqiqiy modellar va internetsiz ishlaydi: kichik soxta model, SQLite va soxta nutq tanish ishlatiladi. Ular WebSocket oqimini, xatolarni, tarixni, lug'atni, nutqni tanishni, Gemini'ni, ikki kishilik suhbat xonalarini va saytni berishni tekshiradi.
 
 ## Natijalar va cheklovlar
 

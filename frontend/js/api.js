@@ -103,6 +103,7 @@ export async function request(path, { method = 'GET', body, json, query, timeout
 
 const liveApi = {
   health: () => request('api/health', { timeout: 8000 }),
+  chatStats: () => request('api/chat/stats', { timeout: 8000 }),
   languages: () => request('api/languages', { timeout: 8000 }),
   dictionary: q => request('api/dictionary', { query: q }),
   history: q => request('api/history', { query: q }),

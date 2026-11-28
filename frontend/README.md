@@ -10,6 +10,7 @@ Oddiy HTML, CSS va JavaScript. Build bosqichi, npm yoki framework yo'q: fayllar 
 | `css/app.css` | Dizayn: [`../frontend-resources`](../frontend-resources/README.md) ranglari, shriftlari va komponentlari, hamda animatsiya |
 | `js/main.js` | Sahifalar orasida o'tish (`#translate`, `#learn`, `#history`, `#sozlamalar`), kirish animatsiyasi, demo video |
 | `js/translate.js` | Tarjima: kamera kadrlarini `WS /ws/sign` ga yuborish, so'zlar va gapni ko'rsatish, ovoz, mikrofon orqali subtitr (`POST /api/stt`) |
+| `js/chat.js` | Suhbat (`#suhbat`): ikki kishini `WS /ws/chat` orqali ulash (tasodifiy navbat yoki xona kodi), imo-ishora tomonida kamera, ovozli tomonda mikrofon, ikkalasida yozish |
 | `js/learn.js` | Lug'at (`GET /api/dictionary`), har bir so'zning videosi (`assets/dict/rsl.json`, pastga qarang) va video yuborish (`POST /api/contributions`) |
 | `js/history.js` | Tarix (`GET/DELETE /api/history`) |
 | `js/api.js` | Server bilan aloqa, xato xabarlari tanlangan tilda, brauzer identifikatori (`X-Client-Id`) |

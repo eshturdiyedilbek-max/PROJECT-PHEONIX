@@ -4,6 +4,17 @@ Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
 
 
+## 2026-11-28: ikki kishilik suhbat, sekinroq storyboard
+
+### Qo'shildi
+- Suhbat sahifasi (`#suhbat`): ikki kishi har biri o'z qurilmasidan gaplashadi. "Imo-ishora rejimi"dagi odamning kamerasi so'zlarni taniydi va tayyor gap suhbatdoshga boradi; "Ovozli rejim"dagi odamning gapi subtitr bo'lib boradi. Ikkalasi ham yozib yuborishi mumkin.
+- Ikki yo'l: tasodifiy suhbatdosh (boshqa rejimda kutib turgan birinchi odam) yoki 6 belgili xona kodi va ulashiladigan havola (`?xona=KOD#suhbat`).
+- Backend: `WS /ws/chat` va `GET /api/chat/stats` (`backend/app/chat/`), 6 ta yangi test. Protokol `docs/API.md` 10-bo'limda.
+- Bosh sahifada ikki katta tugma: "Imo-ishora rejimi" va "Ovozli rejim", orasida ikki tomonga yuradigan qizil chiziq. Dock'da "Suhbat".
+
+### O'zgardi
+- Storyboard sekinroq: har bir sahna taxminan 1,5 ekran scroll oladi (oldin 1 ekrandan kam), sahna ichidagi qismlar scroll bilan birga harakatlanadi (so'zlar birma-bir chiqadi, gap o'zi yoziladi, progress chizig'i to'ladi), qadam matni sahnasi bilan birga turadi. Telefon ham shunday.
+
 ## 2026-11-26: namoyish rejimi olib tashlandi, lug'at videolari saytning o'zida
 
 - "Namoyish rejimi" va "Faqat namoyish, tijorat uchun emas" yozuvlari olib tashlandi. Server bo'lmasa sayt soxta so'z va subtitr chiqarmaydi, "Tanish serveri hozir o'chiq" deb aytadi. Lug'at va tarix serversiz ham ishlaydi.
