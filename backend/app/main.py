@@ -78,6 +78,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.inference_semaphore = asyncio.Semaphore(settings.max_concurrent_inferences)
     app.state.stt_semaphore = asyncio.Semaphore(settings.max_concurrent_stt)
     app.state.ws_connections = 0
+    from app.auth.providers import verify_github, verify_google
+
+    app.state.verify_google = verify_google  # tests swap these for fakes
+    app.state.verify_github = verify_github
+    app.state.github_http = lambda: None  # None = a real client per call; tests return a mocked httpx client
     app.state.chat_hub = None  # created on first use (app/chat/ws.py)
 
     app.add_middleware(
@@ -90,11 +95,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     install_error_handlers(app)
 
     from app.api import contributions, dictionary, history, meta, sentence
+    from app.auth import router as auth
     from app.chat import ws as chat_ws
     from app.sign import ws as sign_ws
     from app.stt import router as stt
 
-    for module in (meta, dictionary, history, contributions, sentence, stt, sign_ws, chat_ws):
+    for module in (meta, auth, dictionary, history, contributions, sentence, stt, sign_ws, chat_ws):
         app.include_router(module.router)
     mount_frontend(app, settings)
     return app

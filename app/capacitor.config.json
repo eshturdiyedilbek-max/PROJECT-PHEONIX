@@ -5,5 +5,19 @@
   "android": {
     "allowMixedContent": false,
     "backgroundColor": "#ffffff"
+  },
+  "plugins": {
+    "SocialLogin": {
+      "providers": {
+        "google": true,
+        "facebook": false,
+        "apple": false,
+        "twitter": false
+      },
+      "logLevel": 1
+    },
+    "SystemBars": {
+      "insetsHandling": "css"
+    }
   }
 }

@@ -1,14 +1,20 @@
-// Copies the website (../frontend) into www/, which Capacitor packs into the APK.
-// The site itself is unchanged: the app is the same pages, served from inside the phone.
-import { cpSync, rmSync, existsSync } from 'node:fs';
+// Builds www/, which Capacitor packs into the APK, from the phone app in ../mobile.
+// The website (../frontend) is NOT the app; we only borrow its fonts and the sample dictionary.
+// Demo mode (mobile/js/demo.js) lives in the app itself, since the website no longer has one.
+// backend/config/auth.json (public sign-in client IDs) is copied as www/auth.json, so sign-in buttons
+// work even before a server is connected.
+import { cpSync, rmSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = join(here, '..', '..', 'frontend');
+const repo = join(here, '..', '..');
 const out = join(here, '..', 'www');
 if (existsSync(out)) rmSync(out, { recursive: true });
-// Skip docs and the large demo-video folder: the app links to nothing in them.
-const skip = /(\/README\.md|\/assets\/demo\/.*\.mp4)$/;
-cpSync(src, out, { recursive: true, filter: p => !skip.test(p.replaceAll('\\', '/')) });
-console.log('www/ <- frontend/');
+mkdirSync(out, { recursive: true });
+
+cpSync(join(repo, 'mobile'), out, { recursive: true });
+cpSync(join(repo, 'frontend', 'fonts'), join(out, 'fonts'), { recursive: true });
+cpSync(join(repo, 'frontend', 'js', 'demo-dictionary.js'), join(out, 'js', 'demo-dictionary.js'));
+cpSync(join(repo, 'backend', 'config', 'auth.json'), join(out, 'auth.json'));
+console.log('www/ <- mobile/ (+ fonts, demo data, auth.json)');
