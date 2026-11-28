@@ -85,6 +85,9 @@ Sign languages the recognizer supports. Use it for the language picker in Settin
 - `text_lang`: language of the words the recognizer outputs (`rsl` → Russian words, `asl` → English words).
 - `tts_lang`: voice to use with `speechSynthesis` for that language.
 - `commercial_use: false` means the model's training data forbids commercial use (ASL/WLASL). Fine for demos; don't sell it.
+- `planned_sign_languages`: languages the site lists as "coming soon" (`{code, english_name, available: false, coming_soon: true}`): `ipsl`, `csl`, `bisindo`, `libras`, `ethsl`, `lse`, `esl`, `psl`. They can be picked in the site, but `/ws/sign` answers `unsupported_language` for them until a model is added.
+
+`GET /api/dictionary` also returns `"coming_soon": true` (with no items) for a planned language.
 
 ## 3. Sign → text (real-time) — `WS /ws/sign`
 

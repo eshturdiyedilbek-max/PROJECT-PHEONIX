@@ -1,6 +1,9 @@
 // Learn page: search the dictionary (GET /api/dictionary) and send a recorded sample (POST /api/contributions).
 import { api, apiBase, onModeChange } from './api.js';
-import { t, onLangChange } from './i18n.js';
+import { getLang, t, onLangChange } from './i18n.js';
+import { settings } from './settings.js';
+import { RM } from './motion.js';
+import { BY_READY, SIGN_LANGS, findLang, isKnown, langName } from './signlangs.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -42,14 +45,44 @@ export function initLearn() {
   const grid = $('#learn-grid'), more = $('#learn-more'), total = $('#learn-total'), q = $('#q');
   const st = { offset: 0, total: 0, selected: null, loaded: false, seq: 0 };
 
+  // ---------- which sign language: all ten, shared with the conversation page and Settings ----------
+  const row = $('#dl-langs'), soon = $('#dl-soon'), body = $('#dl-body'), contribForm = $('#contrib');
+  const curLang = () => (isKnown(settings.get('sign')) ? settings.get('sign') : 'rsl');
+  function paintLangs() {
+    const lang = getLang(), cur = curLang();
+    row.innerHTML = BY_READY.map(l => `<label class="opt dl-opt${l.ready ? '' : ' is-soon'}"><input type="radio" name="dlang" value="${l.code}"${l.code === cur ? ' checked' : ''}>
+      <span class="dl-opt-t"><span class="n">${esc(l.abbr)}</span><small>${esc(l.ready ? langName(l, lang) : t('l10.soon'))}</small></span></label>`).join('');
+    const picked = findLang(cur);
+    soon.hidden = picked.ready; body.hidden = !picked.ready; contribForm.hidden = !picked.ready;
+    if (!picked.ready) {
+      soon.innerHTML = `<span class="dl-soon-abbr" aria-hidden="true">${esc(picked.abbr)}</span>
+        <div class="dl-soon-text"><h2>${esc(t('learn.soonT', { abbr: picked.abbr }))}</h2>
+        <p>${esc(t('learn.soonP', { name: langName(picked, lang) }))}</p>
+        <div class="dl-soon-go">${SIGN_LANGS.filter(l => l.ready).map(l => `<button type="button" class="ph-btn ph-btn--quiet" data-go="${l.code}">${esc(langName(l, lang))}</button>`).join('')}</div></div>`;
+      if (!RM) { soon.classList.remove('dl-in'); void soon.offsetWidth; soon.classList.add('dl-in'); }
+    }
+  }
+  row.addEventListener('change', e => { if (e.target.name === 'dlang') settings.set('sign', e.target.value); });
+  soon.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) settings.set('sign', b.dataset.go); });
+  let shownLang = curLang();
+  settings.onChange(k => {
+    if (k !== 'sign') return;
+    paintLangs();
+    if (curLang() === shownLang) return;
+    shownLang = curLang(); st.loaded = false;
+    if (!document.querySelector('[data-view=learn]').hidden) load(false);
+  });
+  paintLangs();
+
   const params = () => ({
-    lang: document.querySelector('input[name=dlang]:checked').value,
+    lang: curLang(),
     category: document.querySelector('input[name=dcat]:checked').value,
     q: q.value.trim()
   });
 
   async function load(append) {
     const seq = ++st.seq;
+    if (!findLang(curLang()).ready) { st.loaded = true; return; }   // the "coming soon" panel is showing
     if (!append) st.offset = 0;
     total.textContent = t('learn.loading');
     try {
@@ -151,11 +184,11 @@ export function initLearn() {
   let debounce = 0;
   $('#learn-form').addEventListener('submit', e => { e.preventDefault(); load(false); });
   q.addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(() => load(false), 300); });
-  document.querySelectorAll('input[name=dlang],input[name=dcat]').forEach(r => r.addEventListener('change', () => load(false)));
+  document.querySelectorAll('input[name=dcat]').forEach(r => r.addEventListener('change', () => load(false)));
   more.addEventListener('click', () => load(true));
 
   function renderTotal() { if (st.loaded || st.offset) total.textContent = st.total ? t('learn.total', { n: st.total }) : t('learn.none'); }
-  onLangChange(renderTotal);
+  onLangChange(() => { renderTotal(); paintLangs(); });
   onModeChange(() => { st.loaded = false; if (!document.querySelector('[data-view=learn]').hidden) load(false); });
   return { enter() { if (!st.loaded) load(false); } };
 }

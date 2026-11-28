@@ -145,16 +145,18 @@
     </div>
   </div>
 
-  <!-- The ten sign languages with the most signers; which ones Phoenix reads today (js/signlangs.js) -->
+  <!-- Ten sign languages, each one pickable for a conversation and in the dictionary (js/signlangs.js) -->
   <div class="l10" id="tillar">
-    <div class="wrap l10-in">
+    <div class="wrap">
       <header class="l10-head">
         <h2 class="l10-title" data-reveal data-i18n="l10.title"></h2>
         <p class="l10-lead" data-reveal data-i18n="l10.lead"></p>
-        <p class="l10-legend" data-reveal><span class="l10-key l10-key--on" aria-hidden="true"></span><span data-i18n="l10.ready"></span><span class="l10-key" aria-hidden="true"></span><span data-i18n="l10.soon"></span></p>
-        <p class="l10-src caption" data-i18n="l10.src"></p>
       </header>
-      <ol class="l10-list" id="l10-list"></ol>
+      <div class="l10-ready" id="l10-ready"></div>
+      <div class="l10-soon">
+        <p class="l10-soon-h" data-reveal><span data-i18n="l10.soonH"></span><span class="l10-soon-rule" aria-hidden="true"></span></p>
+        <ul class="l10-grid" id="l10-grid"></ul>
+      </div>
     </div>
   </div>
 
@@ -204,6 +206,7 @@
         <div class="ch-lang" id="ch-lang" hidden>
           <h2 class="ch-lang-t" id="ch-lang-t" data-i18n="ch.langT"></h2>
           <div class="ch-lang-grid" id="ch-lang-grid" role="radiogroup" aria-labelledby="ch-lang-t"></div>
+          <p class="ch-lang-soon" id="ch-lang-soon" hidden aria-live="polite"></p>
           <fieldset class="ch-tgt"><legend data-i18n="ch.tgtT"></legend>
             <label><input type="radio" name="ch-tgt" value="uz"><span>O'zbekcha</span></label>
             <label><input type="radio" name="ch-tgt" value="ru"><span>Русский</span></label>
@@ -309,22 +312,22 @@
     <h1 class="title" data-fly="left" data-i18n="learn.title"></h1>
     <p class="intro" data-fly="right" data-i18n="learn.intro"></p>
     <ol class="learn-how" data-fly="up"><li data-i18n="learn.how1"></li><li data-i18n="learn.how2"></li><li data-i18n="learn.how3"></li></ol>
-    <form data-fly="up" class="search" id="learn-form" role="search"><input id="q" data-i18n-ph="learn.ph" data-i18n-aria="learn.searchAria"><button class="ph-btn" type="submit" data-i18n="learn.search"></button></form>
-    <div class="filters" data-fly="up">
-      <fieldset class="seg"><legend data-i18n="learn.lang"></legend>
-        <label class="opt"><input type="radio" name="dlang" value="rsl" checked><span class="n">RSL</span></label>
-        <label class="opt"><input type="radio" name="dlang" value="asl"><span class="n">ASL</span></label>
-      </fieldset>
-      <fieldset class="seg"><legend data-i18n="learn.type"></legend>
-        <label class="opt"><input type="radio" name="dcat" value=""><span class="n" data-i18n="learn.all"></span></label>
-        <label class="opt"><input type="radio" name="dcat" value="word" checked><span class="n" data-i18n="cat.word"></span></label>
-        <label class="opt"><input type="radio" name="dcat" value="phrase"><span class="n" data-i18n="cat.phrase"></span></label>
-        <label class="opt"><input type="radio" name="dcat" value="letter"><span class="n" data-i18n="cat.letter"></span></label>
-      </fieldset>
+    <fieldset class="dl-langs" data-fly="up"><legend data-i18n="learn.lang"></legend><div class="dl-lang-row" id="dl-langs"></div></fieldset>
+    <div class="dl-soon" id="dl-soon" hidden aria-live="polite"></div>
+    <div class="dl-body" id="dl-body">
+      <form data-fly="up" class="search" id="learn-form" role="search"><input id="q" data-i18n-ph="learn.ph" data-i18n-aria="learn.searchAria"><button class="ph-btn" type="submit" data-i18n="learn.search"></button></form>
+      <div class="filters" data-fly="up">
+        <fieldset class="seg"><legend data-i18n="learn.type"></legend>
+          <label class="opt"><input type="radio" name="dcat" value=""><span class="n" data-i18n="learn.all"></span></label>
+          <label class="opt"><input type="radio" name="dcat" value="word" checked><span class="n" data-i18n="cat.word"></span></label>
+          <label class="opt"><input type="radio" name="dcat" value="phrase"><span class="n" data-i18n="cat.phrase"></span></label>
+          <label class="opt"><input type="radio" name="dcat" value="letter"><span class="n" data-i18n="cat.letter"></span></label>
+        </fieldset>
+      </div>
+      <p class="caption muted" id="learn-total"></p>
+      <div id="learn-grid"></div>
+      <button class="ph-btn ph-btn--quiet more" type="button" id="learn-more" hidden data-i18n="learn.more"></button>
     </div>
-    <p class="caption muted" id="learn-total"></p>
-    <div id="learn-grid"></div>
-    <button class="ph-btn ph-btn--quiet more" type="button" id="learn-more" hidden data-i18n="learn.more"></button>
 
     <form class="contrib" id="contrib">
       <h2 class="heading" data-i18n="contrib.title"></h2>

@@ -1,7 +1,8 @@
 // The ten sign languages with the most signers (Ethnologue estimates, as listed on Wikipedia's
 // "List of sign languages by number of native signers", read 2026-11-28; the figures are rough).
-// `ready`: the server has a recognition model for it today. The rest are listed so people can see
-// where Phoenix is heading; they cannot be picked yet.
+// All ten can be picked in a conversation, in the dictionary and in Settings.
+// `ready`: the server has a recognition model and a word list for it today. For the rest the video call
+// and typed messages work, and the camera-to-text part and the dictionary say "coming soon".
 // name/region: [uz, ru, en]
 export const SIGN_LANGS = [
   { code: 'ipsl', abbr: 'IPSL', signers: 6300000, ready: false,
@@ -40,3 +41,7 @@ const IDX = { uz: 0, ru: 1, en: 2 };
 export const langName = (l, lang) => l.name[IDX[lang] ?? 0];
 export const langRegion = (l, lang) => l.region[IDX[lang] ?? 0];
 export const isReady = code => !!SIGN_LANGS.find(l => l.code === code)?.ready;
+export const findLang = code => SIGN_LANGS.find(l => l.code === code);
+export const isKnown = code => !!findLang(code);
+// Ready ones first (they are what works today), then the rest in the order above.
+export const BY_READY = [...SIGN_LANGS.filter(l => l.ready), ...SIGN_LANGS.filter(l => !l.ready)];
