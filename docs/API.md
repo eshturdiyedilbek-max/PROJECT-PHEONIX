@@ -371,10 +371,11 @@ this socket, and nothing is stored. Rooms live in the memory of one server proce
 ```json
 {"type": "waiting", "mode": "random", "waiting": {"sign": 1, "voice": 0}, "conversations": 3}
 {"type": "waiting", "mode": "room", "room": "K7M2QP"}
-{"type": "paired", "room": "K7M2QP", "kind": "code", "partner": {"role": "voice", "name": "Akmal"}}
+{"type": "paired", "room": "K7M2QP", "kind": "code", "partner": {"role": "voice", "name": "Akmal"}, "offer": true}
 {"type": "message", "from": "me|partner", "id": 1, "role": "sign", "text": "Salom, men shifokorman", "source": "sign|speech|typed", "lang": "uz", "ts": 1764300000000}
 {"type": "draft", "text": "salom men"}
 {"type": "partner_left", "room_open": true}
+{"type": "rtc", "kind": "offer|answer|ice|cam", "sdp": "...", "candidate": {...}, "on": true}
 {"type": "pong"}
 {"type": "error", "code": "room_not_found", "message": "..."}
 ```
@@ -385,7 +386,20 @@ After `partner_left` a code room stays open (`room_open: true`) and the other pe
 same code; a random pairing ends.
 
 **Client → server:** `{"type": "say", "text": "...", "source": "sign|speech|typed", "lang": "uz"}`,
-`{"type": "draft", "text": "..."}`, `{"type": "ping"}`, `{"type": "leave"}`.
+`{"type": "draft", "text": "..."}`, `{"type": "rtc", ...}`, `{"type": "ping"}`, `{"type": "leave"}`.
+
+**Video call (WebRTC).** The two people can see each other. Video goes browser to browser; this socket only
+passes the setup messages, unchanged, to the other person:
+
+| `kind` | Fields | Meaning |
+| --- | --- | --- |
+| `offer` / `answer` | `sdp` (string, up to 16 000 chars) | Session description. The side with `"offer": true` in `paired` sends the offer. |
+| `ice` | `candidate` (RTCIceCandidate JSON, or `null` at the end) | A network path to try. |
+| `cam` | `on` (bool) | The sender turned their camera on or off (the other screen shows a placeholder). |
+
+Setup messages have their own limit (120 per 10 s) so a burst of candidates never eats into the text limit.
+`GET /api/chat/ice` → `{"ice_servers": [{"urls": ["stun:stun.l.google.com:19302", ...]}]}`. Set
+`CHAT_ICE_SERVERS` (JSON list of RTCIceServer) to add a TURN relay for networks that block direct links.
 
 **Errors:** `invalid_client_id`, `bad_role`, `room_not_found`, `room_full`, `busy` (close 4400);
 `no_partner`, `bad_message`, `too_fast` (more than 40 messages in 10 s; the socket stays open);

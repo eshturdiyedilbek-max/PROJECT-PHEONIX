@@ -1,9 +1,8 @@
-// Phoenix website entry: page router (#landing, #suhbat, #translate, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt, #tolov), site language,
+// Phoenix website entry: page router (#landing, #suhbat, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt, #tolov), site language,
 // entrance animation, landing storyboard, bottom dock.
 import { applyTheme, initSettingsView, settings } from './settings.js';
 import { api, apiBase, getMode, resolveMode } from './api.js';
 import { applyI18n, getLang, onLangChange, setLang, t } from './i18n.js';
-import { initTranslate } from './translate.js';
 import { initLearn } from './learn.js';
 import { initHistory } from './history.js';
 import { RM } from './motion.js';
@@ -15,15 +14,18 @@ import { initCheckout } from './checkout.js';
 import { initCelebrate } from './celebrate.js';
 import { chooseRole, initChat } from './chat.js';
 import { isPro, left, onPlanChange } from './plan.js';
+import { SIGN_LANGS, langName, langRegion } from './signlangs.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-const VIEWS = ['landing', 'suhbat', 'translate', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt', 'tolov'];
+const VIEWS = ['landing', 'suhbat', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt', 'tolov'];
 const pages = {};   // view name -> { enter(), leave() }
 let routed = false;  // the first view arrives with the intro, later ones fade in
 
 function route() {
+  // the old one-screen translator became the conversation page; old links still land somewhere useful
+  if (location.hash === '#translate') { history.replaceState(null, '', '#suhbat'); }
   const name = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'landing';
   $$('section[data-view]').forEach(v => {
     const on = v.dataset.view === name;
@@ -32,25 +34,10 @@ function route() {
     if (on && routed && !RM) { v.classList.remove('enter'); void v.offsetWidth; v.classList.add('enter'); replayFly(v); }
   });
   routed = true;
-  if (name === 'translate') unlockTranslate();
   $$('.dock-item, .top-link, .top-acct').forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + name));
   document.documentElement.dataset.view = name;
   pages[name]?.enter?.();
   if (location.hash && location.hash !== '#landing') scrollTo(0, 0);
-}
-
-// Translate lives behind the big button on the home page. Once the visitor has gone in, it joins the dock
-// (with a little pop the first time) and stays there on later visits.
-const TX_KEY = 'phoenix_tx_dock';
-function unlockTranslate(first = true) {
-  const item = $('#dock-tx'); if (!item || !item.hidden) return;
-  item.hidden = false;
-  try { localStorage.setItem(TX_KEY, '1'); } catch (e) {}
-  if (first && !RM) { item.classList.add('arrive'); setTimeout(() => item.classList.remove('arrive'), 1400); }
-}
-function initTranslateDock() {
-  let on = false; try { on = localStorage.getItem(TX_KEY) === '1'; } catch (e) {}
-  if (on) unlockTranslate(false);
 }
 
 // The big button's second line: attempts left on this plan.
@@ -121,11 +108,57 @@ function initLanguage() {
   if (sel) { sel.value = getLang(); sel.addEventListener('change', () => setLang(sel.value)); }
   onLangChange(lang => {
     if (sel) sel.value = lang;
-    // the welcome caption re-enters like a new subtitle line
-    const w = $('#welcome-word');
-    if (w && !RM) { w.classList.remove('say'); void w.offsetWidth; w.classList.add('say'); }
+    paintLangs10(lang);
+    paintSignSelect(lang);
     checkApi();
   });
+}
+
+// Home: the ten sign languages with the most signers, as a ranked bar chart. Bars are to scale
+// (signers / the largest), and the ones Phoenix reads today are red.
+function paintLangs10(lang = getLang()) {
+  const list = $('#l10-list'); if (!list) return;
+  const max = Math.max(...SIGN_LANGS.map(l => l.signers));
+  const fmt = n => n.toLocaleString('ru-RU');
+  list.innerHTML = SIGN_LANGS.map((l, i) => `
+    <li class="l10-row${l.ready ? ' is-ready' : ''}" style="--v:${(l.signers / max).toFixed(4)};--i:${i}">
+      <span class="l10-rank">${i + 1}</span>
+      <span class="l10-name"><b>${langName(l, lang)}</b><small>${l.abbr} · ${langRegion(l, lang)}</small></span>
+      <span class="l10-bar" aria-hidden="true"><i></i></span>
+      <span class="l10-num"><b>${fmt(l.signers)}</b><small>${t('l10.people')}</small></span>
+      <span class="l10-tag">${t(l.ready ? 'l10.ready' : 'l10.soon')}</span>
+    </li>`).join('');
+}
+function initLangs10() {
+  paintLangs10();
+  const list = $('#l10-list'); if (!list) return;
+  if (RM || !('IntersectionObserver' in window)) { list.classList.add('in'); return; }
+  const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { list.classList.add('in'); io.disconnect(); } }, { rootMargin: '0px 0px -18% 0px' });
+  io.observe(list);
+}
+// Settings > sign language: all ten listed, only the ready ones can be picked.
+function paintSignSelect(lang = getLang()) {
+  const sel = $('#set-sign'); if (!sel) return;
+  const cur = settings.get('sign');
+  sel.innerHTML = SIGN_LANGS.map(l => `<option value="${l.code}"${l.ready ? '' : ' disabled'}>${langName(l, lang)}${l.ready ? '' : ' · ' + t('l10.soon')}</option>`).join('');
+  sel.value = cur;
+}
+
+// Hero mark: the big logo leans a little toward the pointer, and the small one in the top bar
+// only appears once the big one has scrolled away.
+function initHeroMark() {
+  const mark = $('#hero-mark'); if (!mark) return;
+  const html = document.documentElement;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => html.classList.toggle('past-mark', !e.isIntersecting), { rootMargin: '-64px 0px 0px 0px' }).observe(mark);
+  } else html.classList.add('past-mark');
+  if (RM || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  let raf = 0, px = 0, py = 0;
+  addEventListener('pointermove', e => {
+    if ($('#landing').hidden || scrollY > innerHeight) return;
+    px = e.clientX / innerWidth - .5; py = e.clientY / innerHeight - .5;
+    raf ||= requestAnimationFrame(() => { raf = 0; mark.style.setProperty('--px', px.toFixed(3)); mark.style.setProperty('--py', py.toFixed(3)); });
+  }, { passive: true });
 }
 
 // Storyboard: a long scroll drives one continuous position (0..5) through the five scenes.
@@ -246,8 +279,8 @@ async function init() {
   applyTheme();
   initLanguage();
   initThemeToggle();
+  paintSignSelect();
   initSettingsView();
-  pages.translate = initTranslate();
   pages.learn = initLearn();
   pages.history = initHistory();
   pages.sozlamalar = { enter: checkApi };
@@ -259,9 +292,10 @@ async function init() {
   // home page: the two mode buttons open the conversation page with that side already picked
   $$('.meet-btn').forEach(a => a.addEventListener('click', () => chooseRole(a.dataset.role)));
   initCelebrate();
-  initTranslateDock();
   paintLaunch(); onPlanChange(paintLaunch); onLangChange(paintLaunch);
   $('#to-how')?.addEventListener('click', () => $('#how').scrollIntoView({ behavior: RM ? 'auto' : 'smooth' }));
+  initLangs10();
+  initHeroMark();
   intro();
   initStory();
   initReveal();
@@ -271,15 +305,16 @@ async function init() {
   initDock();
   const onScroll = () => document.documentElement.classList.toggle('scrolled', scrollY > 8);
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
-  import('./hero-hands.js').then(m => m.initHeroHands($('#welcome-stage'))).catch(e => {
-    console.warn('[phoenix] 3D hands:', e);
-    $('#welcome-stage')?.classList.add('no-webgl');
-  });
   await resolveMode();   // live if a server answers, else offline (the site still opens)
   addEventListener('hashchange', route);
   route();
   loadDemoVideo();
-  settings.onChange(k => { if (k === 'api') checkApi(); });
+  settings.onChange((k, v) => {
+    if (k === 'api') checkApi();
+    // a choice made elsewhere (the conversation page) shows up in Settings too
+    const el = $(`[data-set="${k}"]`);
+    if (el && el.type !== 'checkbox' && typeof v === 'string' && el.value !== v) el.value = v;
+  });
 }
 
 init();

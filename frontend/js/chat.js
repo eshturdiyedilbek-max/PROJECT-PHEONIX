@@ -2,6 +2,8 @@
 // One person is in sign mode (camera -> WS /ws/sign -> recognized words), the other in voice mode
 // (microphone -> POST /api/stt -> subtitles). WS /ws/chat pairs them, by a random queue or a room code,
 // and relays each side's text to the other. Typing works for both, so a conversation never stalls.
+// The two also see each other: a WebRTC video call runs browser to browser, and /ws/chat only carries
+// its setup messages (offer, answer, network candidates, camera on/off).
 // Protocol: docs/API.md §10.
 import { api, clientId, isOffline, onModeChange, openSignSocket, resolveMode, wsUrl } from './api.js';
 import { settings } from './settings.js';
@@ -9,6 +11,7 @@ import { getLang, onLangChange, t } from './i18n.js';
 import { RM } from './motion.js';
 import { left, takeAttempt } from './plan.js';
 import { replayFly } from './fly.js';
+import { SIGN_LANGS, isReady, langName } from './signlangs.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -75,6 +78,7 @@ export function initChat() {
     st.role = role;
     view.dataset.role = role;
     view.querySelectorAll('.ch-role').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.role === role)));
+    el('ch-lang').hidden = role !== 'sign';
     const how = el('ch-how');
     const first = how.hidden;
     how.hidden = false;
@@ -82,6 +86,33 @@ export function initChat() {
     if (first) how.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'nearest' });
   }
   view.querySelectorAll('.ch-role').forEach(b => b.addEventListener('click', () => pickRole(b.dataset.role)));
+
+  // ---------- signing side: which sign language, which text language ----------
+  function paintLangPick() {
+    const grid = el('ch-lang-grid'), lang = getLang();
+    let cur = settings.get('sign');
+    if (!isReady(cur)) { cur = 'rsl'; settings.set('sign', cur); }
+    grid.innerHTML = SIGN_LANGS.map((l, i) => `<button type="button" role="radio" class="ch-lang-opt" data-code="${l.code}" style="--i:${i}" aria-checked="${l.code === cur}"${l.ready ? '' : ' aria-disabled="true" tabindex="-1"'}><b>${esc(langName(l, lang))}</b><small>${esc(l.ready ? l.abbr : l.abbr + ' · ' + t('l10.soon'))}</small></button>`).join('');
+    if (!grid.querySelector('[aria-checked=true]')) grid.querySelector('[role=radio]:not([aria-disabled])').setAttribute('aria-checked', 'true');
+    grid.querySelectorAll('[role=radio]').forEach(b => b.tabIndex = b.getAttribute('aria-checked') === 'true' ? 0 : -1);
+    view.querySelectorAll('input[name=ch-tgt]').forEach(r => { r.checked = r.value === settings.get('target'); });
+  }
+  el('ch-lang-grid').addEventListener('click', e => {
+    const b = e.target.closest('[role=radio]'); if (!b || b.getAttribute('aria-disabled') === 'true') return;
+    settings.set('sign', b.dataset.code); paintLangPick();
+    el('ch-lang-grid').querySelector(`[data-code="${b.dataset.code}"]`)?.focus();
+  });
+  el('ch-lang-grid').addEventListener('keydown', e => {
+    if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(e.key)) return;
+    e.preventDefault();
+    const ready = SIGN_LANGS.filter(l => l.ready).map(l => l.code);
+    const i = ready.indexOf(settings.get('sign')), step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
+    settings.set('sign', ready[(i + step + ready.length) % ready.length]); paintLangPick();
+    el('ch-lang-grid').querySelector('[aria-checked=true]')?.focus();
+  });
+  view.querySelectorAll('input[name=ch-tgt]').forEach(r => r.addEventListener('change', () => settings.set('target', r.value)));
+  settings.onChange(k => { if (k === 'sign' || k === 'target') paintLangPick(); });
+  paintLangPick();
 
   const nameIn = el('ch-name');
   nameIn.value = settings.get('chatName') || '';
@@ -141,6 +172,7 @@ export function initChat() {
       } else if (m.type === 'paired') onPaired(m);
       else if (m.type === 'message') addMsg(m);
       else if (m.type === 'draft') paintDraft(m.text);
+      else if (m.type === 'rtc') onRtc(m);
       else if (m.type === 'partner_left') onPartnerLeft(m);
       else if (m.type === 'error') fatal = onError(m) || fatal;
     };
@@ -204,7 +236,7 @@ export function initChat() {
   function leave() {
     st.userLeft = true;
     clearTimeout(st.retryTimer);
-    closeWs(); stopInputs();
+    closeWs(); stopInputs(); rtcStop();
     st.room = null; st.kind = null; st.partner = null;
     el('ch-ended').hidden = true;
     show('pick');
@@ -228,20 +260,23 @@ export function initChat() {
     el('ch-type').hidden = false;
     paintDraft('');
     sysLine('ch.joined');
+    rtcStart(!!m.offer);
   }
   function paintBar() {
     const p = st.partner; if (!p) return;
     el('ch-with').innerHTML = `<b>${esc(p.name || t('ch.anon'))}</b> · ${esc(t('role.' + p.role))}`;
+    el('ch-peer-ic').innerHTML = ICON[p.role] || '';
+    el('ch-peer-name').textContent = p.name || t('ch.anon');
     el('ch-room-tag').textContent = st.kind === 'code' && st.room ? t('ch.roomTag', { code: st.room }) : '';
   }
   function onPartnerLeft(m) {
-    stopInputs();
+    stopInputs(); rtcStop();
     paintDraft('');
     if (m.room_open && st.room) { waitRoom(st.room, true); return; }
     ended('ch.left');
   }
   function ended(key) {
-    stopInputs();
+    stopInputs(); rtcStop();
     view.dataset.live = 'off';
     st.endedSpec = key;
     if (st.phase !== 'talk') show('talk');
@@ -329,9 +364,9 @@ export function initChat() {
       try { cam.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }); } catch (e2) { banner('cam', 'danger', 'ch.camErr', null); return; }
     }
     takeAttempt();
-    video.srcObject = cam.stream; video.hidden = false; el('ch-cam-off').hidden = true;
-    await video.play().catch(() => {});
+    showSelf(cam.stream);
     setCamBtn(true);
+    setLocalTrack(cam.stream.getVideoTracks()[0]);
     const ws = openSignSocket(settings.get('sign'));
     cam.ws = ws;
     ws.onopen = () => ws.send(JSON.stringify({ type: 'start', fps: 15, save_history: !!settings.get('saveHistory'), smooth: settings.get('smooth'), target_lang: settings.get('target') }));
@@ -343,7 +378,10 @@ export function initChat() {
         if (m.sentence) say(m.sentence, 'sign', m.sentence_lang);
         cam.words = []; paintLive(); send({ type: 'draft', text: '' });
       } else if (m.type === 'error' && (m.code === 'model_unavailable' || m.code === 'unsupported_language')) {
-        banner('model', 'warn', 'ch.noModel', null); camOff();
+        // no recognizer for this language right now: keep the camera for the video call, stop sending frames
+        banner('model', 'warn', 'ch.noModel', null);
+        clearInterval(cam.timer); cam.ready = false; cam.ws = null;
+        if (ws.readyState <= 1) ws.close(1000);
       }
     };
     ws.onclose = () => { if (cam.ws === ws) { cam.ws = null; cam.ready = false; clearInterval(cam.timer); } };
@@ -361,12 +399,18 @@ export function initChat() {
     clearInterval(cam.timer); cam.ready = false;
     const ws = cam.ws; cam.ws = null; if (ws && ws.readyState <= 1) ws.close(1000);
     cam.stream?.getTracks().forEach(x => x.stop()); cam.stream = null;
-    video.srcObject = null; video.hidden = true; el('ch-cam-off').hidden = false;
+    showSelf(null);
     cam.words = []; paintLive();
     setCamBtn(false);
+    setLocalTrack(null);
   }
-  function setCamBtn(on) {
-    const b = el('ch-cam-btn');
+  function showSelf(stream) {
+    video.srcObject = stream; video.hidden = !stream; el('ch-cam-off').hidden = !!stream;
+    if (stream) video.play().catch(() => {});
+    el('ch-stage').dataset.self = stream ? 'on' : 'off';
+  }
+  function setCamBtn(on, id = 'ch-cam-btn') {
+    const b = el(id);
     b.dataset.i18n = on ? 'ch.camStop' : 'ch.camOn'; b.textContent = t(b.dataset.i18n);
     b.classList.toggle('ph-btn--quiet', on);
   }
@@ -441,8 +485,116 @@ export function initChat() {
   }
   el('ch-mic').addEventListener('click', () => (mic.on ? micOff() : micOn()));
 
+  // ---------- voice side: camera only for the call (no recognition, no attempt used) ----------
+  const vcam = { stream: null };
+  async function vcamOn() {
+    banner('vcam');
+    try { vcam.stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false }); }
+    catch (e) { banner('vcam', 'danger', 'ch.vcamErr', null); return; }
+    showSelf(vcam.stream);
+    setCamBtn(true, 'ch-vcam-btn');
+    setLocalTrack(vcam.stream.getVideoTracks()[0]);
+  }
+  function vcamOff() {
+    vcam.stream?.getTracks().forEach(x => x.stop()); vcam.stream = null;
+    showSelf(null);
+    setCamBtn(false, 'ch-vcam-btn');
+    setLocalTrack(null);
+  }
+  el('ch-vcam-btn').addEventListener('click', () => (vcam.stream ? vcamOff() : vcamOn()));
+
+  // ---------- video call (WebRTC) ----------
+  // The side with "offer": true in `paired` opens one two-way video channel and sends the offer;
+  // the other answers. Turning a camera on or off swaps the track on that channel (no new offer)
+  // and tells the other side with {kind: "cam"} so it can show a placeholder.
+  const peerVideo = el('ch-peer-v');
+  const rtc = { pc: null, ready: null, sender: null, local: null, peerCam: false, pending: [], ice: null, gen: 0, failed: false };
+  async function iceServers() {
+    if (!rtc.ice) {
+      try { rtc.ice = (await api.chatIce()).ice_servers; } catch (e) { rtc.ice = [{ urls: ['stun:stun.l.google.com:19302'] }]; }
+    }
+    return rtc.ice;
+  }
+  function rtcStart(offerer) {
+    rtcStop();
+    const gen = ++rtc.gen;
+    if (!window.RTCPeerConnection) { paintStage('ch.vidNo'); return; }
+    rtc.ready = (async () => {
+      const servers = await iceServers();
+      if (gen !== rtc.gen) return null;
+      const pc = new RTCPeerConnection({ iceServers: servers });
+      rtc.pc = pc;
+      pc.onicecandidate = e => send({ type: 'rtc', kind: 'ice', candidate: e.candidate ? e.candidate.toJSON() : null });
+      pc.ontrack = e => { peerVideo.srcObject = e.streams[0] || new MediaStream([e.track]); peerVideo.play().catch(() => {}); paintStage(); };
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === 'failed') rtc.failed = true;
+        if (pc.connectionState === 'connected') rtc.failed = false;
+        paintStage();
+      };
+      if (offerer) {
+        const tr = pc.addTransceiver('video', { direction: 'sendrecv' });
+        rtc.sender = tr.sender;
+        if (rtc.local) await tr.sender.replaceTrack(rtc.local);
+        await pc.setLocalDescription(await pc.createOffer());
+        send({ type: 'rtc', kind: 'offer', sdp: pc.localDescription.sdp });
+      }
+      return pc;
+    })().catch(e => { console.warn('[phoenix] video call:', e); paintStage('ch.vidNo'); return null; });
+    send({ type: 'rtc', kind: 'cam', on: !!rtc.local });
+    paintStage();
+  }
+  async function flushIce(pc) {
+    const list = rtc.pending.splice(0);
+    for (const c of list) { try { await pc.addIceCandidate(c); } catch (e) { /* a stale candidate */ } }
+  }
+  async function onRtc(m) {
+    if (m.kind === 'cam') { rtc.peerCam = !!m.on; paintStage(); return; }
+    const pc = await rtc.ready; if (!pc || pc !== rtc.pc) return;
+    try {
+      if (m.kind === 'offer') {
+        await pc.setRemoteDescription({ type: 'offer', sdp: m.sdp });
+        const tr = pc.getTransceivers().find(x => x.receiver.track?.kind === 'video') || pc.getTransceivers()[0];
+        if (tr) { tr.direction = 'sendrecv'; rtc.sender = tr.sender; if (rtc.local) await tr.sender.replaceTrack(rtc.local); }
+        await pc.setLocalDescription(await pc.createAnswer());
+        send({ type: 'rtc', kind: 'answer', sdp: pc.localDescription.sdp });
+        await flushIce(pc);
+      } else if (m.kind === 'answer') {
+        await pc.setRemoteDescription({ type: 'answer', sdp: m.sdp });
+        await flushIce(pc);
+      } else if (m.kind === 'ice' && m.candidate) {
+        if (pc.remoteDescription) await pc.addIceCandidate(m.candidate); else rtc.pending.push(m.candidate);
+      }
+    } catch (e) { console.warn('[phoenix] video call:', e); }
+  }
+  function setLocalTrack(track) {
+    rtc.local = track || null;
+    rtc.sender?.replaceTrack(rtc.local).catch(() => {});
+    send({ type: 'rtc', kind: 'cam', on: !!rtc.local });
+  }
+  function rtcStop() {
+    rtc.gen++;
+    try { rtc.pc?.close(); } catch (e) {}
+    Object.assign(rtc, { pc: null, ready: null, sender: null, peerCam: false, pending: [], failed: false });
+    peerVideo.srcObject = null;
+    paintStage();
+  }
+  let stageKey = '';
+  function paintStage(key) {
+    if (key !== undefined) stageKey = key;
+    else if (!rtc.pc && !rtc.ready) stageKey = stageKey === 'ch.vidNo' ? stageKey : '';
+    const live = rtc.pc?.connectionState === 'connected';
+    const peerOn = rtc.peerCam && !!peerVideo.srcObject && live;
+    el('ch-stage').dataset.peer = peerOn ? 'on' : 'off';
+    let note = stageKey;
+    if (!note && rtc.peerCam && !live) note = rtc.failed ? 'ch.vidFail' : 'ch.vidWait';
+    const out = el('ch-vid-st');
+    out.dataset.key = note; out.textContent = note ? t(note) : '';
+    el('ch-peer-state').textContent = rtc.peerCam && !live ? (rtc.failed ? '' : t('ch.vidWait')) : t('ch.peerCamOff');
+  }
+
   function stopInputs() {
     if (cam.stream || cam.ws) camOff();
+    if (vcam.stream) vcamOff();
     if (mic.on) micOff();
     window.speechSynthesis?.cancel?.();
   }
@@ -450,7 +602,7 @@ export function initChat() {
   // ---------- language switch: re-render what JS wrote ----------
   onLangChange(() => {
     for (const [id, [s, l, x, a]] of [...banners]) banner(id, s, l, x, a);
-    paintWait(); paintBar(); renderLog();
+    paintWait(); paintBar(); renderLog(); paintLangPick(); paintStage();
     const er = el('ch-join-err'); if (!er.hidden && er.dataset.key) er.textContent = t(er.dataset.key);
     if (st.endedSpec) el('ch-ended-t').textContent = t(st.endedSpec);
   });

@@ -2,6 +2,18 @@
 
 Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
+## 2026-11-28: bir-birini ko'rib suhbat, 10 ta imo-ishora tili, katta logo
+
+### Qo'shildi
+- Suhbatda video qo'ng'iroq: ikki kishi bir-birini ko'radi. Video brauzerdan brauzerga (WebRTC) boradi, server faqat ulanish xabarlarini uzatadi (`WS /ws/chat` ichida `type: "rtc"`). Imo-ishora tomonining kamerasi ham tanish, ham video uchun ishlaydi; ovozli tomon kamerasini xohlasa yoqadi. Suhbatdoshning kamerasi o'chiq bo'lsa, katta oynada o'zingiz ko'rinasiz.
+- `GET /api/chat/ice` va `CHAT_ICE_SERVERS` (TURN server qo'shish uchun), 2 ta yangi test.
+- Bosh sahifada "Dunyodagi eng ko'p ishlatiladigan 10 ta imo-ishora tili": Ethnologue hisoblari bo'yicha, masshtabli chiziqlar bilan. RSL va ASL "Ishlaydi", qolganlari "Tez orada". Suhbatda va Sozlamalarda ham shu 10 ta til ro'yxati.
+- Imo-ishora tomoni suhbat boshlashdan oldin tilni (RSL/ASL) va gap qaysi tilda borishini (o'zbek, rus, ingliz) tanlaydi.
+
+### O'zgardi
+- Bosh sahifadagi 3D "Xush kelibsiz" qo'llari olib tashlandi; o'rnida katta Phoenix logosi chiziladi. Yuqoridagi kichik logo katta logo ekrandan chiqqanda paydo bo'ladi.
+- Eski bitta ekranli "Tarjima" sahifasi olib tashlandi: tarjima endi faqat suhbat orqali. Eski `#translate` havolalari suhbatga ochiladi. three.js va 3D qo'l modellari repodan chiqarildi.
+
 
 
 ## 2026-11-28: ikki kishilik suhbat, sekinroq storyboard
