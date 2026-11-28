@@ -2,6 +2,17 @@
 
 Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
+## 2026-11-28: Maxfiylik siyosati va ro'yxatdan o'tishda rozilik
+
+### Qo'shildi
+- Maxfiylik siyosati sahifasi (`#maxfiylik`), o'zbek, rus va ingliz tilida: kamera kadrlari, ovoz, matn, ikki kishilik suhbat va video qo'ng'iroq, tarix, video hissa, to'lov, akkaunt ma'lumotlari, saqlash muddatlari, huquqlar va aloqa. Matn `frontend/js/privacy-text.js` da, versiya va sana bilan.
+- Ro'yxatdan o'tishda majburiy "Maxfiylik siyosati bilan tanishib chiqdim va unga roziman" belgisi. Belgisiz akkaunt ochilmaydi, rozilik versiyasi va vaqti akkauntga yoziladi. Google va GitHub tugmalari ostida ham rozilik izohi.
+- Akkaunt sahifasida "Akkauntni o'chirish" (tasdiqlash bilan).
+- Saytning pastki qismida va ovozli suhbat panelida siyosatga havola.
+
+### O'zgardi
+- Loyihani vaqtinchalik ish deb ko'rsatadigan yozuvlar sayt va repodan olib tashlandi. Phoenix to'laqonli mahsulot.
+
 ## 2026-11-28: Colab server sayt bilan o'zi ulanadi
 
 ### Qo'shildi
@@ -117,7 +128,7 @@ Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 - Server saytni `/` manzilida beradi (`SERVE_FRONTEND`, `FRONTEND_DIR`). Colab tunneli endi bitta havola: sayt ham, API ham.
 - Sayt uchun testlar (`backend/tests/test_frontend.py`). Jami 108 ta test.
 - "Ishlar davomida" bo'limi: dizayn izlanishlari, Colab va tayyor sayt rasmlari ([`docs/progress/`](docs/progress/README.md)).
-- O'zbekcha README ustozlar va hakamlar uchun: loyiha nima qiladi, qanday ishlaydi, texnologiyalar, repo tuzilishi, ishga tushirish, natijalar va cheklovlar.
+- O'zbekcha README: loyiha nima qiladi, qanday ishlaydi, texnologiyalar, repo tuzilishi, ishga tushirish, natijalar va cheklovlar.
 
 ### O'zgardi
 - Repo tuzilishi: server kodi `backend/` papkasiga ko'chdi (`app/`, `tests/`, `scripts/`, `config/`, `data/`, `pyproject.toml`, `Dockerfile`). Inglizcha texnik README endi `backend/README.md`.

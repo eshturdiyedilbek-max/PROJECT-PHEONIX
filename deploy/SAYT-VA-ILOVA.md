@@ -20,7 +20,7 @@ Colab notebookni ishga tushiring (`deploy/COLAB.md`). Oxirida `https://xxxx.tryc
 
 - **Havola bilan (eng oson):** sayt manzilining oxiriga `?api=` va Colab havolasini qo'shing:
   `https://project-pheonix-....vercel.app/?api=https://xxxx.trycloudflare.com`
-  Shu havolani ochgan har kim darhol haqiqiy serverga ulanadi. Hakamlarga shu havolani bering.
+  Shu havolani ochgan har kim darhol haqiqiy serverga ulanadi. Foydalanuvchilarga shu havolani bering.
 - **Qo'lda:** saytda **Sozlamalar** → **Server manzili** ga Colab havolasini qo'ying.
 
 Tepadagi "Namoyish rejimi" belgisi yo'qolsa, sayt serverga ulandi. Colab har safar yangi havola beradi, shuning uchun har ishga tushirishda havolani yangilang.

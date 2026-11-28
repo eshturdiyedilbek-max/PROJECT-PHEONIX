@@ -3,7 +3,8 @@
 // Pro is tied to one.
 import { api, apiBase, clientId, getAuth, getMode, onAuthChange, setAuth } from './api.js';
 import { onLangChange, t } from './i18n.js';
-import { AuthError, isPro, left, limit, login, logoutLocal, onPlanChange, register, who } from './plan.js';
+import { AuthError, deleteLocalAccount, isPro, left, limit, login, logoutLocal, onPlanChange, register, who } from './plan.js';
+import { EMAIL, VERSION } from './privacy-text.js';
 import { RM } from './motion.js';
 
 const $ = s => document.querySelector(s);
@@ -94,12 +95,14 @@ async function offerSignIn() {
   slot.replaceChildren();
   $('#acct-gh').hidden = true;
   $('#auth-or').hidden = true;
+  $('#acct-oauth-note').hidden = true;
   status('');
   if (who() || getMode() === 'offline') return;
   let prov = null;
   try { prov = await api.authProviders(); } catch (e) { prov = null; }
   if (!prov?.google?.client_id && !prov?.github?.client_id) return;
   $('#auth-or').hidden = false;
+  $('#acct-oauth-note').hidden = false;
   $('#acct-gh').hidden = !prov.github?.client_id;
   if (!prov.google?.client_id) return;
   try { await loadGis(); } catch (e) { status('ac.gisFail'); return; }
@@ -146,7 +149,7 @@ async function submitAuth(e) {
   e.preventDefault();
   const f = e.currentTarget, btn = f.querySelector('.auth-go');
   if (btn.disabled) return;
-  const data = { name: f.name.value, email: f.email.value, password: f.password.value };
+  const data = { name: f.name.value, email: f.email.value, password: f.password.value, agreed: f.agree.checked ? VERSION : null };
   authErr = null; paintAuthErr();
   f.querySelectorAll('input').forEach(i => i.removeAttribute('aria-invalid'));
   btn.disabled = true; $('#auth-go').textContent = t('ac.busy');
@@ -158,7 +161,7 @@ async function submitAuth(e) {
   } catch (err) {
     authErr = err instanceof AuthError ? err.code : 'email';
     paintAuthErr();
-    const field = { name: f.name, email: f.email, nouser: f.email, exists: f.email, short: f.password, wrong: f.password }[authErr];
+    const field = { name: f.name, email: f.email, nouser: f.email, exists: f.email, short: f.password, wrong: f.password, agree: f.agree }[authErr];
     if (field) { field.setAttribute('aria-invalid', 'true'); field.focus(); }
     if (!RM) { f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); }
   } finally {
@@ -185,6 +188,25 @@ export function initAccount() {
   $('#pw-eye').addEventListener('click', e => {
     const b = e.currentTarget, pw = $('#auth-form').password, show = pw.type === 'password';
     pw.type = show ? 'text' : 'password'; b.setAttribute('aria-pressed', String(show));
+  });
+  // The policy link in the consent line: remember to offer a way back to this form.
+  $('#auth-agree-link').addEventListener('click', () => { try { sessionStorage.setItem('phoenix_pp_from', 'signup'); } catch (e) {} });
+  $('#auth-agree').addEventListener('change', e => { e.target.closest('.check').toggleAttribute('data-on', e.target.checked); });
+  // Delete account: an inline confirmation, then the account and its plan are gone from this device.
+  const delBox = $('#acct-del-box');
+  $('#acct-del').addEventListener('click', () => { delBox.hidden = false; $('#acct-del-no').focus(); });
+  $('#acct-del-no').addEventListener('click', () => { delBox.hidden = true; $('#acct-del').focus(); });
+  $('#acct-del-go').addEventListener('click', async () => {
+    const u = who();
+    delBox.hidden = true;
+    if (u && !u.local) {
+      // Server accounts (Google/GitHub) are removed by request until the server offers self-service deletion.
+      location.href = `mailto:${EMAIL}?subject=${encodeURIComponent('Phoenix: delete account')}&body=${encodeURIComponent(u.email || u.id)}`;
+      return;
+    }
+    deleteLocalAccount();
+    setAuthMode('in');
+    status('ac.deleted');
   });
   $('#acct-gh').addEventListener('click', startGithub);
   $('#acct-gh-copy').addEventListener('click', async e => {

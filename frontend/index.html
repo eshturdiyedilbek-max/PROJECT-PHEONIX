@@ -282,7 +282,7 @@
             <button type="button" class="ch-mic" id="ch-mic" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="ch-mic-l" id="ch-mic-l" data-i18n="ch.micOn"></span></button>
             <span class="ch-lvl" id="ch-lvl" aria-hidden="true"></span>
             <button type="button" class="ph-btn ph-btn--quiet" id="ch-vcam-btn" data-i18n="ch.camOn"></button>
-            <p class="caption muted" id="ch-privacy" data-i18n="tx.privacyGemini"></p>
+            <p class="caption muted ch-privacy-row"><span id="ch-privacy" data-i18n="tx.privacyGemini"></span> <a href="#maxfiylik" data-i18n="pp.more"></a></p>
           </div>
           <form class="ch-type" id="ch-type">
             <input id="ch-text" maxlength="500" autocomplete="off" data-i18n-ph="ch.typePh" data-i18n-aria="ch.typeAria">
@@ -575,6 +575,30 @@
   </div>
 </section>
 
+<!-- ============ MAXFIYLIK (Privacy Policy, js/privacy.js) ============ -->
+<section id="maxfiylik" data-view="maxfiylik" hidden>
+  <div class="wrap pp">
+    <header class="pp-head">
+      <a class="co-back pp-back" href="#akkaunt" id="pp-back" hidden><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H5M9 5l-5 5 5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span id="pp-back-t"></span></a>
+      <svg class="pp-mark" viewBox="0 14 96 82" aria-hidden="true"><path d="M46 96A46 46 0 0 0 0 50M50 96A46 46 0 0 1 96 50M76 96A76 76 0 0 0 0 20M20 96A76 76 0 0 1 96 20" fill="none" stroke="currentColor" stroke-width="12"/></svg>
+      <h1 class="pp-title" id="pp-title" data-fly="up"></h1>
+      <p class="pp-lead" id="pp-lead" data-fly="up"></p>
+      <p class="pp-meta caption" id="pp-meta"></p>
+    </header>
+    <div class="pp-glance" data-fly="up">
+      <h2 class="pp-glance-t" id="pp-glance-t"></h2>
+      <ul id="pp-glance"></ul>
+    </div>
+    <div class="pp-grid">
+      <nav class="pp-toc" aria-labelledby="pp-toc-t">
+        <p class="pp-toc-t" id="pp-toc-t"></p>
+        <ol id="pp-toc"></ol>
+      </nav>
+      <article class="pp-body" id="pp-body"></article>
+    </div>
+  </div>
+</section>
+
 <!-- ============ AKKAUNT ============ -->
 <section id="akkaunt" data-view="akkaunt" hidden>
   <div class="wrap page acct">
@@ -597,6 +621,7 @@
             <span class="pw-wrap"><input name="password" type="password" autocomplete="current-password" minlength="6" required><button type="button" class="pw-eye" id="pw-eye" aria-pressed="false" data-i18n-aria="ac.pwShow"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="eye-open" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path class="eye-slash" d="M4 20 20 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></span>
           </label>
           <p class="auth-hint caption auth-only-up" data-i18n="ac.pwHint"></p>
+          <label class="check auth-agree auth-only-up"><input type="checkbox" name="agree" id="auth-agree"><span><span data-i18n="ac.agree1"></span><a href="#maxfiylik" id="auth-agree-link" data-i18n="ac.agreeLink"></a><span data-i18n="ac.agree2"></span></span></label>
           <p class="auth-err" id="auth-err" role="alert"></p>
           <button class="ph-btn ph-btn--big auth-go" type="submit"><span id="auth-go" data-i18n="ac.goIn"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
           <p class="auth-switch caption"><span id="auth-switch-q" data-i18n="ac.noAcc"></span> <button type="button" class="linkish" id="auth-switch" data-i18n="ac.tabUp"></button></p>
@@ -606,6 +631,7 @@
         <div class="acct-google" id="acct-google"></div>
         <p class="acct-status caption" id="acct-status" aria-live="polite"></p>
         <button class="ph-btn ph-btn--quiet acct-gh" type="button" id="acct-gh" hidden><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg><span data-i18n="ac.ghBtn"></span></button>
+        <p class="acct-oauth-note caption" id="acct-oauth-note" hidden><span data-i18n="ac.oauth1"></span><a href="#maxfiylik" data-i18n="ac.agreeLink"></a><span data-i18n="ac.oauth2"></span></p>
         <div class="acct-device-code" id="acct-gh-code" hidden>
           <p data-i18n="ac.ghStep"></p>
           <p class="acct-code"><b id="acct-gh-user-code"></b><button class="ph-btn ph-btn--quiet" type="button" id="acct-gh-copy" data-i18n="ac.copy"></button></p>
@@ -618,7 +644,12 @@
           <div><h2 id="acct-name"></h2><p class="muted" id="acct-email"></p></div></div>
         <p class="acct-via caption"><span data-i18n="ac.via"></span> <span id="acct-providers"></span></p>
         <p id="acct-synced" data-i18n="ac.synced"></p>
-        <button class="ph-btn ph-btn--quiet" type="button" id="acct-logout" data-i18n="ac.logout"></button>
+        <div class="acct-actions"><button class="ph-btn ph-btn--quiet" type="button" id="acct-logout" data-i18n="ac.logout"></button><button class="linkish acct-del" type="button" id="acct-del" data-i18n="ac.del"></button></div>
+        <div class="acct-del-box" id="acct-del-box" role="alertdialog" aria-labelledby="acct-del-t" aria-describedby="acct-del-p" hidden>
+          <p class="acct-del-t" id="acct-del-t" data-i18n="ac.delT"></p>
+          <p class="caption" id="acct-del-p" data-i18n="ac.delP"></p>
+          <div class="acct-actions"><button class="ph-btn acct-del-go" type="button" id="acct-del-go" data-i18n="ac.delGo"></button><button class="ph-btn ph-btn--quiet" type="button" id="acct-del-no" data-i18n="ac.delNo"></button></div>
+        </div>
       </article>
 
       <aside class="acct-side" data-fly="up">
@@ -744,7 +775,7 @@
 </div>
 
 <footer><div class="wrap">
-  <p data-i18n="footer.line"></p>
+  <p class="foot-row"><span data-i18n="footer.line"></span><a href="#maxfiylik" data-i18n="footer.privacy"></a></p>
   <p data-i18n="footer.lic"></p>
   <p data-i18n="footer.hands"></p>
 </div></footer>

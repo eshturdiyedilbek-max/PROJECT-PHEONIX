@@ -14,7 +14,7 @@ This is the contract between the frontend (Translate, Learn/Dictionary, History,
 - All JSON is UTF-8. Timestamps are ISO-8601 UTC strings, e.g. `"2026-11-24T19:30:00Z"`.
 - Interactive docs (auto-generated): `GET /docs`
 
-## 0. Client identity (no login in MVP)
+## 0. Client identity (anonymous client ID)
 
 There are no accounts in v1. On first visit the frontend generates a random UUID v4, stores it in `localStorage` (key suggestion: `phoenix_client_id`), and sends it on every request:
 
