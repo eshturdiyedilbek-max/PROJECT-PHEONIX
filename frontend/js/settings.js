@@ -9,7 +9,8 @@ const DEFAULTS = {
   saveHistory: true,
   theme: 'light',       // the site is white by default; dark is available in Settings
   api: '',              // custom server URL, e.g. the Colab tunnel; empty = same server
-  uiLang: 'uz'          // site language: uz | ru | en (i18n.js)
+  uiLang: 'uz',         // site language: uz | ru | en (i18n.js)
+  chatName: ''          // name shown to the other person in a conversation (#suhbat), optional
 };
 
 let state = { ...DEFAULTS };

@@ -348,3 +348,48 @@ No server endpoints in v1. Keep these client-side (localStorage): sign language 
 ## 9. CORS
 
 The server allows origins from the `CORS_ORIGINS` env var (comma-separated). Dev default: `http://localhost:3000,http://localhost:5173`. Tell the backend your deployed frontend URL. The bundled website in `frontend/` is served by the same server at `/`, so it needs no CORS setup.
+
+## 10. Two-person conversation — `WS /ws/chat`, `GET /api/chat/stats`
+
+Two people, each on their own device. One is in **sign** mode (their camera goes to `/ws/sign` as usual and
+the recognized sentence is sent here as text), the other in **voice** mode (their speech goes to `/api/stt`
+and the subtitle is sent here). The server only pairs them and relays text: no frames or audio pass through
+this socket, and nothing is stored. Rooms live in the memory of one server process (the Colab/Kaggle setup).
+
+**Connect:** `WS /ws/chat?client_id=<uuid>&role=sign|voice[&room=...][&name=...]`
+
+| `room` | Meaning |
+| --- | --- |
+| *(empty)* | Random partner: wait in the queue until someone with the other role arrives (longest-waiting first). |
+| `new` | Open a room and get a 6-character code (letters and digits, no 0/O/1/I) to tell the other person. |
+| `K7M2QP` | Join that room (case-insensitive). |
+
+`name` is optional, up to 24 characters, shown to the partner.
+
+**Server → client**
+
+```json
+{"type": "waiting", "mode": "random", "waiting": {"sign": 1, "voice": 0}, "conversations": 3}
+{"type": "waiting", "mode": "room", "room": "K7M2QP"}
+{"type": "paired", "room": "K7M2QP", "kind": "code", "partner": {"role": "voice", "name": "Akmal"}}
+{"type": "message", "from": "me|partner", "id": 1, "role": "sign", "text": "Salom, men shifokorman", "source": "sign|speech|typed", "lang": "uz", "ts": 1764300000000}
+{"type": "draft", "text": "salom men"}
+{"type": "partner_left", "room_open": true}
+{"type": "pong"}
+{"type": "error", "code": "room_not_found", "message": "..."}
+```
+
+`message` goes to both people (`from` tells whose it is), so both screens show the same order.
+`draft` is the partner's words still being signed (shown greyed out, never stored).
+After `partner_left` a code room stays open (`room_open: true`) and the other person can come back with the
+same code; a random pairing ends.
+
+**Client → server:** `{"type": "say", "text": "...", "source": "sign|speech|typed", "lang": "uz"}`,
+`{"type": "draft", "text": "..."}`, `{"type": "ping"}`, `{"type": "leave"}`.
+
+**Errors:** `invalid_client_id`, `bad_role`, `room_not_found`, `room_full`, `busy` (close 4400);
+`no_partner`, `bad_message`, `too_fast` (more than 40 messages in 10 s; the socket stays open);
+`idle_timeout` (close 4408 after 15 min waiting or 30 min of silence in a conversation).
+Text is cut to 500 characters, drafts to 200.
+
+`GET /api/chat/stats` → `{"waiting": {"sign": 1, "voice": 0}, "conversations": 3}` (the search screen shows it).

@@ -95,12 +95,40 @@
         </div>
       </div>
       <ol class="story-steps" role="list">
-        <li class="step" data-step="1"><h3 data-i18n="story.s1.t"></h3><p data-i18n="story.s1.p"></p></li>
-        <li class="step" data-step="2"><h3 data-i18n="story.s2.t"></h3><p data-i18n="story.s2.p"></p></li>
-        <li class="step" data-step="3"><h3 data-i18n="story.s3.t"></h3><p data-i18n="story.s3.p"></p></li>
-        <li class="step" data-step="4"><h3 data-i18n="story.s4.t"></h3><p data-i18n="story.s4.p"></p></li>
-        <li class="step" data-step="5"><h3 data-i18n="story.s5.t"></h3><p data-i18n="story.s5.p"></p></li>
+        <li class="step" data-step="1"><div class="step-in"><h3 data-i18n="story.s1.t"></h3><p data-i18n="story.s1.p"></p></div></li>
+        <li class="step" data-step="2"><div class="step-in"><h3 data-i18n="story.s2.t"></h3><p data-i18n="story.s2.p"></p></div></li>
+        <li class="step" data-step="3"><div class="step-in"><h3 data-i18n="story.s3.t"></h3><p data-i18n="story.s3.p"></p></div></li>
+        <li class="step" data-step="4"><div class="step-in"><h3 data-i18n="story.s4.t"></h3><p data-i18n="story.s4.p"></p></div></li>
+        <li class="step" data-step="5"><div class="step-in"><h3 data-i18n="story.s5.t"></h3><p data-i18n="story.s5.p"></p></div></li>
       </ol>
+    </div>
+  </div>
+
+
+  <!-- Two people, two screens: pick a side and Phoenix finds the other person (#suhbat) -->
+  <div class="meet" id="meet">
+    <div class="wrap meet-in">
+      <h2 class="meet-title" data-reveal data-i18n="meet.title"></h2>
+      <p class="meet-lead" data-reveal data-i18n="meet.lead"></p>
+      <div class="meet-pair">
+        <a class="meet-btn meet-btn--sign" href="#suhbat" data-role="sign" data-fly="left">
+          <span class="meet-face">
+            <span class="meet-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><i class="meet-rec"></i></span>
+            <b data-i18n="role.sign"></b>
+            <span class="meet-p" data-i18n="role.signP"></span>
+            <span class="meet-cta"><span data-i18n="meet.go"></span><svg class="meet-go" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>
+          </span>
+        </a>
+        <div class="meet-line" aria-hidden="true"><i></i><i></i></div>
+        <a class="meet-btn meet-btn--voice" href="#suhbat" data-role="voice" data-fly="right">
+          <span class="meet-face">
+            <span class="meet-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="meet-eq"><i></i><i></i><i></i><i></i></span></span>
+            <b data-i18n="role.voice"></b>
+            <span class="meet-p" data-i18n="role.voiceP"></span>
+            <span class="meet-cta"><span data-i18n="meet.go"></span><svg class="meet-go" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>
+          </span>
+        </a>
+      </div>
     </div>
   </div>
 
@@ -125,6 +153,108 @@
       <p class="close-word" data-i18n="hero.welcome"></p>
       <p class="close-lead" data-i18n="close.lead"></p>
       <a class="ph-btn ph-btn--big ph-btn--invert" href="#translate"><span data-i18n="hero.try"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SUHBAT: two people, each on their own device ============ -->
+<section id="suhbat" data-view="suhbat" hidden>
+  <div class="wrap chat">
+    <div class="ch-banners" id="ch-banners" aria-live="polite"></div>
+
+    <!-- 1. pick a side, then how to meet -->
+    <div class="ch-pick" id="ch-pick">
+      <h1 class="ch-title" data-fly="up" data-i18n="ch.title"></h1>
+      <p class="ch-lead" data-fly="up" data-i18n="ch.lead"></p>
+      <div class="ch-roles" role="group" data-i18n-aria="ch.rolesAria">
+        <button type="button" class="ch-role ch-role--sign" data-role="sign" aria-pressed="false" data-fly="left">
+          <span class="ch-role-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span><b data-i18n="role.sign"></b><span data-i18n="role.signP"></span>
+        </button>
+        <button type="button" class="ch-role ch-role--voice" data-role="voice" aria-pressed="false" data-fly="right">
+          <span class="ch-role-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><b data-i18n="role.voice"></b><span data-i18n="role.voiceP"></span>
+        </button>
+      </div>
+      <div class="ch-how" id="ch-how" hidden>
+        <label class="ch-name"><span data-i18n="ch.name"></span><input id="ch-name" maxlength="24" autocomplete="nickname" data-i18n-ph="ch.namePh"></label>
+        <div class="ch-ways">
+          <div class="ch-way ch-way--random">
+            <h2 data-i18n="ch.randomT"></h2>
+            <p data-i18n="ch.randomP"></p>
+            <button type="button" class="ph-btn ph-btn--big" id="ch-random"><span data-i18n="ch.randomBtn"></span></button>
+          </div>
+          <div class="ch-way ch-way--room">
+            <h2 data-i18n="ch.roomT"></h2>
+            <p data-i18n="ch.roomP"></p>
+            <button type="button" class="ph-btn ph-btn--quiet ph-btn--big" id="ch-create" data-i18n="ch.createBtn"></button>
+            <form class="ch-join" id="ch-join">
+              <input id="ch-code" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" data-i18n-ph="ch.codePh" data-i18n-aria="ch.codeAria">
+              <button type="submit" class="ph-btn" data-i18n="ch.joinBtn"></button>
+            </form>
+            <p class="ch-err caption" id="ch-join-err" role="alert" hidden></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. waiting for the other person -->
+    <div class="ch-wait" id="ch-wait" hidden>
+      <div class="ch-seek" aria-hidden="true">
+        <span class="ch-ring"></span><span class="ch-ring"></span><span class="ch-ring"></span>
+        <span class="ch-me" id="ch-me-ic"></span>
+        <span class="ch-them" id="ch-them-ic"></span>
+      </div>
+      <h2 class="ch-wait-t" id="ch-wait-t" role="status"></h2>
+      <p class="ch-wait-p" id="ch-wait-p"></p>
+      <div class="ch-code" id="ch-code-box" hidden>
+        <p class="caption" data-i18n="ch.codeIs"></p>
+        <p class="ch-code-v" id="ch-code-v"></p>
+        <button type="button" class="ph-btn ph-btn--quiet" id="ch-share"><span data-i18n="ch.share"></span></button>
+        <p class="caption muted" id="ch-share-ok" role="status"></p>
+      </div>
+      <button type="button" class="ph-btn ph-btn--quiet" id="ch-cancel" data-i18n="ch.cancel"></button>
+    </div>
+
+    <!-- 3. the conversation -->
+    <div class="ch-talk" id="ch-talk" hidden>
+      <div class="ch-bar">
+        <p class="ch-with"><span class="ch-dot" id="ch-dot"></span><span id="ch-with"></span></p>
+        <p class="caption muted" id="ch-room-tag"></p>
+        <button type="button" class="ph-btn ph-btn--quiet" id="ch-voice" aria-pressed="true" hidden><span data-i18n="ch.readAloud"></span></button>
+        <button type="button" class="ph-btn ph-btn--quiet" id="ch-leave" data-i18n="ch.leave"></button>
+      </div>
+      <div class="ch-grid">
+        <div class="ch-input">
+          <!-- signing side: camera + live words -->
+          <div class="ch-sign" id="ch-sign" hidden>
+            <div class="ch-cam"><video id="ch-cam" playsinline muted hidden></video><p class="ch-cam-off" id="ch-cam-off" data-i18n="ch.camOff"></p></div>
+            <p class="ch-live" id="ch-live" aria-live="polite"></p>
+            <div class="ch-ctrl">
+              <button type="button" class="ph-btn" id="ch-cam-btn" data-i18n="ch.camOn"></button>
+              <button type="button" class="ph-btn ph-btn--quiet" id="ch-send-sign" disabled data-i18n="ch.sendSign"></button>
+            </div>
+            <p class="caption muted" data-i18n="ch.signHint"></p>
+          </div>
+          <!-- speaking side: microphone -->
+          <div class="ch-voice" id="ch-voicepane" hidden>
+            <button type="button" class="ch-mic" id="ch-mic" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="ch-mic-l" id="ch-mic-l" data-i18n="ch.micOn"></span></button>
+            <span class="ch-lvl" id="ch-lvl" aria-hidden="true"></span>
+            <p class="caption muted" id="ch-privacy" data-i18n="tx.privacyGemini"></p>
+          </div>
+          <form class="ch-type" id="ch-type">
+            <input id="ch-text" maxlength="500" autocomplete="off" data-i18n-ph="ch.typePh" data-i18n-aria="ch.typeAria">
+            <button type="submit" class="ph-btn" data-i18n="ch.send"></button>
+          </form>
+        </div>
+        <div class="ch-log-wrap">
+          <ol class="ch-log" id="ch-log" aria-live="polite"></ol>
+          <p class="ch-draft" id="ch-draft" aria-hidden="true"></p>
+        </div>
+      </div>
+      <div class="ch-ended" id="ch-ended" hidden>
+        <p id="ch-ended-t"></p>
+        <button type="button" class="ph-btn" id="ch-again" data-i18n="ch.again"></button>
+        <button type="button" class="ph-btn ph-btn--quiet" id="ch-home" data-i18n="ch.home"></button>
+      </div>
     </div>
   </div>
 </section>
@@ -647,6 +777,7 @@
 <nav class="dock" data-i18n-aria="nav.dock">
   <a href="#landing" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.home"></span><span class="l-short" data-i18n="nav.homeS"></span></span></a>
   <a href="#translate" class="dock-item dock-main" id="dock-tx" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.translate"></span><span class="l-short" data-i18n="nav.translateS"></span></span></a>
+  <a href="#suhbat" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3.5 3v-3a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M19.5 9.5a2 2 0 0 1 1 1.7v3.8a2 2 0 0 1-2 2v2.5l-3-2.5h-3.5a2.5 2.5 0 0 1-2-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.chat"></span><span class="l-short" data-i18n="nav.chatS"></span></span></a>
   <a href="#learn" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.learn"></span><span class="l-short" data-i18n="nav.learnS"></span></span></a>
   <a href="#history" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.history"></span><span class="l-short" data-i18n="nav.historyS"></span></span></a>
   <a href="#resurslar" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 4.5-9 4.5-9-4.5z M3 12l9 4.5 9-4.5 M3 16.5L12 21l9-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.res"></span><span class="l-short" data-i18n="nav.resS"></span></span></a>
