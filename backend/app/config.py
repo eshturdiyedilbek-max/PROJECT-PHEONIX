@@ -26,6 +26,11 @@ class Settings(BaseSettings):
 
     max_concurrent_stt: int = 2
 
+    # Video call between the two people in a conversation (WebRTC). STUN finds each browser's public
+    # address; a TURN relay helps when strict networks block a direct link. JSON list of RTCIceServer,
+    # e.g. [{"urls":"turn:turn.example.org:3478","username":"u","credential":"p"}]. Empty = public STUN.
+    chat_ice_servers: str = ""
+
     stt_engine: Literal["whisper", "gemini", "auto"] = "auto"  # whisper | gemini | auto (Gemini if GEMINI_API_KEY is set, Whisper as backup)
     stt_model: str = "small"
     stt_device: str = "cpu"

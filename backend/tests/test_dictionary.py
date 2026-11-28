@@ -80,3 +80,10 @@ async def test_asl_dictionary_is_english(client):
     item = next(i for i in body["items"] if i["text"] == "hello")
     assert item["lang"] == "asl" and item["translations"]["en"] == "hello" and item["translations"]["ru"] is None
     assert (await client.get("/api/dictionary", params={"lang": "asl"})).json()["total"] == 2000
+
+
+async def test_exact_match_comes_first(client):
+    r = await client.get("/api/dictionary", params={"lang": "rsl", "q": "я", "limit": 5})
+    assert r.status_code == 200
+    items = r.json()["items"]
+    assert items and items[0]["text"].lower() == "я"

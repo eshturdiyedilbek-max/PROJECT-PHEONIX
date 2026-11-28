@@ -2,6 +2,56 @@
 
 Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
+## 2026-11-28: bir-birini ko'rib suhbat, 10 ta imo-ishora tili, katta logo
+
+### Qo'shildi
+- Suhbatda video qo'ng'iroq: ikki kishi bir-birini ko'radi. Video brauzerdan brauzerga (WebRTC) boradi, server faqat ulanish xabarlarini uzatadi (`WS /ws/chat` ichida `type: "rtc"`). Imo-ishora tomonining kamerasi ham tanish, ham video uchun ishlaydi; ovozli tomon kamerasini xohlasa yoqadi. Suhbatdoshning kamerasi o'chiq bo'lsa, katta oynada o'zingiz ko'rinasiz.
+- `GET /api/chat/ice` va `CHAT_ICE_SERVERS` (TURN server qo'shish uchun), 2 ta yangi test.
+- Bosh sahifada "Dunyodagi eng ko'p ishlatiladigan 10 ta imo-ishora tili": Ethnologue hisoblari bo'yicha, masshtabli chiziqlar bilan. RSL va ASL "Ishlaydi", qolganlari "Tez orada". Suhbatda va Sozlamalarda ham shu 10 ta til ro'yxati.
+- Imo-ishora tomoni suhbat boshlashdan oldin tilni (RSL/ASL) va gap qaysi tilda borishini (o'zbek, rus, ingliz) tanlaydi.
+
+### O'zgardi
+- Bosh sahifadagi 3D "Xush kelibsiz" qo'llari olib tashlandi; o'rnida katta Phoenix logosi chiziladi. Yuqoridagi kichik logo katta logo ekrandan chiqqanda paydo bo'ladi.
+- Eski bitta ekranli "Tarjima" sahifasi olib tashlandi: tarjima endi faqat suhbat orqali. Eski `#translate` havolalari suhbatga ochiladi. three.js va 3D qo'l modellari repodan chiqarildi.
+
+
+
+## 2026-11-28: ikki kishilik suhbat, sekinroq storyboard
+
+### Qo'shildi
+- Suhbat sahifasi (`#suhbat`): ikki kishi har biri o'z qurilmasidan gaplashadi. "Imo-ishora rejimi"dagi odamning kamerasi so'zlarni taniydi va tayyor gap suhbatdoshga boradi; "Ovozli rejim"dagi odamning gapi subtitr bo'lib boradi. Ikkalasi ham yozib yuborishi mumkin.
+- Ikki yo'l: tasodifiy suhbatdosh (boshqa rejimda kutib turgan birinchi odam) yoki 6 belgili xona kodi va ulashiladigan havola (`?xona=KOD#suhbat`).
+- Backend: `WS /ws/chat` va `GET /api/chat/stats` (`backend/app/chat/`), 6 ta yangi test. Protokol `docs/API.md` 10-bo'limda.
+- Bosh sahifada ikki katta tugma: "Imo-ishora rejimi" va "Ovozli rejim", orasida ikki tomonga yuradigan qizil chiziq. Dock'da "Suhbat".
+
+### O'zgardi
+- Storyboard sekinroq: har bir sahna taxminan 1,5 ekran scroll oladi (oldin 1 ekrandan kam), sahna ichidagi qismlar scroll bilan birga harakatlanadi (so'zlar birma-bir chiqadi, gap o'zi yoziladi, progress chizig'i to'ladi), qadam matni sahnasi bilan birga turadi. Telefon ham shunday.
+
+## 2026-11-26: namoyish rejimi olib tashlandi, lug'at videolari saytning o'zida
+
+- "Namoyish rejimi" va "Faqat namoyish, tijorat uchun emas" yozuvlari olib tashlandi. Server bo'lmasa sayt soxta so'z va subtitr chiqarmaydi, "Tanish serveri hozir o'chiq" deb aytadi. Lug'at va tarix serversiz ham ishlaydi.
+- Lug'at videolari endi sahifaning o'zida o'ynaydi. Colab'dagi yangi 6b katak har bir rus so'ziga Slovo videosini tayyorlaydi (`backend/scripts/fetch_dictionary_clips.py`). Videosi yo'q so'zda shunday deb yoziladi, boshqa lug'atga faqat kichik havola qoldi.
+
+## 2026-11-26: kamera xabarlari va lug'at video qo'llanmasi
+
+- Kamera ochilmasa, endi sababi aniq yoziladi (oldindan ko'rish oynasi bloklagan, ruxsat yo'q, boshqa dastur band qilgan, https emas, kamera yo'q) va nima qilish kerakligi aytiladi. Yonida "Namuna video bilan sinash" tugmasi bor. Kamera ochilmasa urinish sarflanmaydi.
+- Lug'atdagi har bir so'zda video qo'llanma: o'zimizdagi kliplar (Slovo RSL, 3D ASL) sahifaning o'zida o'ynaydi, qolganlari uchun tirik odam ko'rsatgan video Spread The Sign / SignASL'da yangi oynada ochiladi.
+- Qidiruvda aniq mos so'z birinchi chiqadi.
+
+## 2026-11-26: ro'yxatdan o'tish, Pro va voucher
+
+### Qo'shildi
+- Email va parol bilan ro'yxatdan o'tish va kirish (Akkaunt sahifasi). Namoyish versiyasi: akkaunt shu brauzerda saqlanadi, parol faqat PBKDF2 xeshi ko'rinishida.
+- To'lov sahifasi (`#tolov`): karta raqamidan turini aniqlaydi (Visa, Mastercard, UzCard, Humo, Mir, Amex, UnionPay), muddat, CVV, voucher. "Faqat voucher" usuli kartasiz ochadi. `TBA ACADEMY` voucheri Pro'ni bepul ochadi. Karta orqali to'lov hali hech qanday to'lov tizimiga ulanmagan va sayt buni ochiq aytadi.
+- Bepul rejada 15 ta urinish, Pro'da oyiga 1 000 ta. Tarjima sahifasida qolgan urinishlar ko'rinadi.
+- Pro ochilganda tabrik ekrani: konfetti, logotip chiziladi, iliq so'zlar.
+- Bosh sahifada katta "Tarjimani boshlash" tugmasi.
+
+### O'zgardi
+- Narxlar: "Tashkilot" rejasi olib tashlandi, Pro afzalliklari aniq ko'rsatildi.
+- Tarjima dock'da boshida yo'q: katta tugma orqali kirilgandan keyin dock'da paydo bo'ladi.
+- "Xush kelibsiz" 3D sahnasida endi bitta odam; ostidagi ASL yozuvi olib tashlandi.
+
 ## 2026-11-26: sayt internetda va Android ilovasi
 
 ### Qo'shildi

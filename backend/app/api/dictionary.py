@@ -1,7 +1,7 @@
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Request
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.deps import get_db
@@ -65,11 +65,16 @@ async def list_dictionary(
     conds = [DictionaryEntry.lang == lang]
     if category:
         conds.append(DictionaryEntry.category == category)
+    order = [DictionaryEntry.id]
     if q:
         conds.append(await _text_matcher(db, q))
+        # the exact word first, then words that start with the query, then the rest
+        low = func.py_lower if db.bind.dialect.name == "sqlite" else func.lower
+        text, needle = low(DictionaryEntry.text), q.lower()
+        order = [case((text == needle, 0), (text.startswith(needle, autoescape=True), 1), else_=2), DictionaryEntry.id]
     total = await db.scalar(select(func.count()).select_from(DictionaryEntry).where(*conds))
     rows = await db.scalars(
-        select(DictionaryEntry).where(*conds).order_by(DictionaryEntry.id).limit(limit).offset(offset)
+        select(DictionaryEntry).where(*conds).order_by(*order).limit(limit).offset(offset)
     )
     tl = _text_lang(request, lang)
     return {"items": [entry_json(e, tl) for e in rows], "total": total, "limit": limit, "offset": offset}
