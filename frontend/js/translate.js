@@ -2,11 +2,12 @@
 // Sign -> text: camera frames go to WS /ws/sign as small JPEGs; the server answers with each recognized sign,
 // and on "Tugatish" with a full sentence (docs/API.md section 3, UI behaviour in frontend-resources/states.md).
 // Speech -> subtitles: the microphone is recorded in 4 s chunks and each chunk is sent to POST /api/stt.
-// In demo mode (no server) the same UI runs on sample data from demo.js, and a banner says so.
-import { api, isDemo, newClientId, onModeChange, openSignSocket } from './api.js';
+// With no server the page says so plainly and does not start: nothing here fakes a recognition.
+import { api, isOffline, newClientId, onModeChange, openSignSocket, resolveMode } from './api.js';
 import { settings } from './settings.js';
 import { RM } from './motion.js';
 import { t, onLangChange } from './i18n.js';
+import { isPro, left, limit, onPlanChange, takeAttempt } from './plan.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -19,6 +20,18 @@ const LANG_NAME = l => t('lname.' + l);
 const SIGN_NAME = s => t('sign.' + s);
 // A text spec is an i18n key, or [key, vars]; banners and status keep the spec so a language switch re-renders them.
 const T = x => !x ? '' : Array.isArray(x) ? t(x[0], x[1]) : t(x);
+
+// Sample clips for trying the recognizer without a camera (assets/samples/README.md lists sources and licences).
+// A sample plays in the camera frame and goes through the same pipeline: frames over /ws/sign, words back.
+const SAMPLES = {
+  rsl: [
+    { id: 'rsl-1', src: 'assets/res/slovo-demo.mp4', label: 'smp.rsl1', src_note: 'Slovo · CC BY-SA 4.0' },
+    { id: 'rsl-2', src: 'assets/samples/rsl-slovo-2.mp4', label: 'smp.rsl2', src_note: 'Slovo · CC BY-SA 4.0' }
+  ],
+  asl: [
+    { id: 'asl-1', src: 'assets/samples/asl-welcome-3d.mp4', label: 'smp.asl1', src_note: 'Phoenix 3D' }
+  ]
+};
 
 export function initTranslate() {
   const el = {
@@ -38,7 +51,7 @@ export function initTranslate() {
     sign: settings.get('sign'), target: settings.get('target'), smooth: settings.get('smooth'),
     cam: null, ws: null, live: false, ready: false, timer: 0, encoding: false,
     sent: 0, fpsAt: performance.now(), retry: 0, retryTimer: 0, wantOpen: false,
-    lastFinal: null, newPhrase: false, health: null, languages: null
+    lastFinal: null, newPhrase: false, health: null, languages: null, sample: null
   };
 
   // ---------- banners (status messages above the camera) ----------
@@ -131,23 +144,40 @@ export function initTranslate() {
   }
 
   // ---------- camera ----------
+  // Why the camera did not open, in words the visitor can act on. Each case gets its own banner.
+  const IN_FRAME = (() => { try { return window.top !== window.self; } catch (e) { return true; } })();
+  function camProblem(e) {
+    if (!window.isSecureContext) return 'insecure';
+    if (!navigator.mediaDevices?.getUserMedia) return 'nosupport';
+    const n = e?.name || '';
+    if (n === 'NotAllowedError' || n === 'SecurityError' || n === 'PermissionDeniedError') return IN_FRAME ? 'frame' : 'denied';
+    if (n === 'NotFoundError' || n === 'DevicesNotFoundError' || n === 'OverconstrainedError') return 'missing';
+    if (n === 'NotReadableError' || n === 'TrackStartError' || n === 'AbortError') return 'busy';
+    return 'other';
+  }
+  const toSamples = { label: 'cam.trySample', run: () => { const f = $('#samples-row .sample'); f?.scrollIntoView({ behavior: RM ? 'auto' : 'smooth', block: 'center' }); f?.focus({ preventScroll: true }); } };
+  function camBanner(kind, e) {
+    banner('cam', 'danger', 'cam.' + kind + '.l', ['cam.' + kind + '.t', { name: e?.name || '' }], toSamples);
+  }
+
   async function openCamera() {
     if (st.cam) return true;
-    if (!navigator.mediaDevices?.getUserMedia && isDemo()) return true;
-    if (!navigator.mediaDevices?.getUserMedia) {
-      banner('cam', 'danger', 'b.camNo.l', 'b.camNo.t');
-      return false;
-    }
-    status('camera');
-    try {
-      st.cam = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
-    } catch (e) {
-      const denied = e && (e.name === 'NotAllowedError' || e.name === 'SecurityError');
-      if (isDemo()) {   // the demo does not need the picture, so carry on without it
-        setCamText('tx.noCam', 'tx.noCam', 'tx.noCamHint');
-        return true;
+    let err = null;
+    if (window.isSecureContext && navigator.mediaDevices?.getUserMedia) {
+      status('camera');
+      try {
+        st.cam = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
+      } catch (e) {
+        // a camera that cannot do 640x480 or "user" facing: try once more with no wishes at all
+        if (e?.name === 'OverconstrainedError') { try { st.cam = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }); } catch (e2) { err = e2; } }
+        else err = e;
       }
-      banner('cam', 'danger', denied ? 'b.camDenied.l' : 'b.camMissing.l', denied ? 'b.camDenied.t' : 'b.camMissing.t');
+    }
+    if (!st.cam) {
+      const kind = camProblem(err);
+      console.warn('[phoenix] camera:', kind, err);
+      camBanner(kind, err);
+      setCamText('tx.camOff', 'cam.' + kind + '.l', 'cam.short');
       status('off');
       return false;
     }
@@ -161,6 +191,7 @@ export function initTranslate() {
 
   function closeCamera() {
     st.cam?.getTracks().forEach(t => t.stop());
+    if (st.sample) { el.video.pause(); el.video.removeAttribute('src'); el.video.load(); el.video.classList.remove('sample'); st.sample = null; paintSamples(); }
     st.cam = null; el.video.srcObject = null; el.video.hidden = true; el.empty.hidden = false;
     el.dot.classList.add('off'); setCamText('tx.camOff', 'tx.camOff', 'tx.camHint'); el.fps.textContent = '0';
   }
@@ -176,9 +207,16 @@ export function initTranslate() {
     if (!ws || ws.readyState !== 1 || !st.ready || st.encoding || ws.bufferedAmount > MAX_BUFFERED) return;
     if (el.video.readyState < 2) return;
     const vw = el.video.videoWidth, vh = el.video.videoHeight;
-    // centre-crop to 4:3 so the model sees the same framing as the preview
-    const scale = Math.max(FRAME_W / vw, FRAME_H / vh), sw = FRAME_W / scale, sh = FRAME_H / scale;
-    cctx.drawImage(el.video, (vw - sw) / 2, (vh - sh) / 2, sw, sh, 0, 0, FRAME_W, FRAME_H);
+    if (st.sample) {
+      // sample clips are often portrait: fit the whole picture (grey bars, like the model's own letterbox)
+      const k = Math.min(FRAME_W / vw, FRAME_H / vh), dw = vw * k, dh = vh * k;
+      cctx.fillStyle = '#727272'; cctx.fillRect(0, 0, FRAME_W, FRAME_H);
+      cctx.drawImage(el.video, (FRAME_W - dw) / 2, (FRAME_H - dh) / 2, dw, dh);
+    } else {
+      // centre-crop to 4:3 so the model sees the same framing as the preview
+      const scale = Math.max(FRAME_W / vw, FRAME_H / vh), sw = FRAME_W / scale, sh = FRAME_H / scale;
+      cctx.drawImage(el.video, (vw - sw) / 2, (vh - sh) / 2, sw, sh, 0, 0, FRAME_W, FRAME_H);
+    }
     st.encoding = true;
     canvas.toBlob(b => {
       st.encoding = false;
@@ -257,10 +295,71 @@ export function initTranslate() {
   }
 
   // ---------- controls ----------
+  // ---------- attempts (plan.js): one per camera session ----------
+  function paintQuota() {
+    const l = left(), lim = limit(), pro = isPro();
+    $('#tx-quota-fill').style.setProperty('--k', String(l / lim));
+    $('#tx-quota').dataset.low = String(l <= Math.ceil(lim / 5));
+    $('#tx-quota-t').textContent = t(pro ? 'q.leftPro' : 'q.left', { left: l.toLocaleString('ru-RU'), limit: lim.toLocaleString('ru-RU') });
+    $('#tx-quota-pro').hidden = pro;
+    if (l > 0) banner('limit');
+  }
+  function limitBanner() {
+    const pro = isPro();
+    banner('limit', 'warn', 'b.limit.l', pro ? 'b.limitPro.t' : 'b.limit.t', pro ? null : { label: 'pr.buy', run: () => { location.hash = '#tolov'; } });
+  }
+
+  // ---------- sample clips (no camera needed, no attempt used) ----------
+  function paintSamples() {
+    const row = $('#samples-row'); if (!row) return;
+    const list = SAMPLES[st.sign] || [];
+    row.replaceChildren(...list.map(s => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'sample'; b.dataset.id = s.id;
+      b.setAttribute('aria-pressed', String(st.sample?.id === s.id));
+      const v = document.createElement('video');
+      Object.assign(v, { src: s.src + '#t=1', muted: true, playsInline: true, preload: 'metadata', loop: true });
+      v.setAttribute('aria-hidden', 'true');
+      b.addEventListener('pointerenter', () => v.play().catch(() => {}));
+      b.addEventListener('pointerleave', () => v.pause());
+      const txt = document.createElement('span');
+      txt.innerHTML = '<b></b><small></small>';
+      txt.querySelector('b').textContent = t(s.label);
+      txt.querySelector('small').textContent = s.src_note;
+      const play = document.createElement('i'); play.setAttribute('aria-hidden', 'true');
+      b.append(v, play, txt);
+      b.addEventListener('click', () => (st.sample?.id === s.id ? stopAll() : startSample(s)));
+      return b;
+    }));
+  }
+
+  async function startSample(s) {
+    if (!(await serverUp())) return;
+    if (st.live) stopAll();
+    banner('model'); banner('idle'); banner('cam'); banner('limit');
+    st.sample = s;
+    el.video.srcObject = null;
+    el.video.classList.add('sample');
+    Object.assign(el.video, { src: s.src, loop: true, muted: true });
+    el.video.hidden = false; el.empty.hidden = true;
+    await el.video.play().catch(() => {});
+    el.dot.classList.remove('off'); setCamText('smp.on');
+    st.live = true;
+    el.start.dataset.i18n = 'tx.camStop'; el.start.textContent = t('tx.camStop');
+    el.start.classList.add('ph-btn--quiet');
+    el.stop.disabled = false; el.reset.disabled = false;
+    clearPhrase();
+    paintSamples();
+    connect();
+  }
+
   async function startAll() {
     if (st.live) { stopAll(); return; }
     banner('model'); banner('idle');
+    if (left() <= 0) { limitBanner(); return; }
+    if (!(await serverUp())) return;
     if (!(await openCamera())) return;
+    takeAttempt();
     st.live = true;
     el.start.dataset.i18n = 'tx.camStop'; el.start.textContent = t('tx.camStop');
     el.start.classList.add('ph-btn--quiet');
@@ -316,6 +415,8 @@ export function initTranslate() {
     html.classList.toggle('asl', st.sign === 'asl');
     el.signName.textContent = SIGN_NAME(st.sign);
     el.panel.lang = st.sign === 'asl' ? 'en' : 'ru';
+    if (st.sample && !SAMPLES[st.sign]?.some(x => x.id === st.sample.id)) stopAll();
+    paintSamples();
     checkModel();
   }
 
@@ -331,12 +432,7 @@ export function initTranslate() {
   const mic = { stream: null, rec: null, on: false, ctx: null, analyser: null, peak: 0, raf: 0, queue: Promise.resolve() };
 
   async function micOn() {
-    if (isDemo()) {   // no microphone in demo mode: sample replies from demo.js every few seconds
-      mic.on = true; mic.demo = true;
-      const tick = () => { if (!mic.on) return; api.stt(null, { saveHistory: settings.get('saveHistory') }).then(addSubtitle); mic.timer = setTimeout(tick, CHUNK_MS + 800); };
-      mic.timer = setTimeout(tick, 1200);
-      return true;
-    }
+    if (!(await serverUp())) return false;
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
       banner('mic', 'danger', 'b.micNo.l', 'b.micNo.t'); return false;
     }
@@ -397,12 +493,12 @@ export function initTranslate() {
     el.subText.classList.add('show');
     el.subText.appendChild(line);
     while (el.subText.textContent.length > 600) el.subText.firstChild.remove();   // keep the last few lines
-    const pk = r.engine === 'demo' ? 'tx.privacyDemo' : r.engine === 'gemini' ? 'tx.privacyGemini' : 'tx.privacyWhisper';
+    const pk = r.engine === 'gemini' ? 'tx.privacyGemini' : 'tx.privacyWhisper';
     $('#privacy').dataset.i18n = pk; $('#privacy').textContent = t(pk);
   }
 
   function micOff() {
-    mic.on = false; mic.demo = false; clearTimeout(mic.timer); cancelAnimationFrame(mic.raf);
+    mic.on = false; clearTimeout(mic.timer); cancelAnimationFrame(mic.raf);
     if (mic.rec?.state === 'recording') mic.rec.stop();
     mic.stream?.getTracks().forEach(t => t.stop()); mic.stream = null;
     mic.ctx?.close().catch(() => {}); mic.ctx = null; mic.analyser = null;
@@ -433,13 +529,22 @@ export function initTranslate() {
       if (h.sentence_smoothing === false) { el.tr.hidden = true; $('#row-smooth').hidden = true; }
       checkModel();
     } catch (e) {
-      banner('server', 'danger', 'b.server.l', 'b.server.t', { label: 'b.recheck', run: checkServer });
+      showModeBanner();
+      if (!isOffline()) banner('server', 'danger', 'b.server.l', 'b.server.t', { label: 'b.recheck', run: checkServer });
     }
   }
 
   function showModeBanner() {
-    if (isDemo()) banner('mode', 'ok', 'b.demo.l', 'b.demo.t', { label: 'b.toSettings', run: () => { location.hash = '#sozlamalar'; } });
+    if (isOffline()) banner('mode', 'danger', 'b.off.l', 'b.off.t', { label: 'b.recheck', run: () => resolveMode() });
     else banner('mode');
+  }
+  // Before the camera, a sample or the microphone: is the server there? Checks again in case it just came up.
+  async function serverUp() {
+    if (isOffline()) await resolveMode();
+    if (!isOffline()) return true;
+    showModeBanner();
+    el.banners.querySelector('[data-id=mode]')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return false;
   }
   onModeChange(() => { if (st.live) stopAll(); showModeBanner(); checkServer(); });
 
@@ -474,6 +579,7 @@ export function initTranslate() {
   });
 
   applySign(); applySmooth(); status('off');
+  paintQuota(); onPlanChange(paintQuota); onLangChange(paintQuota); onLangChange(paintSamples);
   document.querySelectorAll('input[name=sign]').forEach(r => {
     const small = r.closest('label').querySelector('small');
     if (small && small.dataset.count) small.textContent = t('tx.signs', { n: small.dataset.count });

@@ -2,6 +2,33 @@
 
 Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
+
+
+## 2026-11-26: namoyish rejimi olib tashlandi, lug'at videolari saytning o'zida
+
+- "Namoyish rejimi" va "Faqat namoyish, tijorat uchun emas" yozuvlari olib tashlandi. Server bo'lmasa sayt soxta so'z va subtitr chiqarmaydi, "Tanish serveri hozir o'chiq" deb aytadi. Lug'at va tarix serversiz ham ishlaydi.
+- Lug'at videolari endi sahifaning o'zida o'ynaydi. Colab'dagi yangi 6b katak har bir rus so'ziga Slovo videosini tayyorlaydi (`backend/scripts/fetch_dictionary_clips.py`). Videosi yo'q so'zda shunday deb yoziladi, boshqa lug'atga faqat kichik havola qoldi.
+
+## 2026-11-26: kamera xabarlari va lug'at video qo'llanmasi
+
+- Kamera ochilmasa, endi sababi aniq yoziladi (oldindan ko'rish oynasi bloklagan, ruxsat yo'q, boshqa dastur band qilgan, https emas, kamera yo'q) va nima qilish kerakligi aytiladi. Yonida "Namuna video bilan sinash" tugmasi bor. Kamera ochilmasa urinish sarflanmaydi.
+- Lug'atdagi har bir so'zda video qo'llanma: o'zimizdagi kliplar (Slovo RSL, 3D ASL) sahifaning o'zida o'ynaydi, qolganlari uchun tirik odam ko'rsatgan video Spread The Sign / SignASL'da yangi oynada ochiladi.
+- Qidiruvda aniq mos so'z birinchi chiqadi.
+
+## 2026-11-26: ro'yxatdan o'tish, Pro va voucher
+
+### Qo'shildi
+- Email va parol bilan ro'yxatdan o'tish va kirish (Akkaunt sahifasi). Namoyish versiyasi: akkaunt shu brauzerda saqlanadi, parol faqat PBKDF2 xeshi ko'rinishida.
+- To'lov sahifasi (`#tolov`): karta raqamidan turini aniqlaydi (Visa, Mastercard, UzCard, Humo, Mir, Amex, UnionPay), muddat, CVV, voucher. "Faqat voucher" usuli kartasiz ochadi. `TBA ACADEMY` voucheri Pro'ni bepul ochadi. Karta orqali to'lov hali hech qanday to'lov tizimiga ulanmagan va sayt buni ochiq aytadi.
+- Bepul rejada 15 ta urinish, Pro'da oyiga 1 000 ta. Tarjima sahifasida qolgan urinishlar ko'rinadi.
+- Pro ochilganda tabrik ekrani: konfetti, logotip chiziladi, iliq so'zlar.
+- Bosh sahifada katta "Tarjimani boshlash" tugmasi.
+
+### O'zgardi
+- Narxlar: "Tashkilot" rejasi olib tashlandi, Pro afzalliklari aniq ko'rsatildi.
+- Tarjima dock'da boshida yo'q: katta tugma orqali kirilgandan keyin dock'da paydo bo'ladi.
+- "Xush kelibsiz" 3D sahnasida endi bitta odam; ostidagi ASL yozuvi olib tashlandi.
+
 ## 2026-11-26: sayt internetda va Android ilovasi
 
 ### Qo'shildi

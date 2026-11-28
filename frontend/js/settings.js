@@ -9,7 +9,6 @@ const DEFAULTS = {
   saveHistory: true,
   theme: 'light',       // the site is white by default; dark is available in Settings
   api: '',              // custom server URL, e.g. the Colab tunnel; empty = same server
-  mode: 'auto',         // auto | live | demo (see api.js resolveMode)
   uiLang: 'uz'          // site language: uz | ru | en (i18n.js)
 };
 
