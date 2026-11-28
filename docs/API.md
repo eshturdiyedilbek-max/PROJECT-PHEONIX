@@ -23,6 +23,27 @@ There are no accounts in v1. On first visit the frontend generates a random UUID
 
 History is scoped to this id. A missing or malformed id on an endpoint that needs it returns `400 invalid_client_id`.
 
+### Sign-in: Google or GitHub (website and mobile app)
+
+Optional. The person proves who they are with Google or GitHub, the server checks it and returns a Phoenix session token. After that the client sends `Authorization: Bearer <token>` (REST) or `?token=<token>` (WebSocket) instead of the client id, and history belongs to the account on every device. A sent but unknown/expired token returns `401 session_expired` (WS closes with 4401): drop the token and sign in again.
+
+**Website: OAuth 2.0 authorization code + PKCE (real redirect).** The page stores a random `state` and a PKCE `code_verifier` in `sessionStorage`, sends the browser to Google (`accounts.google.com/o/oauth2/v2/auth`, scope `openid email profile`) or GitHub (`github.com/login/oauth/authorize`, scope `read:user user:email`) with `redirect_uri` = the website address, checks `state` when the browser comes back with `?code=…&state=…`, then posts the code to the server. The client secrets stay on the server.
+
+| Endpoint | Body | Notes |
+|---|---|---|
+| `GET /api/auth/providers` | | `{"google": {"client_id", "redirect"} \| null, "github": {"client_id", "redirect"} \| null, "redirect_uris": [...]}`. Public IDs from `backend/config/auth.json` (or `GOOGLE_CLIENT_IDS`, `GITHUB_CLIENT_ID`). `redirect` = the website sign-in is fully set up (server has the client secret). `redirect_uris` = website addresses registered as return addresses (`web_redirect_uris` / `AUTH_REDIRECT_URIS`); empty = any https address. |
+| `POST /api/auth/google/code` | `{"code", "redirect_uri", "code_verifier"?}` | Website. Server trades the code at Google with `GOOGLE_CLIENT_SECRET`, verifies the returned ID token. `401 invalid_code` if the code is used/expired, `400 redirect_not_allowed` if `redirect_uri` is not registered. |
+| `POST /api/auth/github/code` | `{"code", "redirect_uri", "code_verifier"?}` | Website. Same, with `GITHUB_CLIENT_SECRET`. |
+| `POST /api/auth/google` | `{"id_token"}` | Mobile app: Google ID token from Android's account picker, issued for the **Web** client ID. Signature, audience, issuer and expiry are checked. |
+| `POST /api/auth/github` | `{"access_token"}` | Mobile app: GitHub token from the device flow. The server asks GitHub whose token it is; with `GITHUB_CLIENT_SECRET` set it also checks the token belongs to our OAuth App. |
+| `POST /api/auth/github/device`, `POST /api/auth/github/poll` | | Device flow proxied for browsers without a redirect address. Not used by the website any more. |
+| `GET /api/auth/me` | | `{"user"}` |
+| `POST /api/auth/logout` | | 204, deletes the session. |
+
+Login response: `{"token", "expires_at", "user": {"id", "name", "email", "avatar_url", "providers": ["github","google"]}, "adopted_history"}`. Send the device's `X-Client-Id` with the login call and what that browser/phone translated before signing in moves into the account (`adopted_history` = rows moved). A Google and a GitHub account with the same verified email are one user.
+
+Errors: `503 auth_unavailable` (provider not configured), `401 invalid_code` / `invalid_token` (proof rejected), `400 redirect_not_allowed`, `502 provider_unavailable` (could not reach Google/GitHub).
+
 ## 1. Error format (all REST endpoints)
 
 ```json

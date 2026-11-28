@@ -109,9 +109,8 @@ const liveApi = {
   dictionary: q => request('api/dictionary', { query: q }),
   history: q => request('api/history', { query: q }),
   authProviders: () => request('api/auth/providers', { timeout: 8000 }),
-  loginGoogle: id_token => request('api/auth/google', { method: 'POST', json: { id_token } }),
-  githubDevice: () => request('api/auth/github/device', { method: 'POST' }),
-  githubPoll: device_code => request('api/auth/github/poll', { method: 'POST', json: { device_code } }),
+  // provider: google | github; body: { code, redirect_uri, code_verifier } from the OAuth redirect
+  loginCode: (provider, body) => request(`api/auth/${provider}/code`, { method: 'POST', json: body }),
   me: () => request('api/auth/me', { timeout: 8000 }),
   logout: () => request('api/auth/logout', { method: 'POST' }),
   deleteHistory: id => request(`api/history/${id}`, { method: 'DELETE' }),
