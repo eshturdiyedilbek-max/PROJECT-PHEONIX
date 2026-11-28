@@ -2,6 +2,13 @@
 
 Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 
+## 2026-11-28: Colab server sayt bilan o'zi ulanadi
+
+### Qo'shildi
+- Colab notebookda 7c qadami: server ishga tushgach, uning yangi manzili `frontend/server.json` ga GitHub orqali yoziladi, Vercel saytni bir daqiqada yangilaydi va hamma shu GPU serverga ulanadi. Token faqat o'qiy olsa, notebook qo'lda nima qilishni aytadi.
+- `backend/scripts/smoke_chat.py`: ikki kishilik suhbatni (`/ws/chat`) tunnel orqali tekshiradi (xona ochadi, qo'shiladi, ikki tomonga bittadan gap yuboradi). Notebookning 8-qadami endi buni ham ishlatadi.
+- Notebook sozlamalarida `UPDATE_SITE`, `SITE_URL` va video qo'ng'iroq uchun ixtiyoriy `CHAT_ICE_SERVERS` (TURN).
+
 ## 2026-11-28: bir-birini ko'rib suhbat, 10 ta imo-ishora tili, katta logo
 
 ### Qo'shildi
