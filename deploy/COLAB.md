@@ -10,7 +10,7 @@ A laptop CPU needs ~8 s per sign, too slow for live. Colab's free T4 GPU is mean
    - in Colab, **File > Open notebook > GitHub**, tick **Include private repos**, sign in to GitHub, and pick `deploy/phoenix_colab.ipynb`.
 2. **GPU:** **Runtime > Change runtime type > T4 GPU > Save**.
 3. **Secrets** (key icon 🔑 in the left sidebar), with **Notebook access** turned on:
-   - `GITHUB_TOKEN`: fine-grained token from https://github.com/settings/personal-access-tokens/new: *Only select repositories* = PROJECT-PHEONIX, *Contents: Read-only*, expiry 7 days.
+   - `GITHUB_TOKEN`: fine-grained token from https://github.com/settings/personal-access-tokens/new: *Only select repositories* = PROJECT-PHEONIX, *Contents: Read and write*, expiry 7 days. Write lets step 7c point the website at the new server; with Read-only, 7c prints the 1-minute manual steps instead.
    - `GEMINI_API_KEY`: Google AI Studio key (optional; without it there is no sentence smoothing and speech-to-text uses Whisper).
    If they are missing, the notebook asks you to paste them. Neither is printed, written to disk in the repo, or left in `.git/config`.
 4. **Runtime > Run all.** The first run takes about 5 to 10 minutes.
@@ -19,7 +19,7 @@ A laptop CPU needs ~8 s per sign, too slow for live. Colab's free T4 GPU is mean
    API base (HTTPS):   https://<random>.trycloudflare.com
    Sign WebSocket:     wss://<random>.trycloudflare.com/ws/sign?lang=rsl
    ```
-   Point the frontend at them. Same API as [`docs/API.md`](../docs/API.md).
+   Step 7c writes the URL into `frontend/server.json` on GitHub, Vercel redeploys in about a minute, and the website uses this server for sign translation, two-person conversations (`/ws/chat`) and video calls. Same API as [`docs/API.md`](../docs/API.md).
 
 ## What each step does
 
@@ -33,13 +33,15 @@ A laptop CPU needs ~8 s per sign, too slow for live. Colab's free T4 GPU is mean
 | 6 Models | `backend/scripts/download_models.py`: Slovo RSL + SignFlow-A ASL (~150 MB each) + Whisper |
 | 7a Benchmark | `backend/scripts/gpu_bench.py`: device used and ms per word for each sign model |
 | 7b Server | `uvicorn app.main:app` on port 8000 (SQLite in `/content`), waits for `/api/health`, checks `sign_devices` says `cuda`, starts a Cloudflare quick tunnel and prints the URLs (the **Website** link opens the Phoenix site, served by the same server) |
-| 8 Test | streams frames over the public `wss://` URL with `backend/scripts/smoke_ws.py` (optionally your own video) |
+| 7c Website | writes `{"api": "<tunnel>"}` to `frontend/server.json` on `BRANCH` through the GitHub API (needs *Contents: Read and write*), so the Vercel site follows the new URL; otherwise prints the manual steps and a `?api=` link |
+| 8 Test | streams frames over the public `wss://` URL with `backend/scripts/smoke_ws.py` (optionally your own video), then checks a two-person conversation with `backend/scripts/smoke_chat.py` |
 
 `GET /api/health` now includes `"sign_devices": {"rsl": "cuda", "asl": "cuda"}`, so the frontend or you can see at any time whether the GPU is in use.
 
 ## Limits (read before the demo)
 
-- **The URL changes** every time 7b is re-run or Colab restarts. Update the frontend each time.
+- **The URL changes** every time 7b is re-run or Colab restarts. Re-run 7c after 7b so the website follows it.
+- Conversations live in this one server process: a Colab restart ends them. Video calls use free public STUN; some strict mobile networks need a TURN relay (`CHAT_ICE_SERVERS` in step 1).
 - Free Colab disconnects after ~90 min without activity and after 12 h at most, and a GPU isn't always available at busy times. Start it 15 minutes before the demo and keep the tab open.
 - Colab's free tier is meant for interactive notebook work, and Google may stop sessions that look like long-running web hosting. Fine for a hackathon demo; not a permanent host.
 - Quick tunnels (`trycloudflare.com`) have no uptime guarantee.
