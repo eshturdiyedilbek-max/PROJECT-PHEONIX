@@ -1,4 +1,4 @@
-// Phoenix website entry: page router (#landing, #suhbat, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt, #tolov), site language,
+// Phoenix website entry: page router (#landing, #suhbat, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt, #tolov, #maxfiylik), site language,
 // entrance animation, landing storyboard, bottom dock.
 import { applyTheme, initSettingsView, settings } from './settings.js';
 import { api, apiBase, getMode, resolveMode } from './api.js';
@@ -10,16 +10,17 @@ import { initFly, initProgress, replayFly } from './fly.js';
 import { initResources } from './resources.js';
 import { initPricing } from './pricing.js';
 import { initAccount } from './account.js';
+import { initPrivacy } from './privacy.js';
 import { initCheckout } from './checkout.js';
 import { initCelebrate } from './celebrate.js';
 import { chooseRole, initChat } from './chat.js';
 import { isPro, left, onPlanChange } from './plan.js';
-import { SIGN_LANGS, langName, langRegion } from './signlangs.js';
+import { BY_READY, SIGN_LANGS, langName, langRegion } from './signlangs.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-const VIEWS = ['landing', 'suhbat', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt', 'tolov'];
+const VIEWS = ['landing', 'suhbat', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt', 'tolov', 'maxfiylik'];
 const pages = {};   // view name -> { enter(), leave() }
 let routed = false;  // the first view arrives with the intro, later ones fade in
 
@@ -114,34 +115,48 @@ function initLanguage() {
   });
 }
 
-// Home: the ten sign languages with the most signers, as a ranked bar chart. Bars are to scale
-// (signers / the largest), and the ones Phoenix reads today are red.
+// Home: the ten sign languages. The two that read signs today get big tiles; the other eight are
+// smaller tiles marked "coming soon". Every tile opens a conversation or the dictionary in that language.
+const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ARROW = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
 function paintLangs10(lang = getLang()) {
-  const list = $('#l10-list'); if (!list) return;
-  const max = Math.max(...SIGN_LANGS.map(l => l.signers));
-  const fmt = n => n.toLocaleString('ru-RU');
-  list.innerHTML = SIGN_LANGS.map((l, i) => `
-    <li class="l10-row${l.ready ? ' is-ready' : ''}" style="--v:${(l.signers / max).toFixed(4)};--i:${i}">
-      <span class="l10-rank">${i + 1}</span>
-      <span class="l10-name"><b>${langName(l, lang)}</b><small>${l.abbr} · ${langRegion(l, lang)}</small></span>
-      <span class="l10-bar" aria-hidden="true"><i></i></span>
-      <span class="l10-num"><b>${fmt(l.signers)}</b><small>${t('l10.people')}</small></span>
-      <span class="l10-tag">${t(l.ready ? 'l10.ready' : 'l10.soon')}</span>
+  const ready = $('#l10-ready'), grid = $('#l10-grid'); if (!ready || !grid) return;
+  const acts = l => `<span class="l10-acts">
+      <a class="l10-act l10-act--go" href="#suhbat" data-sign="${l.code}"><span>${esc(t('l10.talk'))}</span>${ARROW}</a>
+      <a class="l10-act" href="#learn" data-sign="${l.code}">${esc(t('l10.dict'))}</a></span>`;
+  ready.innerHTML = SIGN_LANGS.filter(l => l.ready).map((l, i) => `
+    <article class="l10-big" style="--i:${i}">
+      <span class="l10-abbr" aria-hidden="true">${esc(l.abbr)}</span>
+      <span class="l10-tag">${esc(t('l10.ready'))}</span>
+      <h3 class="l10-name">${esc(langName(l, lang))}</h3>
+      <p class="l10-region">${esc(langRegion(l, lang))}</p>
+      ${acts(l)}
+    </article>`).join('');
+  grid.innerHTML = SIGN_LANGS.filter(l => !l.ready).map((l, i) => `
+    <li class="l10-card" style="--i:${i}">
+      <span class="l10-abbr" aria-hidden="true">${esc(l.abbr)}</span>
+      <h3 class="l10-name">${esc(langName(l, lang))}</h3>
+      <p class="l10-region">${esc(langRegion(l, lang))}</p>
+      ${acts(l)}
     </li>`).join('');
 }
 function initLangs10() {
   paintLangs10();
-  const list = $('#l10-list'); if (!list) return;
-  if (RM || !('IntersectionObserver' in window)) { list.classList.add('in'); return; }
-  const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { list.classList.add('in'); io.disconnect(); } }, { rootMargin: '0px 0px -18% 0px' });
-  io.observe(list);
+  // a tile's link picks that language for the whole site, then the page opens as usual
+  $('#tillar')?.addEventListener('click', e => {
+    const a = e.target.closest('a[data-sign]'); if (a) settings.set('sign', a.dataset.sign);
+  });
+  // tiles rise in, one after another, the first time each group comes into view
+  const groups = ['#l10-ready', '#l10-grid'].map(s => $(s)).filter(Boolean);
+  if (RM || !('IntersectionObserver' in window)) { groups.forEach(g => g.classList.add('in')); return; }
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px' });
+  groups.forEach(g => { g.classList.add('l10-wait'); io.observe(g); });
 }
-// Settings > sign language: all ten listed, only the ready ones can be picked.
+// Settings > sign language: all ten can be picked; the ones without a model yet say so.
 function paintSignSelect(lang = getLang()) {
   const sel = $('#set-sign'); if (!sel) return;
-  const cur = settings.get('sign');
-  sel.innerHTML = SIGN_LANGS.map(l => `<option value="${l.code}"${l.ready ? '' : ' disabled'}>${langName(l, lang)}${l.ready ? '' : ' · ' + t('l10.soon')}</option>`).join('');
-  sel.value = cur;
+  sel.innerHTML = BY_READY.map(l => `<option value="${l.code}">${esc(langName(l, lang))}${l.ready ? '' : ' · ' + esc(t('l10.soon'))}</option>`).join('');
+  sel.value = settings.get('sign');
 }
 
 // Hero mark: the big logo leans a little toward the pointer, and the small one in the top bar
@@ -249,7 +264,7 @@ function initDock() {
   dock.addEventListener('pointerleave', () => { x = null; dock.classList.remove('magnify'); raf ||= requestAnimationFrame(paint); });
 }
 
-// Real demo recording: shown once frontend/assets/demo/real.mp4 exists (temur's screen + camera recording).
+// Real demo recording: shown once frontend/assets/demo/real.mp4 exists (the owner's screen + camera recording).
 async function loadDemoVideo() {
   const src = 'assets/demo/real.mp4';
   try {
@@ -287,6 +302,7 @@ async function init() {
   pages.resurslar = initResources();
   pages.narxlar = initPricing();
   pages.akkaunt = initAccount();
+  pages.maxfiylik = initPrivacy();
   pages.tolov = initCheckout();
   pages.suhbat = initChat();
   // home page: the two mode buttons open the conversation page with that side already picked
