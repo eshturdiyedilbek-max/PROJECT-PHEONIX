@@ -65,6 +65,14 @@ Har bir versiyada nima qo'shilgani va o'zgargani. Sanalar 2026 yil.
 - Brauzer yorlig'idagi logo qizil (oldin eski yashil rang edi).
 - Bosh sahifadagi 3D qo'llar endi haqiqiy **ASL WELCOME** belgisini ko'rsatadi: tekis kaft (B shakli) yondan, kaft yon tomonga qarab, katta yoy bilan ko'krak markaziga keladi va kaft yuqoriga qaraydi. Ikki kishi navbat bilan, oldidan ko'rinib turadi (sviterli gavda, bo'yindan kesilgan). Manba: Lifeprint (ASL University), Wiktionary.
 
+## 2026-11-25: Kaggle'da bepul GPU
+
+### Qo'shildi
+- `deploy/phoenix_kaggle.ipynb`: Colab notebookning Kaggle versiyasi (haftasiga 30 soat bepul T4 GPU). Colab'da GPU band bo'lganda ishlatiladi. Qadamlar bir xil: kodni olish, o'rnatish, modellar, tezlik testi (7a), server + Cloudflare tunnel (7b, Website/HTTPS/WSS havolalari), WebSocket sinovi (8).
+- Kalitlar Kaggle Secrets'dan (`GITHUB_TOKEN`, `GEMINI_API_KEY`) o'qiladi, ekranga chiqmaydi, `.git/config` da qolmaydi.
+- Kaggle uchun qo'shimcha tekshiruvlar: internet yoqilganmi, Python 3.11+, P100 ogohlantirishi, T4 x2 da bitta GPU ishlatiladi. Fayllar `/tmp` da, notebook natijasiga qo'shilmaydi.
+- `deploy/KAGGLE.md`: o'zbekcha qadam-baqadam qo'llanma (akkaunt, telefon tasdig'i, token, import, GPU, Secrets, muammolar jadvali).
+
 ## 2026-11-25: yangi dizayn (oq va qizil)
 
 ### Qo'shildi
