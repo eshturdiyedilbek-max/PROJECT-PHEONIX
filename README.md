@@ -194,10 +194,16 @@ Tezlik: noutbuk protsessorida bitta so'z taxminan 8 soniya. Colab T4 GPU'da tezl
 
 Loyiha qanday rivojlangani rasmlarda: dizayn izlanishlari, Colab GPU va tayyor sayt. Hammasi: [`docs/progress/`](docs/progress/README.md).
 
+Hozirgi sayt (namoyish rejimida olingan). Hamma rasmlar: [`docs/screenshots/`](docs/screenshots/README.md).
+
+![Bosh sahifa](docs/screenshots/homepage.png)
+
 | | |
 | --- | --- |
-| ![Bosh sahifa](docs/progress/10-sayt-bosh-sahifa.png) | ![Tarjima](docs/progress/11-sayt-tarjima-jonli.png) |
-| Bosh sahifa | Jonli tarjima (lokal sinov: sinov kamerasi va sinov modeli) |
+| ![Tarjima](docs/screenshots/translate.png) | ![Lug'at](docs/screenshots/dictionary.png) |
+| Tarjima: kamera yoqilgan, so'zlar chiqmoqda | Lug'at |
+| ![Qorong'i mavzu](docs/screenshots/homepage-dark.png) | ![Telefonda](docs/screenshots/homepage-phone.png) |
+| Qorong'i mavzu | Telefon ekranida |
 
 ## Hujjatlar
 
