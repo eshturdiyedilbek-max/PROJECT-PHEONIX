@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 
 from app.sign.classes import load_classes
+from app.sign.planned import PLANNED_SIGN_LANGUAGES
 from app.stt.engine import default_engine_name
 
 router = APIRouter(prefix="/api", tags=["meta"])
@@ -47,4 +48,9 @@ async def languages(request: Request):
             "model": spec.variant.name,
             "commercial_use": spec.commercial_use,
         })
-    return {"sign_languages": out, "speech_languages": SPEECH_LANGUAGES}
+    planned = [
+        {**l, "available": False, "coming_soon": True}
+        for l in PLANNED_SIGN_LANGUAGES
+        if l["code"] not in st.registry
+    ]
+    return {"sign_languages": out, "planned_sign_languages": planned, "speech_languages": SPEECH_LANGUAGES}

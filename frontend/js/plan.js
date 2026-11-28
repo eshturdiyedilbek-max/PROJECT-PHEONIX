@@ -1,5 +1,5 @@
 // Email + password accounts, the plan (Free / Pro) and the attempt counter.
-// Demo-grade: everything lives in this browser's localStorage. Passwords are never stored,
+// Everything lives in this browser's localStorage. Passwords are never stored,
 // only a salted PBKDF2-SHA-256 hash. Google/GitHub accounts (api.js, server sessions) count as
 // signed in too, so Pro and the counter follow whichever account is active.
 import { getAuth, onAuthChange } from './api.js';
@@ -42,15 +42,17 @@ export class AuthError extends Error { constructor(code) { super(code); this.cod
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 // ---------- accounts ----------
-export async function register({ name, email, password }) {
+export async function register({ name, email, password, agreed }) {
   name = String(name || '').trim(); email = String(email || '').trim().toLowerCase();
   if (!name) throw new AuthError('name');
   if (!EMAIL.test(email)) throw new AuthError('email');
   if (String(password || '').length < 6) throw new AuthError('short');
+  if (!agreed) throw new AuthError('agree');   // the Privacy Policy consent box is required to sign up
   const all = read(K.acc, {});
   if (all[email]) throw new AuthError('exists');
   const salt = newSalt();
-  all[email] = { name, email, salt, hash: await hashPw(password, salt), created: new Date().toISOString() };
+  const now = new Date().toISOString();
+  all[email] = { name, email, salt, hash: await hashPw(password, salt), created: now, privacy: { version: String(agreed), at: now } };
   write(K.acc, all);
   write(K.ses, email);
   emit();
@@ -66,6 +68,15 @@ export async function login({ email, password }) {
   write(K.ses, email);
   emit();
   return localUser();
+}
+
+/** Delete the signed-in email account from this device: the account, its Pro plan and its usage. */
+export function deleteLocalAccount() {
+  const u = localUser(); if (!u) return;
+  const all = read(K.acc, {}); delete all[u.email]; write(K.acc, all);
+  const pro = read(K.pro, {}); delete pro[u.id]; write(K.pro, pro);
+  const use = read(K.use, {}); Object.keys(use).forEach(k => { if (k.startsWith(u.id + '@')) delete use[k]; }); write(K.use, use);
+  logoutLocal();
 }
 
 export function logoutLocal() { try { localStorage.removeItem(K.ses); } catch (e) {} emit(); }

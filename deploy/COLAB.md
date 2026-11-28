@@ -38,15 +38,15 @@ A laptop CPU needs ~8 s per sign, too slow for live. Colab's free T4 GPU is mean
 
 `GET /api/health` now includes `"sign_devices": {"rsl": "cuda", "asl": "cuda"}`, so the frontend or you can see at any time whether the GPU is in use.
 
-## Limits (read before the demo)
+## Limits (read before going live)
 
 - **The URL changes** every time 7b is re-run or Colab restarts. Re-run 7c after 7b so the website follows it.
 - Conversations live in this one server process: a Colab restart ends them. Video calls use free public STUN; some strict mobile networks need a TURN relay (`CHAT_ICE_SERVERS` in step 1).
-- Free Colab disconnects after ~90 min without activity and after 12 h at most, and a GPU isn't always available at busy times. Start it 15 minutes before the demo and keep the tab open.
-- Colab's free tier is meant for interactive notebook work, and Google may stop sessions that look like long-running web hosting. Fine for a hackathon demo; not a permanent host.
+- Free Colab disconnects after ~90 min without activity and after 12 h at most, and a GPU isn't always available at busy times. Start it 15 minutes before you need it and keep the tab open.
+- Colab's free tier is meant for interactive notebook work, and Google may stop sessions that look like long-running web hosting. Good for testing and short sessions; not a permanent host.
 - Quick tunnels (`trycloudflare.com`) have no uptime guarantee.
 - History and contributions are stored in `/content` and are lost when the runtime resets.
-- The Gemini key is only inside the Colab runtime. Revoke it after the hackathon as planned.
+- The Gemini key is only inside the Colab runtime. Rotate it regularly and revoke it if it ever leaks.
 
 ## If something goes wrong
 
