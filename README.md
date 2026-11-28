@@ -2,7 +2,7 @@
 
 Phoenix kar va eshitmaydigan odamlar bilan eshitadigan odamlar o'rtasidagi suhbatni osonlashtiradigan veb-ilova. U kamera orqali imo-ishora tilini taniydi, tanilgan so'zlardan to'liq gap tuzadi va uni o'zbek, rus yoki ingliz tilida matn va ovoz qilib beradi. Javob tomonda eshituvchining nutqi subtitr bo'lib ekranga chiqadi.
 
-> Xakaton loyihasi (1 haftalik MVP). Hozir rus imo-ishora tili (RSL) va amerika imo-ishora tili (ASL) taniladi. O'zbek imo-ishora tili uchun ochiq ma'lumotlar to'plami yo'q, shuning uchun o'zbek tili hozircha **natija tili** sifatida ishlaydi.
+> Hozir rus imo-ishora tili (RSL) va amerika imo-ishora tili (ASL) taniladi. O'zbek imo-ishora tili uchun ochiq ma'lumotlar to'plami yo'q, shuning uchun o'zbek tili hozircha **natija tili** sifatida ishlaydi.
 
 ## Mundarija
 
@@ -186,8 +186,8 @@ Tezlik: noutbuk protsessorida bitta so'z taxminan 8 soniya. Colab T4 GPU'da tezl
 
 - Model alohida so'zlarni taniydi, uzluksiz imo-ishora nutqini emas. So'zlar orasida qisqa to'xtash kerak.
 - O'zbek imo-ishora tili hali tanilmaydi (ochiq ma'lumotlar to'plami yo'q). Saytdagi video yuborish bo'limi shunday to'plam yig'ishni boshlash uchun.
-- ASL modeli WLASL ma'lumotlari asosida, faqat notijorat (namoyish) maqsadda ishlatiladi.
-- Gemini ishlatilganda ovoz va so'zlar Google serverlariga yuboriladi. Sayt buni foydalanuvchiga ko'rsatadi.
+- ASL modeli WLASL ma'lumotlari asosida, ularning litsenziyasi faqat tadqiqot uchun. Tijoriy foydalanish uchun ASL modeli litsenziyali ma'lumotlarda o'qitilishi kerak.
+- Gemini ishlatilganda ovoz va so'zlar Google serverlariga yuboriladi. Sayt buni foydalanuvchiga ko'rsatadi va bu [Maxfiylik siyosati](frontend/js/privacy-text.js)da (saytda `#maxfiylik`) yozilgan.
 - Login yo'q: tarix brauzerga bog'langan, brauzer ma'lumotlari tozalansa, yo'qoladi.
 
 ## Ishlar davomida

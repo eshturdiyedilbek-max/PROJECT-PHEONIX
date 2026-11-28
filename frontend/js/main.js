@@ -1,4 +1,4 @@
-// Phoenix website entry: page router (#landing, #suhbat, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt, #tolov), site language,
+// Phoenix website entry: page router (#landing, #suhbat, #learn, #history, #resurslar, #sozlamalar, #narxlar, #akkaunt, #tolov, #maxfiylik), site language,
 // entrance animation, landing storyboard, bottom dock.
 import { applyTheme, initSettingsView, settings } from './settings.js';
 import { api, apiBase, getMode, resolveMode } from './api.js';
@@ -10,6 +10,7 @@ import { initFly, initProgress, replayFly } from './fly.js';
 import { initResources } from './resources.js';
 import { initPricing } from './pricing.js';
 import { initAccount } from './account.js';
+import { initPrivacy } from './privacy.js';
 import { initCheckout } from './checkout.js';
 import { initCelebrate } from './celebrate.js';
 import { chooseRole, initChat } from './chat.js';
@@ -19,7 +20,7 @@ import { BY_READY, SIGN_LANGS, langName, langRegion } from './signlangs.js';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
-const VIEWS = ['landing', 'suhbat', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt', 'tolov'];
+const VIEWS = ['landing', 'suhbat', 'learn', 'history', 'resurslar', 'sozlamalar', 'narxlar', 'akkaunt', 'tolov', 'maxfiylik'];
 const pages = {};   // view name -> { enter(), leave() }
 let routed = false;  // the first view arrives with the intro, later ones fade in
 
@@ -263,7 +264,7 @@ function initDock() {
   dock.addEventListener('pointerleave', () => { x = null; dock.classList.remove('magnify'); raf ||= requestAnimationFrame(paint); });
 }
 
-// Real demo recording: shown once frontend/assets/demo/real.mp4 exists (temur's screen + camera recording).
+// Real demo recording: shown once frontend/assets/demo/real.mp4 exists (the owner's screen + camera recording).
 async function loadDemoVideo() {
   const src = 'assets/demo/real.mp4';
   try {
@@ -301,6 +302,7 @@ async function init() {
   pages.resurslar = initResources();
   pages.narxlar = initPricing();
   pages.akkaunt = initAccount();
+  pages.maxfiylik = initPrivacy();
   pages.tolov = initCheckout();
   pages.suhbat = initChat();
   // home page: the two mode buttons open the conversation page with that side already picked
