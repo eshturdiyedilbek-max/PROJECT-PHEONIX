@@ -865,7 +865,7 @@ html.phx-go [data-intro]{animation:phx-fade 900ms var(--ease-out) calc(600ms + v
 .acct-status{color:var(--ink-muted);line-height:1.5}
 .acct-status:empty{display:none}
 .acct-status[data-tone=bad]{color:var(--status-danger)}
-.acct-status a{color:var(--red);font-weight:700;text-underline-offset:3px;word-break:break-all}
+.acct-status a{color:var(--red);font-weight:700;text-underline-offset:3px;overflow-wrap:anywhere}
 @media (prefers-reduced-motion:reduce){.oauth-btn[aria-busy=true] svg{animation:none;opacity:.5}}
 .acct-who{display:flex;align-items:center;gap:var(--space-3)}
 .acct-who img,.acct-initial{width:64px;height:64px;border-radius:50%;flex-shrink:0}
