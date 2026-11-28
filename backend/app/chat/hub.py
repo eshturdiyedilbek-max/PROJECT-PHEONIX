@@ -26,6 +26,8 @@ MAX_ROOMS = 500
 MAX_TEXT = 500
 MAX_DRAFT = 200
 MAX_NAME = 24
+MAX_SIGNAL = 16_000  # one WebRTC offer/answer/candidate, serialized; real SDPs are a few KB
+SIGNAL_KINDS = ("offer", "answer", "ice", "cam")
 
 
 def other_role(role: str) -> str:
@@ -142,8 +144,10 @@ class ChatHub:
 
     async def _announce(self, room: Room) -> None:
         a, b = room.peers
-        await a.send({"type": "paired", "room": room.code, "kind": room.kind, "partner": b.public()})
-        await b.send({"type": "paired", "room": room.code, "kind": room.kind, "partner": a.public()})
+        # "offer": which side starts the video call (exactly one of the two), so two browsers never
+        # both send an offer at the same time.
+        await a.send({"type": "paired", "room": room.code, "kind": room.kind, "partner": b.public(), "offer": True})
+        await b.send({"type": "paired", "room": room.code, "kind": room.kind, "partner": a.public(), "offer": False})
 
     # ---- talking ----------------------------------------------------------
     async def say(self, peer: Peer, text: str, source: str, lang: str | None) -> None:
@@ -174,6 +178,31 @@ class ChatHub:
         partner = room.partner(peer) if room else None
         if partner:
             await partner.send({"type": "draft", "text": " ".join(str(text or "").split())[:MAX_DRAFT]})
+
+    async def signal(self, peer: Peer, data: dict) -> None:
+        """Video call setup (WebRTC offer, answer, network candidates, camera on/off), passed to the
+        other person unchanged. The video itself flows browser to browser and never reaches this server."""
+        room = peer.room
+        partner = room.partner(peer) if room else None
+        if partner is None:
+            raise ChatError("no_partner", "Nobody is in the conversation yet")
+        kind = data.get("kind")
+        if kind not in SIGNAL_KINDS:
+            raise ChatError("bad_message", "rtc kind must be offer, answer, ice or cam")
+        out = {"type": "rtc", "kind": kind}
+        if kind in ("offer", "answer"):
+            sdp = data.get("sdp")
+            if not isinstance(sdp, str) or not sdp or len(sdp) > MAX_SIGNAL:
+                raise ChatError("bad_message", "sdp must be a non-empty string")
+            out["sdp"] = sdp
+        elif kind == "ice":
+            cand = data.get("candidate")
+            if cand is not None and (not isinstance(cand, dict) or len(json.dumps(cand)) > MAX_SIGNAL):
+                raise ChatError("bad_message", "candidate must be an object")
+            out["candidate"] = cand
+        else:
+            out["on"] = bool(data.get("on"))
+        await partner.send(out)
 
     # ---- leaving ----------------------------------------------------------
     async def leave(self, peer: Peer) -> None:

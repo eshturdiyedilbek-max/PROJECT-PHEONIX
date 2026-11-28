@@ -115,3 +115,35 @@ def test_flood_is_cut(tc):
         for _ in range(40):
             assert _recv(b)["type"] == "draft"
         assert _recv(a)["code"] == "too_fast"
+
+
+def test_video_call_signals_reach_the_other_person_only(tc):
+    with tc.websocket_connect(_url("sign")) as a:
+        _recv(a)
+        with tc.websocket_connect(_url("voice")) as b:
+            pb, pa = _recv(b), _recv(a)
+            assert pa["offer"] is True and pb["offer"] is False   # exactly one side starts the call
+
+            a.send_text(json.dumps({"type": "rtc", "kind": "offer", "sdp": "v=0 offer"}))
+            assert _recv(b) == {"type": "rtc", "kind": "offer", "sdp": "v=0 offer"}
+            b.send_text(json.dumps({"type": "rtc", "kind": "answer", "sdp": "v=0 answer"}))
+            assert _recv(a) == {"type": "rtc", "kind": "answer", "sdp": "v=0 answer"}
+            cand = {"candidate": "candidate:1 1 udp 1 1.2.3.4 5 typ host", "sdpMid": "0", "sdpMLineIndex": 0}
+            b.send_text(json.dumps({"type": "rtc", "kind": "ice", "candidate": cand}))
+            assert _recv(a) == {"type": "rtc", "kind": "ice", "candidate": cand}
+            a.send_text(json.dumps({"type": "rtc", "kind": "cam", "on": True, "extra": "dropped"}))
+            assert _recv(b) == {"type": "rtc", "kind": "cam", "on": True}
+
+            a.send_text(json.dumps({"type": "rtc", "kind": "hack"}))
+            assert _recv(a)["code"] == "bad_message"
+            a.send_text(json.dumps({"type": "rtc", "kind": "offer", "sdp": "x" * 20000}))
+            assert _recv(a)["code"] == "bad_message"
+
+
+def test_video_call_needs_a_partner_and_ice_servers_are_listed(tc):
+    with tc.websocket_connect(_url("sign", room="new")) as a:
+        _recv(a)
+        a.send_text(json.dumps({"type": "rtc", "kind": "offer", "sdp": "v=0"}))
+        assert _recv(a)["code"] == "no_partner"
+    ice = tc.get("/api/chat/ice").json()["ice_servers"]
+    assert ice and all(s["urls"] for s in ice)

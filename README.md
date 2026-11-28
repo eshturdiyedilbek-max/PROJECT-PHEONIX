@@ -69,20 +69,19 @@ flowchart LR
 ```
 PROJECT-PHEONIX/
 ├── frontend/              Sayt: foydalanuvchi ko'radigan hamma narsa
-│   ├── index.html         Barcha sahifalar (bosh sahifa, tarjima, lug'at, tarix, sozlamalar)
+│   ├── index.html         Barcha sahifalar (bosh sahifa, suhbat, lug'at, tarix, sozlamalar)
 │   ├── css/app.css        Dizayn: ranglar, shriftlar, animatsiya
 │   ├── js/                Mantiq: har bir sahifa alohida faylda
 │   │   ├── main.js        Sahifalar orasida o'tish, kirish animatsiyasi
-│   │   ├── translate.js   Kamera, WebSocket, subtitr, ovoz
+│   │   ├── chat.js        Suhbat: ikki kishi, kamera, mikrofon, video qo'ng'iroq
+│   │   ├── signlangs.js   Dunyodagi eng ko'p ishlatiladigan 10 ta imo-ishora tili
 │   │   ├── learn.js       Lug'at va video yuborish
 │   │   ├── history.js     Tarix
 │   │   ├── api.js         Server bilan aloqa
 │   │   ├── settings.js    Sozlamalar (brauzerda saqlanadi)
-│   │   ├── i18n.js        Uch til: o'zbek, rus, ingliz
-│   │   └── hero-hands.js  Bosh sahifadagi "xush kelibsiz" 3D qo'llar
+│   │   └── i18n.js        Uch til: o'zbek, rus, ingliz
 │   ├── fonts/             Shriftlar (SIL OFL litsenziyasi)
-│   ├── vendor/three/      three.js (3D uchun, MIT)
-│   └── assets/            Logo, 3D qo'l modellari, demo video joyi (real.mp4)
+│   └── assets/            Logo, ikonkalar, demo video joyi (real.mp4)
 ├── app/                   Android ilovasi (Capacitor): saytning o'zi telefon ichida
 ├── backend/               Server: imo-ishorani taniydigan Python kodi
 │   ├── app/               FastAPI ilovasi

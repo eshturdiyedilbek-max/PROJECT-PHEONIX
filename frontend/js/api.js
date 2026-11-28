@@ -104,6 +104,7 @@ export async function request(path, { method = 'GET', body, json, query, timeout
 const liveApi = {
   health: () => request('api/health', { timeout: 8000 }),
   chatStats: () => request('api/chat/stats', { timeout: 8000 }),
+  chatIce: () => request('api/chat/ice', { timeout: 6000 }),
   languages: () => request('api/languages', { timeout: 8000 }),
   dictionary: q => request('api/dictionary', { query: q }),
   history: q => request('api/history', { query: q }),
@@ -154,7 +155,7 @@ const LOCAL = new Set(['dictionary', 'languages', 'history', 'deleteHistory', 'c
 const offlineErr = () => { throw new ApiError(0, 'offline', ERROR_TEXT('offline') || ERROR_TEXT('network')); };
 export const api = new Proxy({}, { get: (_, k) => (mode === 'live' ? liveApi[k] : LOCAL.has(k) ? localApi[k] : async () => offlineErr()) });
 
-/** WS /ws/sign. Only called when the server answers (translate.js checks isOffline first). */
+/** WS /ws/sign. Only called when the server answers (chat.js checks isOffline first). */
 export function openSignSocket(lang) {
   return new WebSocket(wsUrl('ws/sign', auth?.token ? { token: auth.token, lang } : { client_id: clientId(), lang }));
 }

@@ -45,22 +45,35 @@
 <!-- ============ BOSH SAHIFA ============ -->
 <section id="landing" data-view="landing">
   <div class="wrap hero">
-    <figure class="welcome">
-      <!-- 3D render: one person signs "welcome" (js/hero-hands.js). -->
-      <div class="welcome-stage" id="welcome-stage" data-i18n-aria="hero.videoAria" role="img">
-        <span class="render-tag caption" data-i18n="hero.render"></span>
+    <!-- The Phoenix mark at full size: four arcs draw in, then a light runs along them now and then -->
+    <div class="hero-mark" id="hero-mark" data-intro>
+      <span class="hm-ripple" aria-hidden="true"><i></i><i></i><i></i></span>
+      <svg class="hm-logo" viewBox="-2 12 100 86" role="img" aria-label="Phoenix">
+        <g class="hm-arcs">
+          <path class="hm-arc" style="--k:0" pathLength="1" d="M46 96A46 46 0 0 0 0 50"/>
+          <path class="hm-arc" style="--k:1" pathLength="1" d="M50 96A46 46 0 0 1 96 50"/>
+          <path class="hm-arc hm-arc--out" style="--k:2" pathLength="1" d="M76 96A76 76 0 0 0 0 20"/>
+          <path class="hm-arc hm-arc--out" style="--k:3" pathLength="1" d="M20 96A76 76 0 0 1 96 20"/>
+        </g>
+        <g class="hm-glint" aria-hidden="true">
+          <path pathLength="1" d="M46 96A46 46 0 0 0 0 50"/>
+          <path pathLength="1" d="M50 96A46 46 0 0 1 96 50"/>
+          <path pathLength="1" d="M76 96A76 76 0 0 0 0 20"/>
+          <path pathLength="1" d="M20 96A76 76 0 0 1 96 20"/>
+        </g>
+      </svg>
+      <div class="hm-word">
+        <p class="hm-name" aria-hidden="true">Phoenix</p>
+        <p class="hm-sub" data-i18n="intro.sub"></p>
       </div>
-      <figcaption>
-        <span class="welcome-word" id="welcome-word" data-i18n="hero.welcome"></span>
-      </figcaption>
-    </figure>
+    </div>
     <div class="hero-row">
       <div class="hero-copy">
         <h1 data-intro data-i18n="hero.title"></h1>
         <p class="lead" data-intro data-i18n="hero.lead"></p>
       </div>
       <div class="hero-act" data-intro>
-        <a class="tx-launch" href="#translate" id="tx-launch">
+        <a class="tx-launch" href="#suhbat" id="tx-launch">
           <span class="tx-launch-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
           <span class="tx-launch-t"><b data-i18n="launch.t"></b><small id="launch-left"></small></span>
           <svg class="tx-launch-go" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
@@ -132,6 +145,19 @@
     </div>
   </div>
 
+  <!-- The ten sign languages with the most signers; which ones Phoenix reads today (js/signlangs.js) -->
+  <div class="l10" id="tillar">
+    <div class="wrap l10-in">
+      <header class="l10-head">
+        <h2 class="l10-title" data-reveal data-i18n="l10.title"></h2>
+        <p class="l10-lead" data-reveal data-i18n="l10.lead"></p>
+        <p class="l10-legend" data-reveal><span class="l10-key l10-key--on" aria-hidden="true"></span><span data-i18n="l10.ready"></span><span class="l10-key" aria-hidden="true"></span><span data-i18n="l10.soon"></span></p>
+        <p class="l10-src caption" data-i18n="l10.src"></p>
+      </header>
+      <ol class="l10-list" id="l10-list"></ol>
+    </div>
+  </div>
+
   <div class="wrap block" id="demo" hidden>
     <div class="block-head"><h2 class="title" data-i18n="demo.title"></h2><p class="muted" data-i18n="demo.sub"></p></div>
     <div class="video-slot" id="video-slot"></div>
@@ -152,7 +178,7 @@
     <div class="wrap close-in" data-reveal>
       <p class="close-word" data-i18n="hero.welcome"></p>
       <p class="close-lead" data-i18n="close.lead"></p>
-      <a class="ph-btn ph-btn--big ph-btn--invert" href="#translate"><span data-i18n="hero.try"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
+      <a class="ph-btn ph-btn--big ph-btn--invert" href="#suhbat"><span data-i18n="hero.try"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
     </div>
   </div>
 </section>
@@ -175,6 +201,15 @@
         </button>
       </div>
       <div class="ch-how" id="ch-how" hidden>
+        <div class="ch-lang" id="ch-lang" hidden>
+          <h2 class="ch-lang-t" id="ch-lang-t" data-i18n="ch.langT"></h2>
+          <div class="ch-lang-grid" id="ch-lang-grid" role="radiogroup" aria-labelledby="ch-lang-t"></div>
+          <fieldset class="ch-tgt"><legend data-i18n="ch.tgtT"></legend>
+            <label><input type="radio" name="ch-tgt" value="uz"><span>O'zbekcha</span></label>
+            <label><input type="radio" name="ch-tgt" value="ru"><span>Русский</span></label>
+            <label><input type="radio" name="ch-tgt" value="en"><span>English</span></label>
+          </fieldset>
+        </div>
         <label class="ch-name"><span data-i18n="ch.name"></span><input id="ch-name" maxlength="24" autocomplete="nickname" data-i18n-ph="ch.namePh"></label>
         <div class="ch-ways">
           <div class="ch-way ch-way--random">
@@ -224,9 +259,17 @@
       </div>
       <div class="ch-grid">
         <div class="ch-input">
-          <!-- signing side: camera + live words -->
+          <!-- video call: the other person big, you small in the corner (browser to browser, WebRTC) -->
+          <div class="ch-stage" id="ch-stage" data-peer="off" data-self="off">
+            <div class="ch-peer">
+              <video id="ch-peer-v" playsinline autoplay muted data-i18n-aria="ch.peerVideo"></video>
+              <div class="ch-peer-off"><span class="ch-peer-ic" id="ch-peer-ic"></span><b id="ch-peer-name"></b><span id="ch-peer-state"></span></div>
+            </div>
+            <div class="ch-self"><video id="ch-cam" playsinline muted hidden></video><p class="ch-cam-off" id="ch-cam-off" data-i18n="ch.camOff"></p></div>
+            <p class="ch-vid-st" id="ch-vid-st" role="status"></p>
+          </div>
+          <!-- signing side: live words -->
           <div class="ch-sign" id="ch-sign" hidden>
-            <div class="ch-cam"><video id="ch-cam" playsinline muted hidden></video><p class="ch-cam-off" id="ch-cam-off" data-i18n="ch.camOff"></p></div>
             <p class="ch-live" id="ch-live" aria-live="polite"></p>
             <div class="ch-ctrl">
               <button type="button" class="ph-btn" id="ch-cam-btn" data-i18n="ch.camOn"></button>
@@ -238,6 +281,7 @@
           <div class="ch-voice" id="ch-voicepane" hidden>
             <button type="button" class="ch-mic" id="ch-mic" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="ch-mic-l" id="ch-mic-l" data-i18n="ch.micOn"></span></button>
             <span class="ch-lvl" id="ch-lvl" aria-hidden="true"></span>
+            <button type="button" class="ph-btn ph-btn--quiet" id="ch-vcam-btn" data-i18n="ch.camOn"></button>
             <p class="caption muted" id="ch-privacy" data-i18n="tx.privacyGemini"></p>
           </div>
           <form class="ch-type" id="ch-type">
@@ -254,74 +298,6 @@
         <p id="ch-ended-t"></p>
         <button type="button" class="ph-btn" id="ch-again" data-i18n="ch.again"></button>
         <button type="button" class="ph-btn ph-btn--quiet" id="ch-home" data-i18n="ch.home"></button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ TARJIMA ============ -->
-<section id="translate" data-view="translate" hidden>
-  <div class="wrap tx">
-    <div class="tx-head">
-      <h1 class="title" data-fly="left" data-i18n="tx.title"></h1>
-    </div>
-    <div class="banners" id="tx-banners" aria-live="polite"></div>
-    <div class="tx-grid">
-      <div data-fly="left">
-        <div class="frame">
-          <video id="cam" playsinline muted autoplay hidden></video>
-          <div class="cam-empty" id="cam-empty">
-            <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="12" width="30" height="24" rx="4" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M34 21l10-6v18l-10-6z" fill="none" stroke="currentColor" stroke-width="2.5"/></svg>
-            <span class="heading" id="cam-empty-title" data-i18n="tx.camOff"></span>
-            <span class="body-sm" id="cam-empty-hint" data-i18n="tx.camHint"></span>
-          </div>
-          <span class="chip"><span class="dot off" id="cam-dot"></span><span id="cam-state" data-i18n="tx.camOff"></span></span>
-        </div>
-        <div class="frame-meta caption"><span id="sign-name"></span><span><span id="fps">0</span> <span data-i18n="tx.fps"></span></span></div>
-        <div class="run">
-          <button class="ph-btn ph-btn--big" id="btn-start" type="button" data-i18n="tx.start"></button>
-          <button class="ph-btn ph-btn--quiet ph-btn--big" id="btn-stop" type="button" disabled data-i18n="tx.finish"></button>
-          <button class="ph-btn ph-btn--quiet ph-btn--big" id="btn-reset" type="button" disabled data-i18n="tx.reset"></button>
-        </div>
-        <div class="tx-quota" id="tx-quota"><div class="meter-bar"><i id="tx-quota-fill"></i></div><p class="caption"><span id="tx-quota-t"></span> <a href="#narxlar" id="tx-quota-pro" data-i18n="q.more"></a></p></div>
-        <section class="samples" aria-labelledby="samples-h">
-          <h2 class="samples-h" id="samples-h" data-i18n="smp.t"></h2>
-          <p class="samples-p caption" data-i18n="smp.p"></p>
-          <div class="samples-row" id="samples-row"></div>
-        </section>
-      </div>
-      <div class="controls">
-        <fieldset class="seg" id="sign-picker"><legend data-i18n="tx.signLang"></legend>
-          <label class="opt"><input type="radio" name="sign" value="rsl" checked><span><span class="n">Русский жестовый язык</span><br><small data-count="1000"></small></span></label>
-          <label class="opt"><input type="radio" name="sign" value="asl"><span><span class="n">American Sign Language</span><br><small data-count="2000"></small></span></label>
-        </fieldset>
-        <fieldset class="seg"><legend data-i18n="tx.target"></legend>
-          <label class="opt"><input type="radio" name="tgt" value="uz" checked><span class="n">O'zbekcha</span></label>
-          <label class="opt"><input type="radio" name="tgt" value="ru"><span class="n">Русский</span></label>
-          <label class="opt"><input type="radio" name="tgt" value="en"><span class="n">English</span></label>
-        </fieldset>
-      </div>
-      <div class="panels" data-fly="right">
-        <section class="ph-subtitle" aria-live="polite" lang="ru" id="sign-panel">
-          <div class="ph-subtitle__label caption"><span data-i18n="tx.fromSign"></span><span class="ph-subtitle__listening"><span class="ring" id="ring" hidden></span><span id="status"></span></span></div>
-          <p class="ph-subtitle__text" id="words"></p>
-          <div class="result">
-            <p class="sent" id="sentence"></p>
-            <span class="caption muted" id="sentence-meta"></span>
-          </div>
-          <span class="making caption" id="making" hidden><span class="ring"></span><span data-i18n="tx.making"></span></span>
-          <div class="ph-subtitle__meta"><span><span data-i18n="tx.conf"></span> <span id="conf-val">–</span></span><ul id="top3"></ul></div>
-        </section>
-        <div class="actions">
-          <button class="ph-btn ph-btn--quiet" id="btn-tr" type="button" aria-pressed="true"><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5h11M7 2v3M4 5c1 4 3 7 7 8M11 5c-1 4-3 7-8 9M13 22l4-10 4 10M14.5 18.5h5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="tx.smooth"></span><span class="state"></span></button>
-          <button class="ph-btn ph-btn--quiet" id="btn-sub" type="button" aria-pressed="false"><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="13" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 11a8 8 0 0 0 16 0M12 19v3" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="tx.sub"></span><span class="state"></span></button>
-          <button class="ph-btn ph-btn--quiet" id="btn-say" type="button" disabled><svg class="ph-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 8a5 5 0 0 1 0 8" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="tx.say"></span></button>
-        </div>
-        <section class="ph-subtitle speech" id="sub-panel" aria-live="polite" hidden>
-          <div class="ph-subtitle__label caption"><span data-i18n="tx.fromSpeech"></span><span class="ph-subtitle__listening"><span class="bars" id="mic-bars"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i></span><span id="mic-state" data-i18n="tx.listening"></span></span></div>
-          <p id="sub-text"></p>
-          <p class="privacy caption" id="privacy" data-i18n="tx.privacy"></p>
-        </section>
       </div>
     </div>
   </div>
@@ -496,8 +472,6 @@
         <div class="row" data-fly="right"><span>WLASL</span><span>C-UDA</span><span class="no" data-i18n="res.research"></span></div>
         <div class="row" data-fly="left"><span>Whisper</span><span>MIT</span><span class="ok" data-i18n="res.yes"></span></div>
         <div class="row" data-fly="right"><span>Gemini API</span><span>Google</span><span class="ok" data-i18n="res.terms"></span></div>
-        <div class="row" data-fly="left"><span>three.js</span><span>MIT</span><span class="ok" data-i18n="res.yes"></span></div>
-        <div class="row" data-fly="right"><span data-i18n="res.handsModel"></span><span>MIT</span><span class="ok" data-i18n="res.yes"></span></div>
         <div class="row" data-fly="left"><span>Geologica, Golos Text</span><span>SIL OFL 1.1</span><span class="ok" data-i18n="res.yes"></span></div>
       </div>
     </article>
@@ -506,7 +480,7 @@
       <div class="wrap">
         <p class="res-end-t" data-fly="zoom" data-i18n="res.end.t"></p>
         <p class="res-end-p" data-fly="up" data-i18n="res.end.p"></p>
-        <div class="res-end-cta" data-fly="up"><a class="ph-btn ph-btn--big ph-btn--invert" href="#translate"><span data-i18n="hero.try"></span></a><a class="ph-btn ph-btn--big ph-btn--ghost web-only" href="https://github.com/eshturdiyedilbek-max/PROJECT-PHEONIX/releases/latest/download/Phoenix.apk" rel="noopener"><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10M5 9l5 5 5-5M4 17h12" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="apk.btn"></span></a></div>
+        <div class="res-end-cta" data-fly="up"><a class="ph-btn ph-btn--big ph-btn--invert" href="#suhbat"><span data-i18n="hero.try"></span></a><a class="ph-btn ph-btn--big ph-btn--ghost web-only" href="https://github.com/eshturdiyedilbek-max/PROJECT-PHEONIX/releases/latest/download/Phoenix.apk" rel="noopener"><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10M5 9l5 5 5-5M4 17h12" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-i18n="apk.btn"></span></a></div>
       </div>
     </div>
   </div>
@@ -521,6 +495,8 @@
       <div data-fly="left" class="set-row"><p><span data-i18n="set.uiLang"></span><small data-i18n="set.uiLangHint"></small></p><select class="sel" id="ui-lang" data-i18n-aria="set.uiLang"><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
       <div data-fly="right" class="set-row"><p><span data-i18n="set.voice"></span><small data-i18n="set.voiceHint"></small></p><input class="switch" type="checkbox" data-set="voice" data-i18n-aria="set.voice"></div>
       <div data-fly="left" class="set-row" id="row-smooth"><p><span data-i18n="set.smooth"></span><small data-i18n="set.smoothHint"></small></p><input class="switch" type="checkbox" data-set="smooth" data-i18n-aria="set.smooth"></div>
+      <div data-fly="left" class="set-row"><p><span data-i18n="set.sign"></span><small data-i18n="set.signHint"></small></p><select class="sel" data-set="sign" id="set-sign" data-i18n-aria="set.sign"></select></div>
+      <div data-fly="right" class="set-row"><p><span data-i18n="set.target"></span><small data-i18n="set.targetHint"></small></p><select class="sel" data-set="target" data-i18n-aria="set.target"><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
       <div data-fly="right" class="set-row"><p><span data-i18n="set.speech"></span><small data-i18n="set.speechHint"></small></p><select class="sel" data-set="speechLang" data-i18n-aria="set.speech"><option value="auto" data-i18n="set.auto"></option><option value="uz">O'zbekcha</option><option value="ru">Русский</option><option value="en">English</option></select></div>
       <div data-fly="left" class="set-row"><p><span data-i18n="set.hist"></span><small data-i18n="set.histHint"></small></p><input class="switch" type="checkbox" data-set="saveHistory" data-i18n-aria="set.hist"></div>
       <div data-fly="right" class="set-row"><p data-i18n="set.theme"></p><select class="sel" data-set="theme" data-i18n-aria="set.theme"><option value="auto" data-i18n="set.themeAuto"></option><option value="light" data-i18n="set.themeLight"></option><option value="dark" data-i18n="set.themeDark"></option></select></div>
@@ -549,7 +525,7 @@
         <p class="pr-quota"><b>15</b> <span data-i18n="pr.freeQ"></span></p>
         <p class="pr-desc" data-i18n="pr.freeD"></p>
         <ul class="pr-feat"><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.f1"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.f2"></span></li><li><svg class="pr-ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="pr.f3"></span></li></ul>
-        <a class="ph-btn ph-btn--big ph-btn--quiet" href="#translate"><span data-i18n="pr.freeGo"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
+        <a class="ph-btn ph-btn--big ph-btn--quiet" href="#suhbat"><span data-i18n="pr.freeGo"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
       </article>
 
       <article class="pr-pro" data-fly="right">
@@ -690,7 +666,7 @@
         <div class="co-who" id="co-who"></div>
         <div class="co-done" id="co-done" hidden>
           <p class="co-done-t" data-i18n="co.already"></p>
-          <a class="ph-btn ph-btn--big" href="#translate"><span data-i18n="cel.go"></span></a>
+          <a class="ph-btn ph-btn--big" href="#suhbat"><span data-i18n="cel.go"></span></a>
         </div>
 
         <div class="co-forms" id="co-forms">
@@ -761,7 +737,7 @@
       <li><b id="cel-gift"></b><span data-i18n="cel.g3"></span></li>
     </ul>
     <div class="cel-act">
-      <a class="ph-btn ph-btn--big ph-btn--invert" href="#translate" id="cel-go"><span data-i18n="cel.go"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
+      <a class="ph-btn ph-btn--big ph-btn--invert" href="#suhbat" id="cel-go"><span data-i18n="cel.go"></span><svg class="ph-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg></a>
       <button class="ph-btn ph-btn--big cel-close" type="button" id="cel-close" data-i18n="cel.close"></button>
     </div>
   </div>
@@ -776,7 +752,6 @@
 <!-- Dock: the main navigation, pinned to the bottom of the screen -->
 <nav class="dock" data-i18n-aria="nav.dock">
   <a href="#landing" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.home"></span><span class="l-short" data-i18n="nav.homeS"></span></span></a>
-  <a href="#translate" class="dock-item dock-main" id="dock-tx" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 10.5l6-3.5v10l-6-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.translate"></span><span class="l-short" data-i18n="nav.translateS"></span></span></a>
   <a href="#suhbat" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H9l-3.5 3v-3a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M19.5 9.5a2 2 0 0 1 1 1.7v3.8a2 2 0 0 1-2 2v2.5l-3-2.5h-3.5a2.5 2.5 0 0 1-2-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.chat"></span><span class="l-short" data-i18n="nav.chatS"></span></span></a>
   <a href="#learn" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.learn"></span><span class="l-short" data-i18n="nav.learnS"></span></span></a>
   <a href="#history" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.history"></span><span class="l-short" data-i18n="nav.historyS"></span></span></a>
@@ -785,7 +760,6 @@
   <a href="#sozlamalar" class="dock-item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="dock-label"><span class="l-long" data-i18n="nav.settings"></span><span class="l-short" data-i18n="nav.settingsS"></span></span></a>
 </nav>
 
-<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js"}}</script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>
