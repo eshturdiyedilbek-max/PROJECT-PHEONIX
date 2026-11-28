@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, File, Form, Header, Request, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.concurrency import run_in_threadpool
 
-from app.deps import get_db, parse_client_id
+from app.deps import bearer_token, get_db, resolve_client_id
 from app.errors import ApiError
 from app.history_store import save_history as store_history
 from app.llm.gemini import GeminiError
@@ -45,6 +45,7 @@ async def speech_to_text(
     save_history: bool = Form(False),
     engine: str | None = Form(None),
     x_client_id: str | None = Header(None),
+    token: str | None = Depends(bearer_token),
     db: AsyncSession = Depends(get_db),
 ):
     engines = request.app.state.stt_engines
@@ -75,7 +76,7 @@ async def speech_to_text(
 
         client_id = None
         if save_history:
-            client_id = parse_client_id(x_client_id)
+            client_id = await resolve_client_id(db, token, x_client_id)
             if client_id is None:
                 raise ApiError(400, "invalid_client_id", "X-Client-Id header must be a UUID")
 

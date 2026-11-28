@@ -9,7 +9,7 @@ import { RM } from './motion.js';
 import { initFly, initProgress, replayFly } from './fly.js';
 import { initResources } from './resources.js';
 import { initPricing } from './pricing.js';
-import { initAccount } from './account.js';
+import { finishOAuth, initAccount } from './account.js';
 import { initPrivacy } from './privacy.js';
 import { initCheckout } from './checkout.js';
 import { initCelebrate } from './celebrate.js';
@@ -322,6 +322,7 @@ async function init() {
   const onScroll = () => document.documentElement.classList.toggle('scrolled', scrollY > 8);
   addEventListener('scroll', onScroll, { passive: true }); onScroll();
   await resolveMode();   // live if a server answers, else offline (the site still opens)
+  finishOAuth();         // back from Google/GitHub? cleans the address bar now, signs in in the background
   addEventListener('hashchange', route);
   route();
   loadDemoVideo();
