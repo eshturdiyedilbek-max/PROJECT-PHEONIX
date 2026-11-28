@@ -60,3 +60,20 @@ async def test_unknown_client_id_error_shape(app, client):
     assert r.json()["error"]["code"] == "invalid_client_id"
     r = await client.get("/api/_test_client", headers={"X-Client-Id": str(uuid.uuid4())})
     assert r.status_code == 200
+
+
+async def test_languages_lists_planned_ones_as_coming_soon(client):
+    body = (await client.get("/api/languages")).json()
+    planned = body["planned_sign_languages"]
+    assert len(planned) == 8
+    assert {"libras", "psl", "ipsl"} <= {l["code"] for l in planned}
+    assert all(l["available"] is False and l["coming_soon"] is True for l in planned)
+    assert not {"rsl", "asl"} & {l["code"] for l in planned}
+
+
+async def test_dictionary_for_planned_language_is_empty_and_coming_soon(client):
+    r = await client.get("/api/dictionary", params={"lang": "libras"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["items"] == [] and body["total"] == 0 and body["coming_soon"] is True
+    assert (await client.get("/api/dictionary", params={"lang": "rsl"})).json()["coming_soon"] is False

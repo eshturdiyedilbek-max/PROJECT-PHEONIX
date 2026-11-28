@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.deps import get_db
 from app.errors import ApiError
 from app.models import DictionaryEntry
+from app.sign.planned import PLANNED_CODES
 
 router = APIRouter(prefix="/api", tags=["dictionary"])
 
@@ -77,7 +78,15 @@ async def list_dictionary(
         select(DictionaryEntry).where(*conds).order_by(*order).limit(limit).offset(offset)
     )
     tl = _text_lang(request, lang)
-    return {"items": [entry_json(e, tl) for e in rows], "total": total, "limit": limit, "offset": offset}
+    # a language we list but have no word list for yet: empty, and say why so the site can show "coming soon"
+    coming_soon = lang in PLANNED_CODES and lang not in request.app.state.registry
+    return {
+        "items": [entry_json(e, tl) for e in rows],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "coming_soon": coming_soon,
+    }
 
 
 @router.get("/dictionary/{entry_id}")

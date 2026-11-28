@@ -11,7 +11,7 @@ import { getLang, onLangChange, t } from './i18n.js';
 import { RM } from './motion.js';
 import { left, takeAttempt } from './plan.js';
 import { replayFly } from './fly.js';
-import { SIGN_LANGS, isReady, langName } from './signlangs.js';
+import { BY_READY, findLang, isKnown, isReady, langName } from './signlangs.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -88,26 +88,29 @@ export function initChat() {
   view.querySelectorAll('.ch-role').forEach(b => b.addEventListener('click', () => pickRole(b.dataset.role)));
 
   // ---------- signing side: which sign language, which text language ----------
+  // All ten can be picked. Ready ones translate signs; for the rest the call and typing work,
+  // and a line under the grid says the camera-to-text part is coming.
   function paintLangPick() {
     const grid = el('ch-lang-grid'), lang = getLang();
     let cur = settings.get('sign');
-    if (!isReady(cur)) { cur = 'rsl'; settings.set('sign', cur); }
-    grid.innerHTML = SIGN_LANGS.map((l, i) => `<button type="button" role="radio" class="ch-lang-opt" data-code="${l.code}" style="--i:${i}" aria-checked="${l.code === cur}"${l.ready ? '' : ' aria-disabled="true" tabindex="-1"'}><b>${esc(langName(l, lang))}</b><small>${esc(l.ready ? l.abbr : l.abbr + ' · ' + t('l10.soon'))}</small></button>`).join('');
-    if (!grid.querySelector('[aria-checked=true]')) grid.querySelector('[role=radio]:not([aria-disabled])').setAttribute('aria-checked', 'true');
-    grid.querySelectorAll('[role=radio]').forEach(b => b.tabIndex = b.getAttribute('aria-checked') === 'true' ? 0 : -1);
+    if (!isKnown(cur)) { cur = 'rsl'; settings.set('sign', cur); }
+    grid.innerHTML = BY_READY.map((l, i) => `<button type="button" role="radio" class="ch-lang-opt${l.ready ? '' : ' is-soon'}" data-code="${l.code}" style="--i:${i}" aria-checked="${l.code === cur}" tabindex="${l.code === cur ? 0 : -1}"><b>${esc(langName(l, lang))}</b><small>${esc(l.ready ? l.abbr : l.abbr + ' · ' + t('l10.soon'))}</small></button>`).join('');
+    const note = el('ch-lang-soon'), picked = findLang(cur);
+    note.hidden = picked.ready;
+    note.textContent = picked.ready ? '' : t('ch.langSoon', { name: langName(picked, lang) });
     view.querySelectorAll('input[name=ch-tgt]').forEach(r => { r.checked = r.value === settings.get('target'); });
   }
   el('ch-lang-grid').addEventListener('click', e => {
-    const b = e.target.closest('[role=radio]'); if (!b || b.getAttribute('aria-disabled') === 'true') return;
+    const b = e.target.closest('[role=radio]'); if (!b) return;
     settings.set('sign', b.dataset.code); paintLangPick();
     el('ch-lang-grid').querySelector(`[data-code="${b.dataset.code}"]`)?.focus();
   });
   el('ch-lang-grid').addEventListener('keydown', e => {
     if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(e.key)) return;
     e.preventDefault();
-    const ready = SIGN_LANGS.filter(l => l.ready).map(l => l.code);
-    const i = ready.indexOf(settings.get('sign')), step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
-    settings.set('sign', ready[(i + step + ready.length) % ready.length]); paintLangPick();
+    const codes = BY_READY.map(l => l.code);
+    const i = codes.indexOf(settings.get('sign')), step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
+    settings.set('sign', codes[(i + step + codes.length) % codes.length]); paintLangPick();
     el('ch-lang-grid').querySelector('[aria-checked=true]')?.focus();
   });
   view.querySelectorAll('input[name=ch-tgt]').forEach(r => r.addEventListener('change', () => settings.set('target', r.value)));
@@ -357,6 +360,14 @@ export function initChat() {
   }
   async function camOn() {
     banner('cam'); banner('model');
+    // no model for this language yet: the camera is only for the video call (no attempt used, no socket)
+    if (!isReady(settings.get('sign'))) {
+      try { cam.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }); }
+      catch (e) { banner('cam', 'danger', 'ch.camErr', null); return; }
+      showSelf(cam.stream); setCamBtn(true); setLocalTrack(cam.stream.getVideoTracks()[0]);
+      banner('model', 'warn', 'ch.soonModel', null);
+      return;
+    }
     if (left() <= 0) { banner('cam', 'warn', 'ch.limit', null); return; }
     try {
       cam.stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
